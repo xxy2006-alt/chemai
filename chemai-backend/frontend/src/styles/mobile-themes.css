@@ -1,0 +1,93 @@
+/* ============================================================
+   移动端主题作用域（design/学生端.md · design/家长端.md）
+   通过覆盖 Tailwind @theme 同名变量实现按端整体换肤：
+   - [data-theme='student'] 深色单彩（Spotify 结构 + Teal 亮变体槽位，R-S-C1）
+   - [data-theme='parent']  鼠尾草浅色（Wise，亮绿 CTA）
+   两端互不渗漏；--color-on-primary = 主按钮上的文字色（R-S 分册）。
+   ============================================================ */
+
+[data-theme='student'] {
+  /* 表面阶梯（近黑沉浸） */
+  --color-bg: #121212;
+  --color-surface: #181818;
+  --color-surface-muted: #1f1f1f;
+  --color-border: #4d4d4d;
+  --color-border-strong: #5a5a5a;
+  /* 文字 */
+  --color-ink: #ffffff;
+  --color-ink-secondary: #b3b3b3;
+  --color-ink-muted: #7c7c7c;
+  --color-text: #ffffff;
+  --color-text-secondary: #b3b3b3;
+  --color-text-muted: #7c7c7c;
+  /* 唯一彩色槽位 = Teal 亮变体（R-S-C1；Spotify 绿不进入本端） */
+  --color-primary: #2dd4bf;
+  --color-primary-hover: #5eead4;
+  --color-primary-soft: rgba(45, 212, 191, 0.14);
+  --color-on-primary: #042f2e;
+  --color-accent-deep: #0d7377; /* 品牌青原值：仅登录页品牌标识（R-S-C6） */
+  --color-teal: #2dd4bf;
+  --color-teal-hover: #5eead4;
+  --color-teal-soft: rgba(45, 212, 191, 0.14);
+  /* 语义（深色适配：success 源自教师端-Linear，其余源自学生端-Spotify） */
+  --color-success: #27a644;
+  --color-success-soft: rgba(39, 166, 68, 0.16);
+  --color-error: #f3727f;
+  --color-error-soft: rgba(243, 114, 127, 0.14);
+  --color-warning: #ffa42b;
+  --color-warning-soft: rgba(255, 164, 43, 0.14);
+  --color-link: #539df5;
+  /* 阴影：深底必须重阴影（R-S-C5） */
+  --shadow-sm: 0 8px 8px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 8px 8px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.5);
+
+  background: #121212;
+  color-scheme: dark;
+}
+
+/* overscroll 时 body 背景与主题一致 */
+body:has([data-theme='student']) {
+  background: #121212;
+}
+
+[data-theme='parent'] {
+  /* 表面（鼠尾草画布 + 白卡） */
+  --color-bg: #e8ebe6;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f2f4f0;
+  --color-border: #dfe3dc;
+  --color-border-strong: #c9cec6;
+  /* 文字（橄榄暖调近黑） */
+  --color-ink: #0e0f0c;
+  --color-ink-secondary: #454745;
+  --color-ink-muted: #868685;
+  --color-text: #0e0f0c;
+  --color-text-secondary: #454745;
+  --color-text-muted: #868685;
+  /* 主 CTA = Wise 亮绿（R-P-C1：仅主操作/Tab 激活） */
+  --color-primary: #9fe870;
+  --color-primary-hover: #cdffad;
+  --color-primary-soft: #e2f6d5;
+  --color-on-primary: #0e0f0c;
+  /* AI 声音保持品牌青（R-P-C3） */
+  --color-teal: #0d7377;
+  --color-teal-hover: #0a5c5f;
+  --color-teal-soft: #e6f2f2;
+  /* 语义（Wise 全家桶，涨跌徽章用深字变体） */
+  --color-success: #2ead4b;
+  --color-success-soft: #e2f6d5;
+  --color-error: #d03238;
+  --color-error-soft: #fdecea;
+  --color-warning: #b86700;
+  --color-warning-soft: #fff4cc;
+  --color-link: #0d7377;
+
+  background: #e8ebe6;
+  color-scheme: light;
+}
+
+/* overscroll 时 body 背景与主题一致 */
+body:has([data-theme='parent']) {
+  background: #e8ebe6;
+}

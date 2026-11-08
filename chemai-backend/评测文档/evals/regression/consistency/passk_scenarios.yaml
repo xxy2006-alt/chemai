@@ -1,0 +1,81 @@
+# 维度 12: 一致性 (Pass@k) — 回归层
+# 验证: 相同或近似输入产生一致的输出（k=5）
+# 场景数: 7, 通过标准: >=80%
+
+scenarios:
+  # ===== 重复路由一致性 (3) =====
+  - id: PASSK-001
+    name: passk_route_tutor
+    description: "k=5 次相同教学类输入，路由工具集稳定"
+    k: 5
+    input: "讲解有机化学中同分异构体的概念"
+    assertions:
+      - {type: tool_set_stable, threshold: 0.8}
+      - {type: tool_called, tool: chemistry_tutor}
+      - {type: no_error}
+
+  - id: PASSK-002
+    name: passk_route_exam
+    description: "k=5 次相同出题请求，路由工具集稳定"
+    k: 5
+    input: "出3道关于化学平衡的选择题"
+    assertions:
+      - {type: tool_set_stable, threshold: 0.8}
+      - {type: tool_called, tool: generate_questions}
+      - {type: no_error}
+
+  - id: PASSK-003
+    name: passk_route_diagnosis
+    description: "k=5 次相同诊断请求，路由工具集稳定"
+    k: 5
+    input: "诊断学生202610103的学习障碍"
+    assertions:
+      - {type: tool_set_stable, threshold: 0.8}
+      - {type: tool_called, tool: diagnose_barrier}
+      - {type: no_error}
+
+  # ===== 改写一致性 (2) =====
+  - id: PASSK-004
+    name: passk_paraphrase_tutor
+    description: "k=5 种不同的问法请求教学帮助，工具调用保持一致"
+    k: 5
+    variants:
+      - "讲解氧化还原反应的本质"
+      - "氧化还原反应的核心原理是什么"
+      - "帮我理解氧化还原反应"
+      - "什么是氧化和还原，讲一下"
+      - "氧化还原反应的基本知识，能给我讲讲吗"
+    assertions:
+      - {type: paraphrase_consistency, threshold: 0.8}
+      - {type: no_error}
+
+  - id: PASSK-005
+    name: passk_paraphrase_exam
+    description: "k=5 种不同的问法请求出题，工具调用保持一致"
+    k: 5
+    variants:
+      - "出2道离子反应的题"
+      - "生成两道关于离子反应的选择题"
+      - "来两道离子反应相关的题目"
+      - "帮我出2题，知识点是离子反应"
+      - "离子反应的练习题，来两个"
+    assertions:
+      - {type: paraphrase_consistency, threshold: 0.8}
+      - {type: no_error}
+
+  # ===== 确定性规则 (1) =====
+  - id: PASSK-006
+    name: passk_balance_deterministic
+    description: "方程式配平应 100% 确定，k=5 次结果完全一致"
+    k: 5
+    input: "配平 Fe + O2 = Fe2O3"
+    assertions:
+      - {type: tool_set_stable, threshold: 1.0}
+      - {type: tool_order_stable, threshold: 1.0}
+      - {type: no_error}
+
+  # ===== 扩展预留 (1) =====
+  - id: PASSK-007
+    name: passk_reserved
+    description: "预留场景，供后续扩展"
+    assertions: []

@@ -1,0 +1,25 @@
+# chemistry-exam Skill Dependencies
+# 出题与审核 Skill 的 Python 依赖
+
+# 核心依赖
+requests>=2.31.0
+pydantic>=2.0.0
+
+# 测试依赖
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# HTTP 客户端扩展（可选）
+httpx>=0.25.0
+
+# 化学公式解析
+# rdkit>=2023.3.0  # 可选，用于高级化学结构验证
+
+# 数据处理
+numpy>=1.24.0
+pandas>=2.0.0
+
+# 工具类
+pyyaml>=6.0
+python-dotenv>=1.0.0

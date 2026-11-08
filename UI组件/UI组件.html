@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>UI 组件</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<deck-stage>
+  <!-- ══════════ 01 封面 ══════════ -->
+  <section id="s-cover">
+    <div class="bg-deco"></div>
+    <div class="cover-ring" aria-hidden="true">
+      <div class="ring"></div>
+      <div class="ring r2"></div>
+      <div class="ring r3"></div>
+      <div class="arc"></div>
+      <div class="arc a2"></div>
+    </div>
+    <div class="cover-main">
+      <div class="title enter">UI 组件</div>
+      <div class="rule enter d1"></div>
+      <div class="subtitle enter d2">UI&nbsp;COMPONENTS&nbsp;·&nbsp;LIVE&nbsp;DEMO</div>
+    </div>
+    <div class="cover-tags">
+      <div class="tag enter d3">弹层控件</div>
+      <div class="tag enter d4">导航组件</div>
+      <div class="tag enter d5">加载动画</div>
+      <div class="tag enter d6">特殊控件</div>
+    </div>
+  </section>
+
+  <!-- ══════════ 02 轻量弹层 ══════════ -->
+  <section id="s-light">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">01 · Lightweight Overlays</div>
+      <h2>轻量弹层</h2>
+    </div>
+    <div class="cards">
+      <div class="card enter">
+        <div class="card-tag">Hover</div>
+        <div class="stage">
+          <div class="tipwrap">
+            <button class="tbtn">悬停我看看</button>
+            <div class="tip">Tooltip 提示气泡 · 鼠标悬停显示</div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Tooltip</span>提示</div>
+      </div>
+      <div class="card enter d1">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="popwrap">
+            <button class="tbtn" id="btnPop">更多信息</button>
+            <div class="pop" id="pop01">
+              <h4>Popover 弹层</h4>
+              <p>点击按钮弹出内容卡片,适合承载轻量说明与快捷操作。</p>
+              <div class="actions">
+                <button class="mini-btn" id="popClose">知道了</button>
+                <button class="mini-btn pri" id="popMore">查看详情</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Popover</span>弹出卡片</div>
+      </div>
+      <div class="card enter d2">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="ddwrap">
+            <button class="tbtn" id="btnDd">菜单选项</button>
+            <div class="dd" id="dd01">
+              <div class="item">个人中心</div>
+              <div class="item">我的订单</div>
+              <div class="item">收藏夹</div>
+              <div class="sep"></div>
+              <div class="item">退出登录</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Dropdown</span>下拉菜单</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 03 模态弹层 ══════════ -->
+  <section id="s-modal">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">02 · Modal Overlays</div>
+      <h2>模态弹层</h2>
+    </div>
+    <div class="cards">
+      <div class="card enter">
+        <div class="card-tag">Blocking</div>
+        <div class="stage">
+          <button class="tbtn big" id="btnModal">打开弹窗</button>
+        </div>
+        <div class="card-name"><span class="en">Modal</span>弹窗</div>
+      </div>
+      <div class="card enter d1">
+        <div class="card-tag">Slide-in</div>
+        <div class="stage">
+          <button class="tbtn big" id="btnDrawer">打开抽屉</button>
+        </div>
+        <div class="card-name"><span class="en">Drawer</span>抽屉</div>
+      </div>
+      <div class="card enter d2">
+        <div class="card-tag">Slide-up</div>
+        <div class="stage">
+          <button class="tbtn big" id="btnSheet">分享</button>
+        </div>
+        <div class="card-name"><span class="en">Bottom&nbsp;Sheet</span>底部弹层</div>
+      </div>
+    </div>
+
+    <div class="layer-host">
+      <div class="mask" id="modalMask">
+        <div class="modal-box">
+          <h4>确认操作</h4>
+          <div class="field"></div>
+          <div class="field"></div>
+          <p class="mbody">Modal 是阻断式弹层:背景被遮罩锁定,必须处理完当前任务才能继续,常用于确认、填写表单等场景。点击遮罩或按钮关闭。</p>
+          <div class="mactions">
+            <button class="mini-btn" id="modalCancel">取消</button>
+            <button class="mini-btn pri" id="modalOk">确认提交</button>
+          </div>
+        </div>
+      </div>
+      <div class="mask" id="drawerMask">
+        <div class="drawer">
+          <h4>抽屉导航</h4>
+          <div class="drow"><b>账户设置</b><span>›</span></div>
+          <div class="drow"><b>通知中心</b><span>›</span></div>
+          <div class="drow"><b>数据报表</b><span>›</span></div>
+          <div class="drow"><b>主题外观</b><span>›</span></div>
+          <div class="drow"><b>帮助反馈</b><span>›</span></div>
+          <div style="margin-top:30px;">
+            <button class="mini-btn pri" id="drawerClose">收起抽屉</button>
+          </div>
+        </div>
+      </div>
+      <div class="mask" id="sheetMask">
+        <div class="sheet">
+          <div class="grab"></div>
+          <h4>分享到</h4>
+          <div class="srow"><div class="ic">WX</div><span>微信好友</span><span style="margin-left:auto;color:var(--ink-faint);font-family:var(--mono);font-size:13px;">›</span></div>
+          <div class="srow"><div class="ic">WB</div><span>微博</span><span style="margin-left:auto;color:var(--ink-faint);font-family:var(--mono);font-size:13px;">›</span></div>
+          <div class="srow"><div class="ic">QZ</div><span>QQ 空间</span><span style="margin-left:auto;color:var(--ink-faint);font-family:var(--mono);font-size:13px;">›</span></div>
+          <div class="srow"><div class="ic">CP</div><span>复制链接</span><span style="margin-left:auto;color:var(--ink-faint);font-family:var(--mono);font-size:13px;">›</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 04 导航 · 标签 ══════════ -->
+  <section id="s-nav-tabs">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">03 · Navigation · Tabs</div>
+      <h2>标签导航</h2>
+    </div>
+    <div class="cards">
+      <div class="card enter">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="tabs-demo">
+            <div class="tabbar" id="tabbar01">
+              <div class="tab active" data-i="0">首页<span class="ink"></span></div>
+              <div class="tab" data-i="1">发现<span class="ink"></span></div>
+              <div class="tab" data-i="2">我的<span class="ink"></span></div>
+            </div>
+            <div class="tabpanel" id="tabpanel01">内容 · 首页</div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Tabs</span>标签页</div>
+      </div>
+      <div class="card enter d1">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="seg" id="seg01">
+            <div class="seg-thumb" style="left:4px;width:76px;"></div>
+            <div class="seg-item active" data-i="0">日</div>
+            <div class="seg-item" data-i="1">周</div>
+            <div class="seg-item" data-i="2">月</div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Segmented&nbsp;Control</span>分段控件</div>
+      </div>
+      <div class="card enter d2">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="crumb" id="crumb01">
+            <span class="step done">首页</span><span class="arrow">›</span>
+            <span class="step done">课程</span><span class="arrow">›</span>
+            <span class="step">UI 组件</span><span class="arrow">›</span>
+            <span class="step here">组件清单</span>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Breadcrumb</span>面包屑</div>
+      </div>
+      <div class="card enter d3">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="pager" id="pager01">
+            <div class="pg arrow" data-act="prev">‹</div>
+            <div class="pg" data-n="1">1</div>
+            <div class="pg" data-n="2">2</div>
+            <div class="pg" data-n="3">3</div>
+            <div class="pg" data-n="4">4</div>
+            <div class="pg" data-n="5">5</div>
+            <div class="pg arrow" data-act="next">›</div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Pagination</span>分页</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 05 导航 · 流程 ══════════ -->
+  <section id="s-nav-flow">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">04 · Navigation · Flow</div>
+      <h2>流程导航</h2>
+    </div>
+    <div class="cards">
+      <div class="card enter">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="stepper" id="stepper01">
+            <div class="st" data-i="0"><div class="dot">1</div><div class="lab">填写</div></div>
+            <div class="link"></div>
+            <div class="st" data-i="1"><div class="dot">2</div><div class="lab">确认</div></div>
+            <div class="link"></div>
+            <div class="st" data-i="2"><div class="dot">3</div><div class="lab">支付</div></div>
+            <div class="link"></div>
+            <div class="st" data-i="3"><div class="dot">4</div><div class="lab">完成</div></div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Stepper</span>步骤条</div>
+      </div>
+      <div class="card enter d1">
+        <div class="card-tag">Toggle</div>
+        <div class="stage">
+          <div class="sbwrap" id="sbwrap01">
+            <div class="sb">
+              <div class="sbitem active">仪表盘</div>
+              <div class="sbitem">项目</div>
+              <div class="sbitem">任务</div>
+              <div class="sbitem">成员</div>
+            </div>
+            <div class="sbmain">
+              <div class="row w3"></div>
+              <div class="row w2"></div>
+              <div class="row"></div>
+              <div class="row w3"></div>
+            </div>
+            <button class="sb-toggle" id="sbToggle01">收起</button>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Sidebar</span>侧边栏</div>
+      </div>
+      <div class="card enter d2">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="bnwrap" id="bnwrap01">
+            <div class="bn-content" id="bncontent01">首页</div>
+            <div class="bn">
+              <div class="bnitem active" data-l="首页"><span class="bnic">◉</span>首页</div>
+              <div class="bnitem" data-l="搜索"><span class="bnic">○</span>搜索</div>
+              <div class="bnitem" data-l="消息"><span class="bnic">◌</span>消息</div>
+              <div class="bnitem" data-l="我的"><span class="bnic">◎</span>我的</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Bottom&nbsp;Navigation</span>底部导航</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 06 加载 · 进度 ══════════ -->
+  <section id="s-load-prog">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">05 · Loading · Progress</div>
+      <h2>加载进度</h2>
+    </div>
+    <div class="cards">
+      <div class="card enter">
+        <div class="card-tag">Indeterminate</div>
+        <div class="stage"><div class="spinner-demo"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div></div>
+        <div class="card-name"><span class="en">Spinner</span>加载圈</div>
+      </div>
+      <div class="card enter d1">
+        <div class="card-tag">Determinate</div>
+        <div class="stage">
+          <div class="pbar">
+            <div class="track"><div class="fill"></div></div>
+            <div class="label"><span>DOWNLOADING</span><b>78%</b></div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Progress&nbsp;Bar</span>进度条</div>
+      </div>
+      <div class="card enter d2">
+        <div class="card-tag">Determinate</div>
+        <div class="stage">
+          <div class="cprog"><div class="track"></div><div class="num">72%</div></div>
+        </div>
+        <div class="card-name"><span class="en">Circular&nbsp;Progress</span>环形进度</div>
+      </div>
+      <div class="card enter d3">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <button class="btn-load" id="btnLoad01"><span class="lspin"></span><span class="ltext">提交</span></button>
+        </div>
+        <div class="card-name"><span class="en">Button&nbsp;Loading</span>按钮加载</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 07 加载 · 占位 ══════════ -->
+  <section id="s-load-skel">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">06 · Loading · Placeholder</div>
+      <h2>加载占位</h2>
+    </div>
+    <div class="cards">
+      <div class="card enter">
+        <div class="card-tag">Skeleton · 加载 → 完成</div>
+        <div class="stage">
+          <div class="skel-demo" id="skelDemo01">
+            <div class="skel-loading">
+              <div class="square"></div>
+              <div class="bar b2"></div>
+              <div class="bar b3"></div>
+              <div class="bar b1"></div>
+            </div>
+            <div class="skel-content">
+              <div class="avatar"></div>
+              <div class="meta">
+                <div class="nm">Amber Chen</div>
+                <div class="ds">前端工程师 · 组件库维护者</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Skeleton</span>骨架屏</div>
+      </div>
+      <div class="card enter d1">
+        <div class="card-tag">Shimmer · 加载 → 完成</div>
+        <div class="stage">
+          <div class="shim-demo" id="shimDemo01">
+            <div class="shimtext">LOADING…</div>
+            <div class="shim-ready">内容加载完成 ✓</div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Shimmer</span>微光</div>
+      </div>
+      <div class="card enter d2">
+        <div class="card-tag">Auto · Click to replay</div>
+        <div class="stage">
+          <div class="pload" id="pload01">
+            <div class="chrome"><i></i><i></i><i></i></div>
+            <div class="content">
+              <div class="block"></div>
+              <div class="row w1"></div>
+              <div class="row w2"></div>
+              <div class="row w3"></div>
+            </div>
+            <div class="cover">
+              <div class="mini-spin"></div>
+              <div class="mini-txt">LOADING</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Page&nbsp;Loader</span>页面加载</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 08 特殊 · 浏览输入 ══════════ -->
+  <section id="s-sp-browse">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">07 · Special · Browse &amp; Input</div>
+      <h2>浏览与输入</h2>
+    </div>
+    <div class="cards">
+      <div class="card enter">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="caro" id="caro01">
+            <button class="navbtn prev" data-act="prev">‹</button>
+            <div class="viewport"><div class="track">
+              <div class="slide">01</div>
+              <div class="slide">02</div>
+              <div class="slide">03</div>
+            </div></div>
+            <button class="navbtn next" data-act="next">›</button>
+            <div class="dots" id="caroDots01">
+              <i class="on" data-i="0"></i><i data-i="1"></i><i data-i="2"></i>
+            </div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Carousel</span>轮播</div>
+      </div>
+      <div class="card enter d1">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="numinput" id="numinput01">
+            <button class="nbtn" data-d="-1">−</button>
+            <div class="nval" id="nval01">2</div>
+            <button class="nbtn" data-d="1">+</button>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Number&nbsp;Input</span>数字输入</div>
+      </div>
+      <div class="card enter d2">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="switchwrap">
+            <div class="sw" id="sw01"></div>
+            <div class="swlabel" id="swlabel01">自动更新</div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Switch</span>开关</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 09 特殊 · 展示装饰 ══════════ -->
+  <section id="s-sp-decor">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">08 · Special · Display</div>
+      <h2>展示装饰</h2>
+    </div>
+    <div class="cards">
+      <div class="card enter">
+        <div class="card-tag">Click</div>
+        <div class="stage">
+          <div class="tline" id="tline01">
+            <div class="trow on"><div class="tdot"></div><div class="tline2"></div><div class="ttext">需求评审</div></div>
+            <div class="trow on"><div class="tdot"></div><div class="tline2"></div><div class="ttext">原型设计</div></div>
+            <div class="trow on"><div class="tdot"></div><div class="tline2"></div><div class="ttext">开发联调</div></div>
+            <div class="trow"><div class="tdot"></div><div class="tline2"></div><div class="ttext">上线发布</div></div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Timeline</span>时间线</div>
+      </div>
+      <div class="card enter d1">
+        <div class="card-tag">Auto</div>
+        <div class="stage">
+          <div class="badgewrap">
+            <div class="bbtn">✉</div>
+            <div class="bcount">9+</div>
+          </div>
+        </div>
+        <div class="card-name"><span class="en">Badge</span>角标</div>
+      </div>
+      <div class="card enter d2">
+        <div class="card-tag">Auto</div>
+        <div class="stage">
+          <div class="bbwrap"><div class="bbinner">BORDER&nbsp;BEAM</div></div>
+        </div>
+        <div class="card-name"><span class="en">Border&nbsp;Beam</span>光束边框</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 10 总结 · Vibe Coding ══════════ -->
+  <section id="s-summary">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">09 · Vibe Coding</div>
+      <h2>提示词配方</h2>
+    </div>
+    <div class="wrap">
+      <div class="term enter">
+        <div class="tchrome">
+          <i></i><i></i><i></i>
+          <span class="tname">prompt.txt · 四步配方</span>
+        </div>
+        <div class="tbody">
+          <div class="ln"><span class="no">01</span><span class="txt"><span class="k">问框架</span>　项目用什么框架?网页 / H5 / 小程序?</span></div>
+          <div class="ln"><span class="no"></span><span class="txt"><span class="c">　　　「我用 React 19 做个人作品集网站」</span></span></div>
+          <div class="ln"><span class="no">02</span><span class="txt"><span class="k">选组件库</span>　按框架选,团队用哪个用哪个</span></div>
+          <div class="ln"><span class="no"></span><span class="txt"><span class="c">　　　「组件库我选 Ant Design」</span></span></div>
+          <div class="ln"><span class="no">03</span><span class="txt"><span class="k">对组件名</span>　不知道叫什么?反问 AI,让它报名字</span></div>
+          <div class="ln"><span class="no"></span><span class="txt"><span class="c">　　　「删除确认在 antd 里叫什么组件?」</span></span></div>
+          <div class="ln"><span class="no">04</span><span class="txt"><span class="k">写代码</span>　用库里的组件,沿用主题,只写业务</span></div>
+          <div class="ln"><span class="no"></span><span class="txt"><span class="c">　　　「用 Modal 做删除确认,确认后调接口」</span></span></div>
+          <div class="ln"><span class="no">05</span><span class="txt"><span class="k">要迭代</span>　不满意就改,一句话一版</span></div>
+          <div class="ln"><span class="no"></span><span class="txt"><span class="c">　　　「弹窗加淡入动画,文案再明确点」</span></span></div>
+          <div class="ln"><span class="no"></span><span class="txt"><span class="c">　　　(公司项目:技术栈和组件库是团队定的,直接沿用)</span></span></div>
+          <div class="ln"><span class="no"></span><span class="txt"><span class="c">　　　</span><span class="cursor"></span></span></div>
+        </div>
+      </div>
+      <div class="preview-col">
+        <div class="preview-card enter d1">
+          <div class="pc-head"><span class="pc-name">AI 生成成果</span><span class="pc-badge">LIVE</span></div>
+          <div class="pc-body">
+            <div class="mini-modal"></div>
+            <div class="mini-spin"></div>
+          </div>
+        </div>
+        <div class="preview-card enter d2">
+          <div class="pc-head"><span class="pc-name">组件库优先</span><span class="pc-badge">antd · element-plus</span></div>
+          <div class="pc-body">
+            <div class="mini-caro"></div>
+            <div class="mini-switch"></div>
+          </div>
+        </div>
+        <div class="preview-card enter d3">
+          <div class="pc-head"><span class="pc-name">今天就能抄</span><span class="pc-badge">4 步</span></div>
+          <div class="pc-body" style="font-family:var(--mono);font-size:15px;color:var(--ink-dim);letter-spacing:0.1em;">
+            问框架 → 选组件库 → 对组件名 → 写代码
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 11 agent 状态组件 · thinking-orbs ══════════ -->
+  <section id="s-agent-states">
+    <div class="bg-deco"></div>
+    <div class="page-head">
+      <div class="kicker">10 · Agent States — thinking-orbs</div>
+      <h2>agent状态组件</h2>
+    </div>
+    <div class="cards">
+      <div class="card enter">
+        <div class="card-tag">orbits · working</div>
+        <div class="stage"><div class="orb-dish"><canvas data-state="working" data-size="150" width="150" height="150" style="width:150px;height:150px"></canvas></div></div>
+        <div class="card-name"><span class="en">Working</span>工作中</div>
+      </div>
+      <div class="card enter d1">
+        <div class="card-tag">globe · searching</div>
+        <div class="stage"><div class="orb-dish"><canvas data-state="searching" data-size="150" width="150" height="150" style="width:150px;height:150px"></canvas></div></div>
+        <div class="card-name"><span class="en">Searching</span>搜索中</div>
+      </div>
+      <div class="card enter d2">
+        <div class="card-tag">rubik · solving</div>
+        <div class="stage"><div class="orb-dish"><canvas data-state="solving" data-size="150" width="150" height="150" style="width:150px;height:150px"></canvas></div></div>
+        <div class="card-name"><span class="en">Solving</span>求解中</div>
+      </div>
+      <div class="card enter d3">
+        <div class="card-tag">wave · listening</div>
+        <div class="stage"><div class="orb-dish"><canvas data-state="listening" data-size="150" width="150" height="150" style="width:150px;height:150px"></canvas></div></div>
+        <div class="card-name"><span class="en">Listening</span>聆听中</div>
+      </div>
+      <div class="card enter d4">
+        <div class="card-tag">web · connecting</div>
+        <div class="stage"><div class="orb-dish"><canvas data-state="connecting" data-size="150" width="150" height="150" style="width:150px;height:150px"></canvas></div></div>
+        <div class="card-name"><span class="en">Connecting</span>连接中</div>
+      </div>
+      <div class="card enter d5">
+        <div class="card-tag">braid · weaving</div>
+        <div class="stage"><div class="orb-dish"><canvas data-state="weaving" data-size="150" width="150" height="150" style="width:150px;height:150px"></canvas></div></div>
+        <div class="card-name"><span class="en">Weaving</span>编织中</div>
+      </div>
+      <div class="card enter d6">
+        <div class="card-tag">ribbon · composing</div>
+        <div class="stage"><div class="orb-dish"><canvas data-state="composing" data-size="150" width="150" height="150" style="width:150px;height:150px"></canvas></div></div>
+        <div class="card-name"><span class="en">Composing</span>创作中</div>
+      </div>
+      <div class="card enter d7">
+        <div class="card-tag">ring · breathing</div>
+        <div class="stage"><div class="orb-dish"><canvas data-state="breathing" data-size="150" width="150" height="150" style="width:150px;height:150px"></canvas></div></div>
+        <div class="card-name"><span class="en">Thinking</span>思考中</div>
+      </div>
+      <div class="card enter d8">
+        <div class="card-tag">morph · shaping</div>
+        <div class="stage"><div class="orb-dish"><canvas data-state="shaping" data-size="150" width="150" height="150" style="width:150px;height:150px"></canvas></div></div>
+        <div class="card-name"><span class="en">Shaping</span>塑造中</div>
+      </div>
+    </div>
+  </section>
+</deck-stage>
+
+<script src="deck_stage.js"></script>
+<script src="app.js"></script>
+<script src="orbs.js"></script>
+</body>
+</html>

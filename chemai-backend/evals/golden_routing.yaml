@@ -1,0 +1,115 @@
+# Golden Routing Test Cases
+# Phase 2: tests keyword tool recommendation (deterministic, no LLM).
+# Phase 3: extends to full routing (agent + tool) after Gateway absorbs Coordinator.
+#
+# Each entry: (id, input, expect_tools, expect_agent)
+# expect_agent is optional — only validated after Phase 3 merge.
+
+cases:
+  # ── Known bugs (regression prevention) ──
+  - id: "class-count"
+    input: "我有几个班"
+    expect_tools: [diagnose_barrier, show_students]
+    expect_agent: diagnosis_expert
+
+  # ── diagnosis_expert ──
+  - id: "class-students"
+    input: "高一一班的学生"
+    expect_tools: [diagnose_barrier, show_students]
+    expect_agent: diagnosis_expert
+
+  - id: "diagnose-student-id"
+    input: "诊断学生 2024001"
+    expect_tools: [diagnose_barrier]
+    expect_agent: diagnosis_expert
+
+  - id: "weakest-students"
+    input: "班里谁概念最薄弱"
+    expect_tools: [diagnose_barrier, show_students]
+    expect_agent: diagnosis_expert
+
+  - id: "class-barrier-query"
+    input: "帮我看看这个班的学生有哪些障碍"
+    expect_tools: [diagnose_barrier, show_students]
+    expect_agent: diagnosis_expert
+
+  - id: "assign-practice"
+    input: "给学生布置自适应练习"
+    expect_tools: [diagnose_barrier, show_students]
+    expect_agent: diagnosis_expert
+
+  # ── exam_expert ──
+  - id: "generate-redox"
+    input: "出5道氧化还原的题"
+    expect_tools: [generate_questions, show_exam_workbench]
+    expect_agent: exam_expert
+
+  - id: "make-exam"
+    input: "帮我组一套卷子"
+    expect_tools: [generate_questions, show_exam_workbench]
+    expect_agent: exam_expert
+
+  - id: "save-questions"
+    input: "把这些题目保存到题库"
+    expect_tools: [list_banks]
+    expect_agent: exam_expert
+
+  # ── search_expert ──
+  - id: "search-gaokao"
+    input: "搜索2024年高考真题"
+    expect_tools: [search_exam_bank]
+    expect_agent: search_expert
+
+  - id: "search-syllabus"
+    input: "网上查一下最新的化学考试大纲"
+    expect_tools: [search_exam_bank, web_search]
+    expect_agent: search_expert
+
+  # ── tutor_expert ──
+  - id: "explain-concept"
+    input: "什么是勒夏特列原理"
+    expect_tools: [chemistry_tutor]
+    expect_agent: tutor_expert
+
+  - id: "simulate-experiment"
+    input: "模拟钠和水的反应"
+    expect_tools: [simulate_experiment]
+    expect_agent: tutor_expert
+
+  - id: "balance-equation"
+    input: "配平 Fe + O2 → Fe2O3"
+    expect_tools: [balance_equation]
+    expect_agent: tutor_expert
+
+  # ── bank_manager ──
+  - id: "list-banks"
+    input: "列出我的题库"
+    expect_tools: []
+    expect_agent: bank_manager
+
+  # ── browser_expert ──
+  - id: "browse-site"
+    input: "打开化学教研网"
+    expect_tools: []
+    expect_agent: browser_expert
+
+  # ── Boundary cases ──
+  - id: "greeting"
+    input: "你好"
+    expect_tools: []  # no tool recommendation
+    expect_agent: null  # should respond directly
+
+  - id: "multi-keyword"
+    input: "帮我出题，氧化还原，中等难度"
+    expect_tools: [generate_questions, show_exam_workbench]
+    expect_agent: exam_expert
+
+  - id: "navigate-exam"
+    input: "打开考试工作台"
+    expect_tools: []  # navigate, not chat
+    expect_agent: null
+
+  - id: "weekly-report"
+    input: "高一一班本周学习情况"
+    expect_tools: [weekly_report]
+    expect_agent: tutor_expert

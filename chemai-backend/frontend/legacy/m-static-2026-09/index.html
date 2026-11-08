@@ -1,0 +1,311 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>AI 化学助教</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/mhchem.min.js"></script>
+<style>
+.material-icons{font-size:24px;line-height:1;vertical-align:middle}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  background:#f7f4ed;color:#1a1a1a;
+  display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;
+  min-height:100dvh;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+.chat{
+  flex:1;overflow-y:auto;padding:12px 14px 4px;
+  display:flex;flex-direction:column;gap:8px;
+  -webkit-overflow-scrolling:touch;
+}
+.chat::after{content:'';display:block;height:4px}
+.msg{
+  max-width:84%;padding:10px 14px;border-radius:18px;
+  font-size:14px;line-height:1.65;word-break:break-word;
+  animation:in .2s ease;
+}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg-user{
+  align-self:flex-end;background:#b43c28;color:#fff;border-bottom-right-radius:6px;
+}
+.msg-ai{
+  align-self:flex-start;background:#fff;border-bottom-left-radius:6px;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);color:#1a1a1a;
+}
+.msg-ai strong{color:#8b2918}
+.thinking{
+  align-self:flex-start;background:#fff;padding:10px 16px;border-radius:18px;
+  border-bottom-left-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.04);
+  font-size:13px;color:#888;display:flex;align-items:center;gap:6px;
+}
+.thinking .dots{display:flex;gap:3px}
+.thinking .dots span{width:5px;height:5px;border-radius:50%;background:#bbb;animation:dot 1.2s infinite}
+.thinking .dots span:nth-child(2){animation-delay:.2s}
+.thinking .dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,60%,100%{opacity:.2;transform:scale(.8)}30%{opacity:1;transform:scale(1)}}
+.tool-card{
+  background:#faf8f3;border:1px solid rgba(180,60,40,.08);
+  border-radius:10px;padding:8px 10px;font-size:12px;margin:2px 0;
+}
+.tool-card .head{color:#b43c28;font-weight:600;margin-bottom:2px;font-size:11.5px}
+.msg-system{
+  align-self:center;font-size:11.5px;color:#aaa;padding:2px 0;text-align:center;max-width:90%;
+}
+/* Chips */
+.chips{
+  display:flex;gap:8px;padding:4px 14px 8px;overflow-x:auto;
+  flex-shrink:0;scrollbar-width:none;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  white-space:nowrap;padding:7px 14px;border-radius:20px;
+  border:1px solid rgba(0,0,0,.1);font-size:12.5px;
+  cursor:pointer;background:#fff;color:#555;
+  display:flex;align-items:center;gap:5px;flex-shrink:0;transition:.15s;
+}
+.chip:active{background:#b43c28;color:#fff;border-color:#b43c28}
+/* Input */
+.input-bar{
+  display:flex;gap:8px;padding:8px 14px;background:#fff;
+  border-top:1px solid rgba(0,0,0,.06);flex-shrink:0;
+  padding-bottom:max(8px,env(safe-area-inset-bottom));
+}
+.input-bar input{
+  flex:1;padding:10px 14px;border:1.5px solid #e8e4db;
+  border-radius:22px;font-size:14px;outline:none;background:#faf8f3;transition:.15s;
+}
+.input-bar input:focus{border-color:#b43c28;background:#fff}
+.input-bar button{
+  width:40px;height:40px;border-radius:50%;border:none;
+  background:#b43c28;color:#fff;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(180,60,40,.25);transition:transform .15s;
+}
+.input-bar button:active{transform:scale(.9)}
+/* Empty */
+.empty{text-align:center;padding:50px 30px}
+.empty .icon{font-size:48px;margin-bottom:12px;opacity:.3;color:#b43c28}
+.empty h2{font-size:16px;font-weight:600;color:#555;margin-bottom:4px}
+.empty p{font-size:13px;color:#999;line-height:1.6}
+/* Sidebar */
+.sidebar-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:100;display:none}
+.sidebar-overlay.open{display:block}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:85%;max-width:360px;z-index:101;background:#faf7f0;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:2px 0 12px rgba(0,0,0,.08)}
+.sidebar.open{transform:translateX(0)}
+.sidebar .s-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(0,0,0,.06)}
+.sidebar .s-head .s-title{font-weight:600;font-size:15px}
+.sidebar .s-head .s-new{padding:5px 12px;border-radius:14px;border:1px solid #b43c28;color:#b43c28;font-size:12px;cursor:pointer;background:#fff}
+.sidebar .s-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 8px}
+.sidebar .s-item{padding:12px;border-radius:8px;margin-bottom:2px;cursor:pointer;transition:background .15s}
+.sidebar .s-item:active,.sidebar .s-item.active{background:rgba(180,60,40,.06)}
+.sidebar .s-item .s-item-title{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar .s-item .s-item-preview{font-size:12px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar .s-item .s-item-time{font-size:10px;color:#bbb;margin-top:4px}
+</style>
+</head><body>
+
+<div id="header"></div>
+
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="s-head">
+    <span class="s-title">历史对话</span>
+    <span class="s-new" onclick="newConversation()">+ 新建</span>
+  </div>
+  <div class="s-list" id="sb-list"></div>
+</div>
+
+<div class="chat" id="chat">
+  <div class="empty">
+    <div class="icon"><span class="material-icons" style="font-size:48px;color:rgba(180,60,40,.3)">auto_awesome</span></div>
+    <h2>你好，我是你的 AI 化学助教</h2>
+    <p>有任何化学问题都可以问我<br>我会一步一步引导你找到答案</p>
+  </div>
+</div>
+
+<div class="chips">
+  <button class="chip" onclick="quick('我想了解一个化学实验，可以从钠和水反应开始吗？')"><span class="material-icons" style="font-size:16px">biotech</span>实验</button>
+  <button class="chip" onclick="quick('帮我讲解一个化学知识点')"><span class="material-icons" style="font-size:16px">import_contacts</span>讲解</button>
+  <button class="chip" onclick="quick('帮我检查一个化学方程式配平')"><span class="material-icons" style="font-size:16px">tune</span>配平</button>
+</div>
+
+<div class="input-bar">
+  <input id="inp" placeholder="输入化学问题..." onkeydown="if(event.key==='Enter')send()">
+  <button onclick="send()"><span class="material-icons" style="font-size:18px">send</span></button>
+</div>
+
+<div id="tabbar"></div>
+
+<script src="/m/app.js"></script>
+<script src="/js/chem-markdown.js"></script>
+<script>
+var u=requireAuth();if(!u)throw new Error('no auth')
+
+// ── Conversation management ──
+var cid=sessionStorage.getItem('chemai_student_cid')
+if(!cid||!(cid+'').startsWith('m-')){cid='m-'+Date.now();sessionStorage.setItem('chemai_student_cid',cid)}
+var convos=[] // loaded from API
+
+// Custom header with hamburger
+var hdr=document.createElement('div')
+hdr.style.cssText='padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,.04);background:#faf7f0'
+hdr.innerHTML='<span id="btn-menu" class="material-icons" onclick="openSidebar()" style="font-size:22px;cursor:pointer;color:#555">menu</span><span style="font-weight:600;font-family:Cormorant Garamond,serif;font-size:18px">'+esc(u.name||'学生')+'</span>'
+document.getElementById('header').appendChild(hdr)
+document.getElementById('tabbar').appendChild(renderTabBar('chat'))
+
+var chat=document.getElementById('chat')
+
+function addMsg(role,html){
+  var e=chat.querySelector('.empty');if(e)e.remove()
+  var d=document.createElement('div');d.className='msg msg-'+role
+  d.innerHTML=html;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d
+}
+
+function clearChat(){
+  chat.innerHTML='<div class="empty"><div class="icon"><span class="material-icons" style="font-size:48px;color:rgba(180,60,40,.3)">auto_awesome</span></div><h2>你好，我是你的 AI 化学助教</h2><p>有任何化学问题都可以问我<br>我会一步一步引导你找到答案</p></div>'
+}
+
+function thinking(){
+  var e=chat.querySelector('.empty');if(e)e.remove()
+  var d=document.createElement('div');d.className='thinking'
+  d.innerHTML='<div class="dots"><span></span><span></span><span></span></div>思考中...'
+  chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d
+}
+
+function quick(t){document.getElementById('inp').value=t;send()}
+
+// ── Sidebar ──
+function openSidebar(){
+  loadConvoList()
+  document.getElementById('sidebar').classList.add('open')
+  document.getElementById('sb-overlay').classList.add('open')
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open')
+  document.getElementById('sb-overlay').classList.remove('open')
+}
+
+function loadConvoList(){
+  api('/api/agent/chat/conversations?prefix=m-&student_id='+u.id).then(function(d){
+    convos=(d.conversations||[]).sort(function(a,b){return (b.last_at||'')>(a.last_at||'')?1:-1})
+    renderConvoList()
+  }).catch(function(){})
+}
+
+function renderConvoList(){
+  var el=document.getElementById('sb-list')
+  if(!convos.length){el.innerHTML='<div style="text-align:center;padding:30px;color:#888;font-size:13px">暂无历史对话</div>';return}
+  var h=''
+  convos.forEach(function(c){
+    var active=c.thread_id===cid?' active':''
+    h+='<div class="s-item'+active+'" onclick="switchConvo(\''+c.thread_id+'\')">'
+    h+='<div class="s-item-title">'+esc(c.title||'新对话')+'</div>'
+    h+='<div class="s-item-preview">'+esc((c.preview||'').substring(0,40))+'</div>'
+    h+='<div class="s-item-time">'+formatDate(c.last_at||'')+'</div></div>'
+  })
+  el.innerHTML=h
+}
+
+function switchConvo(tid){
+  if(tid===cid){closeSidebar();return}
+  cid=tid;sessionStorage.setItem('chemai_student_cid',cid)
+  closeSidebar()
+  clearChat()
+  // Load history
+  api('/api/agent/chat/history/'+cid).then(function(d){
+    var msgs=d.messages||[]
+    msgs.forEach(function(m){
+      if(m.role==='user') addMsg('user',esc(m.content||''))
+      else addMsg('ai',renderChemMD(m.content||''))
+    })
+  }).catch(function(){})
+}
+
+function newConversation(){
+  api('/api/agent/chat/new',{method:'POST'}).then(function(d){
+    cid=d.thread_id;sessionStorage.setItem('chemai_student_cid',cid)
+    closeSidebar();clearChat()
+    convos.unshift({thread_id:cid,title:'新对话',preview:'',last_at:new Date().toISOString().split('T')[0]})
+  }).catch(function(){})
+}
+
+// ── Chat send ──
+function send(){
+  var inp=document.getElementById('inp'),t=inp.value.trim();if(!t)return
+  inp.value='';inp.disabled=true;setTimeout(function(){inp.disabled=false;inp.focus()},500)
+  addMsg('user',esc(t))
+
+  var th=thinking(),aiEl=null,toolEls=[],full=''
+
+  fetch('/api/agent/chat/langgraph/stream',{
+    method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
+    body:JSON.stringify({persona:'student',message:t,provider:'deepseek',conversation_id:cid,version:'v2'})
+  }).then(function(r){
+    var reader=r.body.getReader(),dec=new TextDecoder(),buf=''
+    function pump(){
+      reader.read().then(function(res){
+        if(res.done){if(th)th.remove();return}
+        buf+=dec.decode(res.value,{stream:true})
+        var lines=buf.split('\n');buf=lines.pop()||''
+        lines.forEach(function(line){
+          if(!line.startsWith('data: '))return
+          var d=line.slice(6);if(d==='[DONE]')return
+          try{var j=JSON.parse(d)}catch(e){return}
+          if(j.type==='text'||j.type==='subagent_text'){
+            if(th){th.remove();th=null}
+            full+=j.content||''
+            if(!aiEl){aiEl=addMsg('ai','');aiEl._t=''}
+            aiEl._t+=j.content||''
+            aiEl.innerHTML=renderChemMD(aiEl._t);chat.scrollTop=chat.scrollHeight
+          }else if(j.type==='tool_call'){
+            if(th){th.remove();th=null}
+            var card=addMsg('system','<div class="tool-card" id="tc_'+esc(j.name||'')+'"><div class="head"><span class="material-icons" style="font-size:16px">build</span> '+esc(j.name||'')+'</div>处理中...</div>')
+            toolEls.push({name:j.name,el:card})
+          }else if(j.type==='tool_result'){
+            for(var k=0;k<toolEls.length;k++){
+              if(toolEls[k].name===j.name){
+                var st=j.success?'完成':'失败';var cl=j.success?'#2c6e49':'#b43c28'
+                toolEls[k].el.innerHTML='<div class="tool-card"><div class="head"><span class="material-icons" style="font-size:16px;color:'+cl+'">'+(j.success?'check_circle':'error')+'</span> '+esc(j.name||'')+'</div><span style="font-size:10px;color:'+cl+'">'+st+'</span></div>'
+                break
+              }
+            }
+          }else if(j.type==='done'){if(th)th.remove()}
+          else if(j.error){if(th)th.remove();addMsg('system','⚠ '+esc(j.error))}
+        })
+        if(!res.done)pump()
+      })
+    };pump()
+  }).catch(function(e){
+    if(th)th.remove()
+    addMsg('system','<span style="color:#b43c28">发送失败</span> '+esc(e.message||'请重试'))
+    document.getElementById('inp').disabled=false
+  })
+
+  // Save conversation metadata to localStorage for history list
+  try {
+    var convos=JSON.parse(localStorage.getItem('chemai_convos')||'[]')
+    var idx=-1; for(var c=0;c<convos.length;c++){if(convos[c].thread_id===cid){idx=c;break}}
+    if(idx>=0) convos.splice(idx,1)
+    convos.unshift({thread_id:cid,title:t.substring(0,30),preview:t.substring(0,50),last_at:new Date().toISOString().split('T')[0]})
+    localStorage.setItem('chemai_convos',JSON.stringify(convos.slice(0,50)))
+  }catch(_){}
+}
+
+// Load chat history on page load
+(function(){
+  api('/api/agent/chat/history/'+cid).then(function(d){
+    var msgs=d.messages||[]
+    if(!msgs.length) return
+    msgs.forEach(function(m){
+      if(m.role==='user') addMsg('user',esc(m.content||''))
+      else addMsg('ai',renderChemMD(m.content||''))
+    })
+  }).catch(function(){})
+})()
+</script></body></html>

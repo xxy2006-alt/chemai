@@ -1,0 +1,86 @@
+name: ChemAI CI
+
+on:
+  push:
+    branches: [master, single-agent-v2, agent-prompt-restructure]
+  pull_request:
+    branches: [master]
+
+jobs:
+  # ── Deterministic evals (fast, no API key needed) ──
+  deterministic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install langchain-openai langgraph langgraph-checkpoint-sqlite
+
+      - name: Run deterministic evals (fast gate)
+        run: |
+          python -m pytest evals/test_runner.py -q
+          python evals/run_evals.py --fast
+
+  # ── Agent import check (no LLM calls, verifies module structure) ──
+  imports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install langchain-openai langgraph langgraph-checkpoint-sqlite
+
+      - name: Verify agent imports
+        run: |
+          python -c "from agent.guard import GuardState, _make_guarded_tool, _make_request_approval_tool, TOOL_APPROVAL_REQUIRED, _get_checkpointer, get_langchain_model"
+          python -c "from agent.tools import TOOLS, TOOL_META; assert len(TOOLS) == 42; assert len(TOOL_META) == 42"
+          python -c "from agent.langgraph_agent_v2 import create_chemai_agent"
+          python -c "from agent.langgraph_agent import create_chemai_agent as create_v1"
+
+  # ── API evals (requires API keys, secrets-configured) ──
+  boundary:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install langchain-openai langgraph langgraph-checkpoint-sqlite
+
+      - name: Run boundary & regression evals
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_BASE_URL: ${{ secrets.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1' }}
+          DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL || 'deepseek-chat' }}
+        run: |
+          python -m pytest evals/test_boundary_complete.py evals/test_regression_complete.py evals/test_sse_plan.py -v
+
+  # ── Docker build ──
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t chemai:ci .

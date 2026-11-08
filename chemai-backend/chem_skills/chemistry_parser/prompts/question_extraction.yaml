@@ -1,0 +1,45 @@
+# 题目提取 Prompt
+# 用于从 OCR 或解析内容中提取和整理题目
+
+template: |
+  你是一位专业的高中化学教研专家。请从以下原始内容中提取化学题目。
+
+  ## 原始内容
+  {raw_content}
+
+  ## 题目来源
+  {source_type}  <!-- pdf/docx/ocr/image -->
+
+  ## 任务
+
+  1. 清理格式，移除无关内容
+  2. 识别并提取有效题目
+  3. 标准化化学式
+  4. 识别答案位置并提取
+  5. 标注知识点
+
+  ## 输出格式
+  ```json
+  {{
+    "questions": [
+      {{
+        "original": "原始题目内容",
+        "cleaned": "清理后内容",
+        "type": "题型",
+        "answer": "答案（如有）",
+        "knowledge_points": ["知识点"],
+        "has_chemical_equation": true/false,
+        "equation": "化学方程式（如有）"
+      }}
+    ],
+    "extraction_stats": {{
+      "total_lines": 总行数,
+      "questions_found": 题目数量,
+      "with_answers": 有答案数量,
+      "with_formulas": 有化学式数量
+    }}
+  }}
+  ```
+
+language: zh-CN
+version: "1.0"

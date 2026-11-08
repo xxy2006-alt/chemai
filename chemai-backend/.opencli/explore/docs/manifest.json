@@ -1,0 +1,16 @@
+{
+  "site": "docs",
+  "target_url": "https://docs.bigmodel.cn/cn/guide/tools/zhipu-ocr",
+  "final_url": "https://docs.bigmodel.cn/cn/guide/tools/zhipu-ocr",
+  "title": "OCR 服务 - 智谱AI开放文档",
+  "framework": {
+    "nextjs": false,
+    "nuxt": false,
+    "react": false,
+    "vue2": false,
+    "vue3": false
+  },
+  "stores": [],
+  "top_strategy": "public",
+  "explored_at": "2026-04-09T07:50:21.442Z"
+}

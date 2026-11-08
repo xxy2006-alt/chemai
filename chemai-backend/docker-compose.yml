@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  chemai:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./chemai.db:/app/chemai.db
+      - ./chemai_checkpoints.db:/app/chemai_checkpoints.db
+      - ./chemai_store.db:/app/chemai_store.db
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  # Optional: frontend (served by nginx or Vite)
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: npx vite --host 0.0.0.0 --port 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - chemai
+    profiles:
+      - full

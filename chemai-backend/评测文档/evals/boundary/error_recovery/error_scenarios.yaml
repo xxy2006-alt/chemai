@@ -1,0 +1,69 @@
+# 维度 6: 错误恢复 — 边界层
+# 验证: Agent 在工具/服务异常时优雅降级
+# 场景数: 8, 通过标准: >=75%
+
+scenarios:
+  - id: ERR-001
+    name: error_llm_timeout
+    description: "LLM 调用超时后应给出友好反馈"
+    input: "讲解化学平衡原理"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ERR-002
+    name: error_tool_exception
+    description: "工具调用异常时不应崩溃"
+    input: "配平方程式 H2 + O2 = H2O"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ERR-003
+    name: error_db_connection_lost
+    description: "数据库连接丢失时仍有基本响应"
+    input: "搜索电化学真题"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ERR-004
+    name: error_api_rate_limit
+    description: "API速率限制时正确退避"
+    input: "出10道化学题，全部保存到题库"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ERR-005
+    name: error_malformed_json_response
+    description: "工具返回格式异常时不会中断对话"
+    input: "生成一道有机化学推断题"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ERR-006
+    name: error_fallback_provider
+    description: "主模型不可用时降级到备用模型"
+    input: "氧化还原反应的定义是什么"
+    assertions:
+      - {type: tool_called, tool: chemistry_tutor}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ERR-007
+    name: error_context_overflow
+    description: "上下文窗口溢出时不丢失关键信息"
+    input: "把以下100道题的解题步骤逐一详细分析：[省略大量题目文本]"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ERR-008
+    name: error_concurrent_requests
+    description: "并发请求时不产生竞态问题"
+    input: "同时搜索5种不同知识点的题目并汇总"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}

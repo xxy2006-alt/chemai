@@ -1,0 +1,191 @@
+schema_version: "1.0"
+name: chemistry-improvement
+description: ChemAI 出题质量自改进系统
+
+tools:
+
+  # ===== 指标收集 =====
+
+  - name: improvement_record_metric
+    description: 记录质量指标数据
+    input_schema:
+      type: object
+      properties:
+        metric_type:
+          type: string
+          enum: [review, answer, learning, exam]
+          description: 指标类型
+        entity_id:
+          type: string
+          description: 关联实体ID
+        metric_data:
+          type: object
+          description: 指标数据
+      required: [metric_type, entity_id, metric_data]
+
+  - name: improvement_get_metrics
+    description: 获取质量指标数据
+    input_schema:
+      type: object
+      properties:
+        metric_type:
+          type: string
+          enum: [review, answer, learning, exam, all]
+        time_window:
+          type: string
+          default: "7d"
+        entity_filter:
+          type: object
+          description: 过滤条件
+
+  # ===== 分析引擎 =====
+
+  - name: improvement_analyze
+    description: 执行质量分析
+    input_schema:
+      type: object
+      properties:
+        analysis_type:
+          type: string
+          enum: [review_feedback, learning_effect, difficulty_calibration, all]
+        time_window_days:
+          type: integer
+          default: 7
+        force_refresh:
+          type: boolean
+          default: false
+
+  # ===== 策略调整 =====
+
+  - name: improvement_adjust_strategy
+    description: 请求策略调整（需要审批）
+    input_schema:
+      type: object
+      properties:
+        strategy_type:
+          type: string
+          enum: [prompt, difficulty, kp_combination, threshold]
+        adjustment_request:
+          type: object
+          properties:
+            current_value: {type: object}
+            proposed_value: {type: object}
+            reason: {type: string}
+            expected_impact: {type: string}
+
+  - name: improvement_list_adjustments
+    description: 列出最近策略调整历史
+    input_schema:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [all, applied, pending, rejected]
+          default: all
+        limit:
+          type: integer
+          default: 10
+
+  - name: improvement_approve_adjustment
+    description: 审批策略调整请求
+    input_schema:
+      type: object
+      properties:
+        adjustment_id:
+          type: string
+        approved:
+          type: boolean
+        feedback:
+          type: string
+      required: [adjustment_id, approved]
+
+  - name: improvement_rollback
+    description: 回滚策略到之前的版本
+    input_schema:
+      type: object
+      properties:
+        strategy_type:
+          type: string
+        target_version_id:
+          type: string
+          description: 目标版本ID（空=回滚到上一版）
+
+  # ===== 报告 =====
+
+  - name: improvement_get_dashboard
+    description: 获取质量仪表盘
+    input_schema:
+      type: object
+      properties:
+        time_window:
+          type: string
+          default: "7d"
+        refresh:
+          type: boolean
+          default: false
+
+  - name: improvement_get_report
+    description: 获取质量报告
+    input_schema:
+      type: object
+      properties:
+        report_type:
+          type: string
+          enum: [daily, weekly, monthly, custom]
+        start_date:
+          type: string
+        end_date:
+          type: string
+        include_recommendations:
+          type: boolean
+          default: true
+
+  # ===== Prompt 管理 =====
+
+  - name: improvement_get_prompt_version
+    description: 获取当前 Prompt 版本信息
+    input_schema:
+      type: object
+      properties:
+        prompt_type:
+          type: string
+          enum: [question_generation, question_audit, learning_plan]
+
+  - name: improvement_update_prompt
+    description: 更新 Prompt（需审批或自动）
+    input_schema:
+      type: object
+      properties:
+        prompt_type:
+          type: string
+        new_content:
+          type: string
+        change_reason:
+          type: string
+        auto_apply:
+          type: boolean
+          default: false
+
+  # ===== 知识点优化 =====
+
+  - name: improvement_get_kp_recommendations
+    description: 获取知识点组合推荐
+    input_schema:
+      type: object
+      properties:
+        primary_kp:
+          type: string
+        count:
+          type: integer
+          default: 3
+
+  - name: improvement_get_kp_effectiveness
+    description: 获取知识点效果分析
+    input_schema:
+      type: object
+      properties:
+        knowledge_point:
+          type: string
+        time_window_days:
+          type: integer
+          default: 30

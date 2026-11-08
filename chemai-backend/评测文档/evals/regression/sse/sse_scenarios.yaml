@@ -1,0 +1,47 @@
+# 维度 11: SSE流式传输 — 回归层
+# 验证: Server-Sent Events 事件流格式和顺序正确
+# 场景数: 5, 通过标准: 100%
+
+scenarios:
+  - id: SSE-001
+    name: sse_event_order
+    description: "SSE 事件发送顺序必须正确"
+    event_order: [thinking_start, tool_call, thinking_end, text_delta, done]
+    input: "讲解化学平衡原理"
+    assertions:
+      - {type: event_order, expected: [thinking_start, tool_call, thinking_end, text_delta, done]}
+      - {type: no_error}
+
+  - id: SSE-002
+    name: sse_heartbeat
+    description: "长时间任务中必须有心跳事件防止超时"
+    input: "分析题库中近3年的化学高考命题趋势并生成详细报告"
+    assertions:
+      - {type: event_present, event: heartbeat}
+      - {type: max_interval_ms, value: 15000}
+      - {type: no_error}
+
+  - id: SSE-003
+    name: sse_field_completeness
+    description: "done 事件必须包含必要的字段"
+    input: "出一道化学选择题"
+    assertions:
+      - {type: event_present, event: done}
+      - {type: event_fields, event: done, fields: [event, data]}
+      - {type: no_error}
+
+  - id: SSE-004
+    name: sse_no_error_events
+    description: "正常流程中不应出现 error 事件"
+    input: "配平 H2 + O2 = H2O"
+    assertions:
+      - {type: event_not_present, event: error}
+      - {type: no_error}
+
+  - id: SSE-005
+    name: sse_approval_flow_events
+    description: "审批流程中有正确的中断事件"
+    input: "为期末考试生成一套试卷"
+    assertions:
+      - {type: event_order, expected: [tool_call, interrupt]}
+      - {type: no_error}

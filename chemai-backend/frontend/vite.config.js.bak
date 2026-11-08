@@ -1,0 +1,27 @@
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  root: '.',
+  base: './',
+  build: {
+    outDir: 'dist',
+    input: {
+      main: 'index.html',
+      login: 'login.html',
+      ocr: 'pages/ocr.html',
+      'ocr-sheets': 'pages/ocr-sheets.html',
+      exam: 'pages/exam-v2.html',
+      diagnosis: 'pages/diagnosis.html',
+      students: 'pages/students.html',
+    }
+  },
+  server: {
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8001',
+        changeOrigin: true
+      }
+    }
+  }
+})

@@ -1,0 +1,113 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+/lib/
+/lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+/lib/  # Python venv 的 lib 目录（锚定根，避免误伤 frontend/src/lib）
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database
+*.db
+# 演示数据本体入库（其余 db / shm / wal 仍忽略）
+!chemai.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Local data (keep sample_answer_sheets for testing)
+data/sample_answer_sheets/
+!data/sample_answer_sheets/.gitkeep
+.gstack/
+chemai.db-shm
+chemai.db-wal
+
+# Chroma vector store (runtime state + backups, not source)
+data/chromadb/
+data/chromadb.bak_*/
+data/db_backup_*/
+
+# Eval run archives (trend store, regenerated per run)
+evals/reports/
+
+# Judge calibration artifacts (regenerated per calibration run; yaml seeds stay tracked)
+evals/calibration/report.json
+evals/calibration/status.json
+
+# Agent filesystem workspace (runtime artifacts)
+workspace/
+
+# ---- 整理补充 ----
+# 测试/运行产物（根目录散件）
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+.scratch/
+/temp/
+/_temp/
+/_*.py
+/_*.txt
+/_*.png
+/_*.log
+*.err
+/old_wal_from_git.bin
+/test_2020.pdf
+/test_output.txt
+/test_req.json
+/test_payload.json
+/test_results.json
+/test_*_results.json
+/chemai_checkpoints.db*
+/chemai_store.db*

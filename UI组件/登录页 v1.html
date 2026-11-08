@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>登录页 v3 · React + Ant Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Chakra+Petch:wght@500;700&family=Michroma&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@4/dist/antd.min.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  #root { height: 100vh; font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+
+  .login-split { display: flex; height: 100%; }
+
+  /* 左:品牌区 · 底图 + 斜切分屏(Slanted Split) */
+  .brand {
+    width: 50%;
+    background:
+      linear-gradient(rgba(43, 38, 30, 0.52), rgba(43, 38, 30, 0.52)),
+      url('演示图片1.png') center/cover no-repeat;
+    color: #F2EEE6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 96px;
+    position: relative;
+    clip-path: polygon(0 0, 76% 0, 58% 100%, 0 100%);
+  }
+  /* 斜切边缘辉光(Edge Glow):沿斜边内侧泛青色光 */
+  .brand::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; right: 0;
+    width: 110px;
+    background: linear-gradient(90deg, transparent, rgba(92, 200, 255, 0.16));
+    pointer-events: none;
+  }
+
+  /* 左上角 logo:Michroma 字体 + 智慧感星星 */
+  .logo {
+    position: absolute;
+    top: 44px; left: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0.9;
+  }
+  .logo .logo-star {
+    width: 24px; height: 24px;
+    filter: drop-shadow(0 0 8px rgba(92, 200, 255, 0.7));
+  }
+  .logo .logo-name {
+    font-family: 'Michroma', 'Orbitron', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.24em;
+    color: rgba(242, 238, 230, 0.92);
+  }
+
+  .brand h1 {
+    font-size: 56px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-bottom: 20px;
+    /* Chakra Petch 无中文字形:「AI」用 Chakra Petch,「智泊」回退思源黑体 */
+    font-family: 'Chakra Petch', 'Noto Sans SC', 'PingFang SC', sans-serif;
+    color: #5CC8FF;
+    text-shadow: 0 0 26px rgba(92, 200, 255, 0.35);
+  }
+  .brand .en {
+    font-family: 'Orbitron', 'JetBrains Mono', monospace;
+    font-size: 16px;
+    letter-spacing: 0.42em;
+    opacity: 0.55;
+    margin-bottom: 34px;
+  }
+  .brand p { font-size: 20px; opacity: 0.72; }
+
+  /* 右:表单区 · 淡蓝光束边框(Border Beam) */
+  .form-side {
+    width: 50%;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .beam-card {
+    position: relative;
+    width: 408px;
+    border-radius: 22px;
+    overflow: hidden;
+  }
+  .beam-card::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: conic-gradient(from 0deg, transparent 0 305deg, rgba(126, 208, 255, 0.95) 348deg, transparent 360deg);
+    animation: beamSpin 4s linear infinite;
+  }
+  @keyframes beamSpin { to { transform: rotate(360deg); } }
+  .beam-card .form-box {
+    position: relative;
+    margin: 2px;
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 44px 40px;
+    animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .login-btn {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  /* 登录中:按钮内 Shimmer 流光(双流光,更明显) */
+  .login-btn.shimmering {
+    background: linear-gradient(90deg, #1890ff, #40a9ff);
+    box-shadow: 0 0 20px rgba(24, 144, 255, 0.55);
+  }
+  .login-btn.shimmering::before,
+  .login-btn.shimmering::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .login-btn.shimmering::before {
+    background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.9) 50%, transparent 62%);
+    background-size: 220% 100%;
+    animation: btnShimmer 1.6s linear infinite;
+  }
+  .login-btn.shimmering::after {
+    background: linear-gradient(105deg, transparent 44%, rgba(255, 255, 255, 0.4) 50%, transparent 56%);
+    background-size: 220% 100%;
+    animation: btnShimmer 1.6s linear infinite 0.45s;
+  }
+  @keyframes btnShimmer {
+    from { background-position: 130% 0; }
+    to   { background-position: -90% 0; }
+  }
+
+  /* 鼠标跟随星光拖尾 canvas */
+  #fx {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .form-box h2 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .form-box .sub { color: #999; margin-bottom: 34px; }
+  .login-btn { width: 100%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<canvas id="fx"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/antd@4/dist/antd.min.js"></script>
+
+<script>
+(function () {
+  const { Form, Input, Button } = window.antd;
+
+  // 左:品牌区
+  function BrandSide() {
+    return React.createElement('div', { className: 'brand' },
+      React.createElement('div', { className: 'logo' },
+        React.createElement('svg', {
+          className: 'logo-star',
+          viewBox: '0 0 24 24',
+          'aria-hidden': 'true'
+        },
+          React.createElement('path', {
+            d: 'M12 0 C12.6 5.8 18.2 11.4 24 12 C18.2 12.6 12.6 18.2 12 24 C11.4 18.2 5.8 12.6 0 12 C5.8 11.4 11.4 5.8 12 0 Z',
+            fill: '#5CC8FF'
+          })
+        ),
+        React.createElement('span', { className: 'logo-name' }, 'ZHI BO')
+      ),
+      React.createElement('h1', null, '智泊AI'),
+      React.createElement('div', { className: 'en' }, 'SMART PARKING'),
+      React.createElement('p', null, '让每一次停车,都有好的体验')
+    );
+  }
+
+  // 右:登录表单(antd Form / Input / Button,任意输入即可登录)
+  function LoginForm() {
+    var loading = React.useState(false);
+    var isLoading = loading[0];
+    var setLoading = loading[1];
+
+    function onFinish(values) {
+      if (isLoading) return;
+      setLoading(true);
+      setTimeout(function () {
+        setLoading(false);
+        antd.message.success('登录成功,欢迎回来');
+      }, 2200);
+    }
+
+    return React.createElement('div', { className: 'form-box' },
+      React.createElement('h2', null, '欢迎回来'),
+      React.createElement('p', { className: 'sub' }, '登录你的账户,继续使用'),
+      React.createElement(Form, { layout: 'vertical', onFinish: onFinish },
+        React.createElement(Form.Item, { label: '用户名', name: 'username' },
+          React.createElement(Input, { placeholder: '用户名(任意数字即可)', size: 'large' })
+        ),
+        React.createElement(Form.Item, { label: '密码', name: 'password' },
+          React.createElement(Input.Password, { placeholder: '密码(任意数字即可)', size: 'large' })
+        ),
+        React.createElement(Form.Item, null,
+          React.createElement(Button, {
+            type: 'primary',
+            htmlType: 'submit',
+            size: 'large',
+            className: 'login-btn' + (isLoading ? ' shimmering' : '')
+          }, isLoading ? '登录中…' : '登 录')
+        )
+      )
+    );
+  }
+
+  function App() {
+    return React.createElement('div', { className: 'login-split' },
+      React.createElement(BrandSide),
+      React.createElement('div', { className: 'form-side' },
+        React.createElement('div', { className: 'beam-card' },
+          React.createElement(LoginForm)
+        )
+      )
+    );
+  }
+
+  ReactDOM.render(React.createElement(App), document.getElementById('root'));
+
+  /* 鼠标跟随 · 霓虹拖尾(Neon Trail) */
+  (function () {
+    var canvas = document.getElementById('fx');
+    var ctx = canvas.getContext('2d');
+    var W, H;
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    var pts = [];
+    var MAX = 44;
+    var lastMove = 0;
+    window.addEventListener('pointermove', function (e) {
+      lastMove = Date.now();
+      pts.push({ x: e.clientX, y: e.clientY });
+      if (pts.length > MAX) pts.shift();
+    });
+
+    function tick() {
+      ctx.clearRect(0, 0, W, H);
+      // 停止移动后,拖尾逐渐消散
+      if (pts.length > 2 && Date.now() - lastMove > 220) pts.shift();
+
+      var n = pts.length;
+      if (n > 1) {
+        for (var i = 1; i < n; i++) {
+          var t = i / n;
+          var p0 = pts[i - 1];
+          var p1 = pts[i];
+          ctx.beginPath();
+          ctx.moveTo(p0.x, p0.y);
+          ctx.lineTo(p1.x, p1.y);
+          ctx.strokeStyle = 'rgba(92, 200, 255, ' + (t * 0.85).toFixed(3) + ')';
+          ctx.lineWidth = 2.6 * t + 0.4;
+          ctx.lineCap = 'round';
+          ctx.shadowBlur = 14;
+          ctx.shadowColor = 'rgba(92, 200, 255, 0.85)';
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+    tick();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+# 维度 14: 已知缺陷回归 — 回归层
+# 验证: 已修复的 Bug 不再复现
+# 场景数: 5, 通过标准: 100%
+
+scenarios:
+  - id: DEFECT-001
+    name: defect_teacher_not_student_mode
+    bug_description: "Bug: Agent 将教师用户误识别为学生，强制进入启发式教学模式。教师无法直接获取教学资源。修复于 2025-11-15，发现于 2025-11-10。"
+    bug_date: "2025-11-10"
+    fix_date: "2025-11-15"
+    role: teacher
+    input: "氧化还原反应有哪些常考题型？直接给我一份列表就行"
+    assertions:
+      - {type: not_tool_called, tool: chemistry_tutor}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: DEFECT-002
+    name: defect_checkpoint_persistence
+    bug_description: "Bug: AsyncSqliteSaver 在服务重启后丢失会话历史，导致多轮对话上下文断裂。修复于 2025-12-03，发现于 2025-12-01。"
+    bug_date: "2025-12-01"
+    fix_date: "2025-12-03"
+    input: "你刚才讲的第三个知识点能再解释一下吗"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: DEFECT-003
+    name: defect_formula_rendering
+    bug_description: "Bug: KaTeX 渲染器在 Agent 输出时直接显示原始 LaTeX 源码（如 \\ce{H2O}），而非渲染后的化学式。修复于 2026-02-20，发现于 2026-02-18。"
+    bug_date: "2026-02-18"
+    fix_date: "2026-02-20"
+    input: "生成一道包含化学方程式的选择题"
+    assertions:
+      - {type: tool_called, tool: generate_questions}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: DEFECT-004
+    name: defect_web_search_date
+    bug_description: "Bug: Bing Web Search API 对当前日期感知错误，返回'2026 年尚未到来'，导致 web_search 工具对时效性查询返回过期数据。修复于 2026-03-10，发现于 2026-03-08。"
+    bug_date: "2026-03-08"
+    fix_date: "2026-03-10"
+    input: "搜索2026年高考化学大纲最新变化"
+    assertions:
+      - {type: tool_called, tool: web_search}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: DEFECT-005
+    name: defect_student_role_routing
+    bug_description: "Bug: 学生用户登录后看到教师仪表板，可以访问周报和出题功能。路由层面未根据角色过滤。修复于 2026-04-05，发现于 2026-04-01。"
+    bug_date: "2026-04-01"
+    fix_date: "2026-04-05"
+    role: student
+    input: "帮我查看班级的学情周报"
+    assertions:
+      - {type: not_tool_called, tool: weekly_report}
+      - {type: not_tool_called, tool: generate_questions}
+      - {type: no_error}

@@ -1,0 +1,41 @@
+# 维度 8: 计划连贯性 — 边界层
+# 验证: Agent 工具调用计划逻辑正确，无死循环、过早终止等问题
+# 场景数: 4, 通过标准: >=80%
+
+scenarios:
+  - id: PLAN-001
+    name: plan_no_infinite_loop
+    description: "Agent 不应陷入无限循环，调用次数应在合理范围内"
+    input: "分析题库中所有关于氧化还原的题目，每道题都分析考点，然后汇总"
+    assertions:
+      - {type: max_tool_calls, value: 8}
+      - {type: no_repeated_identical_call}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: PLAN-002
+    name: plan_no_premature_finalize
+    description: "Agent 不应在完成整个工作流之前过早终止"
+    input: "出3道化学题并保存到题库，生成后一并保存"
+    assertions:
+      - {type: tool_called, tool: generate_questions}
+      - {type: tool_called, tool: save_question}
+      - {type: tool_trajectory_order, tools: [generate_questions, save_question]}
+      - {type: no_error}
+
+  - id: PLAN-003
+    name: plan_depth_reasonable
+    description: "Agent 调用深度合理，不应无意义地层层嵌套"
+    input: "搜索化学题、根据结果出变种、然后诊断、最后根据诊断出练习"
+    assertions:
+      - {type: max_tool_calls, value: 5}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: PLAN-004
+    name: plan_no_dead_end
+    description: "Agent 不应陷入死胡同，最终要给出有意义回复"
+    input: "查一下上周的考试统计数据"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}

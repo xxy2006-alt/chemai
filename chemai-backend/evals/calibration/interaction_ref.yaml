@@ -1,0 +1,72 @@
+family: interaction
+samples:
+- id: ix-ref-01
+  input: 我要出题
+  output: 好的！请告诉我：1) 题型（选择/填空/计算）2) 难度（简单/中等/困难）3) 知识点；或说「按班级薄弱点推荐」。
+  human_score: 90
+  note: 信息不全→选项式追问
+- id: ix-ref-02
+  input: 我要出题
+  output: 好的，请在下方面板中配置参数。
+  human_score: 25
+  note: 机械开面板不追问（Spec 05 前的旧行为）
+- id: ix-ref-03
+  input: 我要出题
+  output: 你想出什么题？说说你的想法。你想考哪个知识点？难度呢？题型呢？
+  human_score: 40
+  note: 开放式连续盘问，不给选项
+- id: ix-ref-04
+  input: 出3道氧化还原的选择题，中等难度
+  output: 好的（随后打开出题面板）
+  human_score: 95
+  note: 信息齐全→直接执行不追问
+- id: ix-ref-05
+  input: 出3道氧化还原的选择题，中等难度
+  output: 请问你想要什么题型？难度呢？知识点呢？
+  human_score: 30
+  note: 信息已齐全仍盘问
+- id: ix-ref-06
+  input: 我们班电离平衡最近错得多，出点题
+  output: 已根据最近 5 次作业（电离平衡正确率 40%）推荐：先出 5 道弱电解质电离的选择题，中等难度，是否开始？
+  human_score: 95
+  note: 结合薄弱点推荐+依据可见
+- id: ix-ref-07
+  input: 我们班电离平衡最近错得多，出点题
+  output: 好的，这就为您出电离平衡的题。
+  human_score: 25
+  note: 不查数据直接出题
+- id: ix-ref-08
+  input: 帮我准备一次月考：先诊断班级薄弱点，再出10道题，最后生成复习计划
+  output: 已拆解为 3 步：1) 诊断薄弱点 2) 按薄弱点出题 3) 生成复习计划。开始执行第 1 步…
+  human_score: 90
+  note: 复杂任务拆解+进度
+- id: ix-ref-09
+  input: 帮我准备一次月考：先诊断班级薄弱点，再出10道题，最后生成复习计划
+  output: 好的。
+  human_score: 15
+  note: 复杂任务无拆解无进度
+- id: ix-ref-10
+  input: 什么是氧化还原反应
+  output: 氧化还原反应是…（直接讲解，未调用计划工具）
+  human_score: 95
+  note: 简单任务不产计划（反例）
+- id: ix-ref-11
+  input: 给张浩宇生成学习计划
+  output: 好的，正在打开张浩宇的学习方案编辑器…
+  human_score: 95
+  note: 明确指令直接执行
+- id: ix-ref-12
+  input: 帮我看看我们班的情况
+  output: 请选择：1) 班级整体诊断 2) 找薄弱学生 3) 出针对练习
+  human_score: 90
+  note: 模糊需求→给选项引导
+- id: ix-ref-13
+  input: 帮我看看我们班的情况
+  output: （直接调用 show_students 列出所有学生，未问清需求）
+  human_score: 45
+  note: 模糊需求未澄清
+- id: ix-ref-14
+  input: 帮我看看我们班的情况
+  output: 你想看什么？
+  human_score: 50
+  note: 开放式反问无选项

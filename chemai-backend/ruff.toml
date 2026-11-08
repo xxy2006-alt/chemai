@@ -1,0 +1,30 @@
+# ChemAI ruff 配置 — 默认 E/F 规则
+# 排除非核心代码: 临时目录 / 嵌套副本 / 数据 / 文档 / 脚本式测试
+target-version = "py311"
+line-length = 120
+
+exclude = [
+    "_temp",
+    "agent/langgraph_agent.py",  # v1 多 Agent（废弃回退，用户只用 v2，不维护 lint）
+    "agent/langgraph_sse.py",    # v1 SSE 适配器（废弃回退）
+    "chemai-backend",          # 嵌套的旧副本
+    "data",                    # 数据文件
+    "评测文档",                 # 文档目录
+    "design-demos",
+    "docs",
+    "openspec",
+    "frontend",
+    "__pycache__",
+    "test_*.py",               # 脚本式测试（顶层冒烟脚本）
+    "tests",                   # pytest 测试目录
+    "evals",                   # eval 脚本（依赖真实 API）
+    "tools",                   # 一次性数据生成/迁移脚本（非服务）
+    "chem_skills",             # 化学技能包（独立模块，非 agent/ app/ 服务）
+    ".scratch",                # 临时原型目录
+    "scripts/import_mineru_paper.py",  # 一次性导入脚本
+    "scripts/import_single_paper.py",  # 一次性导入脚本
+]
+
+[lint]
+# 默认 E/F 规则集，不做裁剪
+select = ["E", "F"]

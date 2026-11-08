@@ -1,0 +1,439 @@
+/*
+ * Academic Catalyst Design System — 智辅化学 ChemAI
+ * Modern Academic style: Oxford Blue + Parchment Neutrals + Glassmorphism AI
+ */
+
+/* ─── Material Symbols ─── */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: #c4c6cf; border-radius: 10px; }
+
+/* ─── Sidebar ─── */
+.sidebar-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; border-radius: 8px;
+  color: #86a0cd; transition: all .2s;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500;
+  text-decoration: none;
+}
+.sidebar-link:hover { color: #fff; background: rgba(255,255,255,.08); }
+.sidebar-link.active { background: rgba(255,255,255,.12); color: #fff; font-weight: 700; border-right: 3px solid #fff; }
+
+/* ─── TopBar ─── */
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(251,249,245,.85); backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; padding: 0 32px;
+  border-bottom: 1px solid rgba(215,196,177,.3);
+}
+.topbar-tab {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 500;
+  color: #43474e; padding-bottom: 4px;
+  text-decoration: none; transition: .15s;
+}
+.topbar-tab:hover, .topbar-tab.active { color: #002045; border-bottom: 2px solid #002045; font-weight: 700; }
+
+/* ─── Cards ─── */
+.card {
+  background: #fff; border-radius: 8px;
+  border: 1px solid rgba(215,196,177,.3);
+  padding: 24px; transition: box-shadow .2s;
+}
+.card:hover { box-shadow: 0 4px 20px rgba(26,54,93,.06); }
+.card-accent { border-top: 4px solid #D7C4B1; }
+
+/* ─── AI Chat Bubbles ─── */
+.msg-user {
+  background: #002045; color: #fff; align-self: flex-end;
+  border-radius: 8px 8px 4px 8px; max-width: 75%;
+  padding: 12px 16px; font-size: 14px; line-height: 1.6;
+}
+.msg-ai {
+  background: rgba(224,242,241,.5); backdrop-filter: blur(12px);
+  border: 1px solid rgba(19,105,106,.15); align-self: flex-start;
+  border-radius: 8px 8px 8px 4px; max-width: 80%;
+  padding: 14px 18px; font-size: 14px; line-height: 1.65;
+}
+.msg-ai .ai-avatar {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: #13696a; margin-bottom: 6px;
+}
+/* Typing indicator — 三点跳动动画 */
+.typing-dots { display: inline-flex; gap: 3px; padding: 4px 0; }
+.typing-dots span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #13696a; display: inline-block;
+  animation: dot-bounce 1.4s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Tool Card ─── */
+.tool-card {
+  align-self: flex-start; max-width: 85%;
+  background: #fff; border: 1px solid rgba(215,196,177,.4);
+  border-left: 3px solid #455f88; border-radius: 8px;
+  padding: 10px 14px; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+}
+.tool-card-header { display: flex; align-items: center; gap: 8px; }
+.tool-card-body {
+  display: none; margin-top: 8px; padding: 8px;
+  background: rgba(0,0,0,.03); border-radius: 4px;
+  font-size: 12px; max-height: 200px; overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* ─── Suggestion Chips ─── */
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 16px; border-radius: 9999px;
+  border: 1px solid rgba(215,196,177,.5);
+  background: #fff; font-size: 14px; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+  color: #1b1c1a;
+}
+.chip:hover { border-color: #002045; background: rgba(0,32,69,.05); }
+
+/* ─── Agent Status Bar ─── */
+.agent-status {
+  display: none; align-items: center; gap: 8px;
+  padding: 6px 24px; font-size: 12px; color: #43474e;
+  border-top: 1px solid rgba(215,196,177,.3);
+  background: rgba(251,249,245,.9);
+  font-family: 'JetBrains Mono', monospace;
+}
+.agent-status .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: linear-gradient(135deg, #002045, #13696a);
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .3; transform: scale(1.5); }
+}
+
+/* ─── Buttons ─── */
+.btn-primary {
+  background: #002045; color: #fff; border: none;
+  border-radius: 8px; padding: 10px 20px;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+}
+.btn-primary:hover { background: #1a365d; box-shadow: 0 2px 8px rgba(0,32,69,.2); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.btn-secondary {
+  background: #fff; color: #002045; border: 1px solid #002045;
+  border-radius: 8px; padding: 10px 20px;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+}
+.btn-secondary:hover { background: rgba(0,32,69,.05); }
+
+.btn-teal {
+  background: #13696a; color: #fff; border: none;
+  border-radius: 8px; padding: 10px 20px;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+}
+.btn-teal:hover { background: #0d4f50; }
+
+/* ─── Input Fields ─── */
+.input-field {
+  border: 1px solid rgba(215,196,177,.6); border-radius: 8px;
+  padding: 10px 14px; font-size: 14px; font-family: 'IBM Plex Sans', sans-serif;
+  outline: none; transition: .15s; background: #fff; width: 100%;
+}
+.input-field:focus {
+  border-color: #002045;
+  box-shadow: 0 0 0 3px rgba(0,32,69,.1);
+}
+
+/* ─── Tags / Badges ─── */
+.tag {
+  display: inline-block; padding: 2px 10px;
+  border-radius: 9999px; font-size: 12px; font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tag-easy { background: #a2eded; color: #004f50; }
+.tag-medium { background: #d6e3ff; color: #2d476f; }
+.tag-hard { background: #ffdad6; color: #93000a; }
+.tag-concept { background: #eaddff; color: #5429a6; }
+.tag-reading { background: #d6e3ff; color: #2d476f; }
+.tag-expression { background: #a5eff0; color: #004f50; }
+
+/* ─── Progress Bar ─── */
+.progress-bar {
+  height: 6px; background: #e4e2de; border-radius: 9999px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 9999px;
+  background: linear-gradient(90deg, #002045, #13696a);
+  transition: width .3s ease;
+}
+.progress-fill.pulse { animation: progress-glow 2s ease-in-out infinite; }
+@keyframes progress-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .7; }
+}
+
+/* ─── Modal ─── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.3); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-card {
+  background: #fff; border-radius: 16px; padding: 32px;
+  max-width: 640px; width: 90%; max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(26,54,93,.15);
+}
+.modal-content {
+  background: #fff; border-radius: 12px; padding: 24px;
+  width: 90%; max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(26,54,93,.15);
+}
+
+/* ─── Button icon (clear) ─── */
+.btn-icon {
+  background: none; border: none; cursor: pointer;
+  color: #43474e; padding: 4px; border-radius: 4px;
+  transition: .15s; display: flex; align-items: center; justify-content: center;
+}
+.btn-icon:hover { background: rgba(0,0,0,.05); color: #002045; }
+
+/* ─── Button small ─── */
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+
+/* ─── Status badges ─── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 12px; border-radius: 9999px; font-size: 12px;
+  font-family: 'JetBrains Mono', monospace; font-weight: 500;
+}
+.badge-draft { background: #e4e2de; color: #43474e; }
+.badge-published { background: #a2eded; color: #004f50; }
+.badge-pending { background: #ffdad6; color: #93000a; }
+.badge-success { background: #a2eded; color: #004f50; }
+
+/* ─── Checkbox card ─── */
+.check-card {
+  border: 1px solid rgba(215,196,177,.4); border-radius: 8px;
+  padding: 10px 14px; margin-bottom: 6px; cursor: pointer;
+  transition: .15s; background: #fff; display: flex; gap: 10px; align-items: flex-start;
+}
+.check-card:hover { border-color: #002045; }
+.check-card.selected { border-color: #13696a; background: rgba(19,105,106,.05); }
+.check-card input[type=checkbox] { margin-top: 2px; accent-color: #13696a; }
+
+/* ─── Table ─── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  text-align: left; padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
+  color: #43474e; border-bottom: 2px solid rgba(215,196,177,.5);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.data-table td {
+  padding: 12px 16px; font-size: 14px;
+  border-bottom: 1px solid rgba(215,196,177,.2);
+}
+
+/* ─── Page transitions ─── */
+.page { display: none; }
+.page.active { display: block; }
+#page-home.active { display: flex; flex-direction: column; height: 100%; }
+
+/* ─── Empty State ─── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 48px; color: #74777f;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* B+ Design Tokens — Lab Notebook / Spectral Chemistry */
+/* ═══════════════════════════════════════════════ */
+
+:root {
+  --ink: #1a1a2e;
+  --paper: #faf8f3;
+  --paper-warm: #f5efe0;
+  --ink-light: #3d3d56;
+  --stain-amber: #d4956b;
+  --congo-red: #c0392b;
+  --methyl-green: #2c6e49;
+  --indigo-deep: #2c3e6b;
+  --copper-blue: #1a5276;
+  --spectrum-hα: #FF6B35;
+  --spectrum-hβ: #00D4AA;
+  --spectrum-hγ: #7B2D8E;
+  --spectrum-hδ: #3B5BA5;
+  --grid-line: rgba(0,0,0,.04);
+}
+
+/* ─── Grid paper background ─── */
+.bg-grid-paper {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+
+/* ─── Molecule ring rotation ─── */
+@keyframes molecule-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes molecule-float { 0%,100% { transform: translateY(0) rotate(0deg); } 33% { transform: translateY(-6px) rotate(1deg); } 66% { transform: translateY(3px) rotate(-1deg); } }
+.molecule-bg { animation: molecule-rotate 120s linear infinite; transform-origin: center center; opacity: .06; }
+
+/* ─── Reaction hover ─── */
+@keyframes titration { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+.btn-reaction {
+  background: linear-gradient(135deg, var(--copper-blue), var(--indigo-deep), var(--methyl-green));
+  background-size: 200% 200%;
+  border: none; color: #fff; transition: all .3s;
+}
+.btn-reaction:hover { animation: titration .8s ease forwards; box-shadow: 0 4px 20px rgba(26,82,118,.25); }
+
+/* ─── Handwritten formula watermark ─── */
+.formula-watermark {
+  position: relative; overflow: hidden;
+}
+.formula-watermark::after {
+  content: 'CH₃COOH ⇌ CH₃COO⁻ + H⁺';
+  position: absolute; bottom: 4px; right: 12px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic; font-size: 22px;
+  color: rgba(0,0,0,.03);
+  pointer-events: none; white-space: nowrap;
+  transform: rotate(-2deg);
+}
+
+/* ─── Element symbol nav ─── */
+.elem-nav {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 8px;
+  text-decoration: none; transition: all .2s;
+  color: var(--ink-light); font-size: 14px;
+}
+.elem-nav .elem-sym {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-weight: 700; font-size: 15px; min-width: 36px; text-align: center;
+  padding: 4px 6px; border-radius: 4px;
+  background: rgba(0,0,0,.04); color: var(--ink);
+  letter-spacing: 1px;
+}
+.elem-nav:hover { background: var(--paper-warm); }
+.elem-nav:hover .elem-sym { background: var(--ink); color: var(--paper); }
+.elem-nav.active { background: var(--paper-warm); font-weight: 600; }
+.elem-nav.active .elem-sym { background: var(--copper-blue); color: #fff; box-shadow: 0 2px 8px rgba(26,82,118,.2); }
+
+/* ─── Stained card (journal entry) ─── */
+.card-journal {
+  background: var(--paper); border: 1px solid rgba(0,0,0,.06);
+  border-radius: 4px; padding: 32px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
+  position: relative;
+}
+.card-journal::before {
+  content: ''; position: absolute; top: 0; left: 48px; width: 1px; height: 100%;
+  background: rgba(195,48,43,.12); /* faint red margin line */
+}
+
+/* ─── Input fields — journal style ─── */
+.input-journal {
+  border: none; border-bottom: 2px solid rgba(0,0,0,.1);
+  background: transparent; border-radius: 0;
+  padding: 10px 4px; font-size: 15px; width: 100%; outline: none;
+  transition: .2s; font-family: 'IBM Plex Sans', sans-serif;
+}
+.input-journal:focus { border-bottom-color: var(--congo-red); }
+.input-journal::placeholder { color: rgba(0,0,0,.2); }
+
+/* ─── Select — journal style ─── */
+.select-journal {
+  border: none; border-bottom: 2px solid rgba(0,0,0,.1);
+  background: transparent; border-radius: 0;
+  padding: 10px 4px; font-size: 15px; width: 100%; outline: none;
+  font-family: 'IBM Plex Sans', sans-serif; cursor: pointer;
+  transition: .2s; -webkit-appearance: none;
+}
+.select-journal:focus { border-bottom-color: var(--congo-red); }
+
+/* ─── Spectral line divider ─── */
+.spectral-line {
+  height: 2px; border: none;
+  background: linear-gradient(90deg, transparent, var(--spectrum-hα) 20%, var(--spectrum-hβ) 50%, var(--spectrum-hδ) 80%, transparent);
+  margin: 16px 0; opacity: .5;
+}
+
+/* ─── Caffeine molecule decorative ─── */
+.molecule-decoration {
+  position: absolute; pointer-events: none; opacity: .05;
+  animation: molecule-float 20s ease-in-out infinite;
+}
+
+/* ─── Sidebar — journal style ─── */
+.sidebar-journal {
+  background: var(--paper-warm);
+  border-right: 1px solid rgba(0,0,0,.06);
+}
+
+/* ═══════════════════════════════════════════════ */
+/* polish-exam-subpages: 子页面收尾组件 */
+/* ═══════════════════════════════════════════════ */
+
+/* ─── 审核标记 badge ─── */
+.audit-badge { display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:9999px;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:500; }
+.audit-badge.passed { background:#e0f2f1;color:#004f50; }
+.audit-badge.warning { background:#fff3cd;color:#856404; }
+.audit-badge.blocked { background:#ffdad6;color:#93000a; }
+
+/* ─── 子Tab staggered ─── */
+@keyframes stab-in { 0%{opacity:0;transform:translateY(-4px)} 100%{opacity:1;transform:translateY(0)} }
+.stab-enter { animation:stab-in .3s ease both; }
+.stab-enter:nth-child(1){animation-delay:0s} .stab-enter:nth-child(2){animation-delay:.06s} .stab-enter:nth-child(3){animation-delay:.12s}
+
+/* ─── 题目卡片 slide-in ─── */
+@keyframes qcard-in { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
+.qcard-enter { animation:qcard-in .3s ease both; }
+
+/* ─── 表格行 fade-in ─── */
+@keyframes row-fade { 0%{opacity:0;transform:translateY(4px)} 100%{opacity:1;transform:translateY(0)} }
+.row-enter { animation:row-fade .25s ease both; }
+
+/* ─── 柱状图增长 ─── */
+.bar-inner { transition: height .5s cubic-bezier(.34,1.56,.64,1); }
+
+/* ─── Dragover 上传区 ─── */
+.drop-zone { border:2px dashed rgba(0,0,0,.1);border-radius:12px;padding:48px;text-align:center;cursor:pointer;transition:.2s; }
+.drop-zone.dragover { border-color:var(--congo-red);background:rgba(192,57,43,.03); }
+
+/* ─── exam check-card 增强 ─── */
+.check-card { border:1px solid rgba(0,0,0,.08);border-radius:8px;padding:10px 14px;margin-bottom:6px;cursor:pointer;transition:.15s;background:#fff;display:flex;gap:10px;align-items:flex-start; }
+.check-card:hover { border-color:var(--ink); }
+.check-card.selected { border-color:var(--congo-red);background:rgba(192,57,43,.04); }
+.check-card input[type=checkbox] { margin-top:2px;accent-color:var(--congo-red); }
+
+/* ─── Tab 下划线动效 ─── */
+.tab-underline { position:relative; }
+.tab-underline::after { content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--ink);transform:scaleX(0);transition:transform .3s ease; }
+.tab-underline.active::after { transform:scaleX(1); }
+.sidebar-journal .brand-title { color: var(--ink); }

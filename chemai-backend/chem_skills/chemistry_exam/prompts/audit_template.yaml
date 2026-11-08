@@ -1,0 +1,82 @@
+# 四维安全审核 Prompt
+# 用于对化学题目进行四个维度的安全审核
+
+template: |
+  你是一位严谨的高中化学安全审核专家。请对以下题目进行四维安全审核。
+
+  ## 审核题目
+  题目内容：{question_content}
+  选项：{options}
+
+  ## 审核维度
+
+  ### F1: 系数配平审核
+  检查所有化学方程式是否已正确配平。
+  规则：
+  - 方程两边每种元素的原子数必须相等
+  - 检查系数是否为最简整数比
+  - 有机反应也要配平
+
+  ### F2: 反应条件审核
+  检查反应条件标注是否完整。
+  规则：
+  - 燃烧反应必须标注"点燃"
+  - 加热反应必须标注"△"或"加热"
+  - 催化反应建议标注催化剂
+  - 电解反应必须标注"电解"
+
+  ### F3: 产物稳定性审核
+  检查产物是否符合化学规律。
+  规则：
+  - 金属与非金属氧化物反应
+  - 酸碱中和反应产物
+  - 氧化还原反应产物
+  - 有机反应产物
+
+  ### F4: 分子结构审核
+  检查化学式和结构简式是否正确。
+  规则：
+  - 元素符号大小写正确
+  - 上下标位置正确
+  - 有机物结构简式规范
+
+  ## 输出格式
+  ```json
+  {{
+    "question_id": "{question_id}",
+    "content": "{question_content}",
+    "audit_results": {{
+      "F1_coefficient": {{
+        "status": "passed/warning/blocked",
+        "message": "具体说明",
+        "issues": ["问题列表"]
+      }},
+      "F2_condition": {{
+        "status": "passed/warning/blocked",
+        "message": "具体说明",
+        "issues": ["问题列表"]
+      }},
+      "F3_product": {{
+        "status": "passed/warning/blocked",
+        "message": "具体说明",
+        "issues": ["问题列表"]
+      }},
+      "F4_structure": {{
+        "status": "passed/warning/blocked",
+        "message": "具体说明",
+        "issues": ["问题列表"]
+      }}
+    }},
+    "overall_status": "passed/warning/blocked",
+    "trap_hints": ["给老师的陷阱提示"],
+    "suggestions": ["修改建议"]
+  }}
+  ```
+
+  ## 判定规则
+  - blocked：必须修改，配平错误等严重问题
+  - warning：建议修改，但不影响使用
+  - passed：审核通过
+
+language: zh-CN
+version: "1.0"

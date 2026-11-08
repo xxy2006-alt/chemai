@@ -1,0 +1,27 @@
+/* ChemAI Agent 系统设计 · Deck Design Tokens */
+:root {
+  --navy-deep: #0B1A2E;
+  --navy-card: #132438;
+  --navy-lighter: #1A3050;
+  --tencent-blue: #0052D9;
+  --wb-green: #07C160;
+  --wb-green-glow: rgba(7, 193, 96, 0.22);
+  --text-primary: #FFFFFF;
+  --text-secondary: #C8D4E0;
+  --text-muted: #95A6B8;
+  --white-soft: #E8ECF1;
+  --font-display: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-body: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "Consolas", monospace;
+  --space-xs: 8px; --space-sm: 16px; --space-md: 24px; --space-lg: 40px; --space-xl: 64px; --space-2xl: 96px;
+}
+html, body {
+  width: 1920px; height: 1080px; margin: 0; padding: 0; overflow: hidden;
+  font-family: var(--font-body); background: var(--navy-deep); color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+.accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--tencent-blue) 0%, var(--wb-green) 100%); }
+.page-num { position: absolute; bottom: 36px; right: 56px; font-size: 22px; color: var(--text-muted); letter-spacing: 0.06em; font-family: var(--font-mono); }
+.section-label { font-size: 22px; color: var(--wb-green); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: var(--space-sm); }
+.accent-tag { display: inline-block; background: var(--wb-green-glow); color: var(--wb-green); padding: 6px 16px; border-radius: 4px; font-size: 22px; font-weight: 600; letter-spacing: 0.06em; }
+.divider { width: 60px; height: 3px; background: var(--wb-green); margin: var(--space-md) 0; }

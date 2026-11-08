@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>障碍诊断 · 智辅化学</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/common.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script src="https://unpkg.com/chart.js@4/dist/chart.umd.js"></script><script>tailwind.config={darkMode:"class",theme:{extend:{colors:{ink:"#1a1a1a",paper:"#faf7f0",paperWarm:"#f5efe0",inkLight:"#555",congoRed:"#b43c28",methylGreen:"#2c6e49"},fontFamily:{sans:["IBM Plex Sans"],mono:["JetBrains Mono"],serif:["Cormorant Garamond","Georgia","serif"]}}}}</script>
+<style>
+body{font-family:'IBM Plex Sans',sans-serif;background:#f7f4ed;color:#1a1a1a;margin:0}
+.sidebar{width:240px;position:fixed;left:0;top:0;height:100vh;z-index:50;background:#f5efe0;border-right:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column}
+.sidebar .brand-area{padding:20px 16px 4px}
+.sidebar .brand-area h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:600;line-height:1.1;margin:0}
+.sidebar .brand-area .sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;margin-top:3px;letter-spacing:.5px}
+.sidebar .home-link{margin:14px 12px 10px;padding:9px 0;text-align:center;font-size:14px;font-family:'IBM Plex Sans',sans-serif;border:1px solid rgba(0,0,0,.1);background:transparent;color:#555;border-radius:4px;cursor:pointer;transition:.15s;text-decoration:none;display:block}
+.sidebar .home-link:hover{border-color:#b43c28;color:#b43c28}
+.elem-nav{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 8px;border-radius:4px;text-decoration:none;color:#555;font-size:15px;transition:.12s}
+.elem-nav .sym{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:17px;min-width:32px;text-align:center;padding:4px 6px;border-radius:3px;background:rgba(0,0,0,.03);color:#1a1a1a}
+.elem-nav:hover{background:rgba(0,0,0,.02)}.elem-nav:hover .sym{background:#1a1a1a;color:#faf7f0}
+.elem-nav.active{background:rgba(0,0,0,.03);font-weight:500}.elem-nav.active .sym{background:#b43c28;color:#fff}
+.main{margin-left:240px;padding:32px;min-height:100vh;background-image:linear-gradient(rgba(0,0,0,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.012) 1px,transparent 1px);background-size:28px 28px;background-position:-1px -1px}
+.page-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:600;color:#1a1a1a;margin:0 0 8px}
+.card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:4px;padding:20px;margin-bottom:16px}
+.btn{padding:8px 18px;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;font-size:14px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;border-radius:4px;transition:.15s}
+.btn:hover{background:#1a1a1a;color:#faf7f0}
+.input{width:100%;border:none;border-bottom:1.5px solid rgba(0,0,0,.08);background:transparent;padding:9px 4px;font-size:15px;font-family:'IBM Plex Sans',sans-serif;outline:none;transition:border-color .3s}
+.input:focus{border-bottom-color:#b43c28}
+select.input{-webkit-appearance:none;border-radius:0}
+.tag{display:inline-block;padding:2px 10px;border-radius:9999px;font-size:12px;font-weight:500;font-family:'JetBrains Mono',monospace}
+.tag-medium{background:rgba(0,0,0,.05);color:#555}
+.tag-concept{background:#eaddff;color:#5429a6}.tag-reading{background:#d6e3ff;color:#2d476f}.tag-expression{background:#a5eff0;color:#004f50}
+.bar-chart{display:flex;align-items:end;gap:24px;height:160px;padding:8px 0}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bar-value{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:600}
+.bar-outer{width:100%;max-width:60px;height:120px;background:#e8e4de;border-radius:6px 6px 0 0;position:relative;overflow:hidden}
+.bar-inner{position:absolute;bottom:0;width:100%;border-radius:6px 6px 0 0;transition:height .5s cubic-bezier(.34,1.56,.64,1)}
+.bar-label{font-size:11px;color:#999;font-family:'JetBrains Mono',monospace}
+.student-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:4px;cursor:pointer;transition:.15s;border:1px solid rgba(0,0,0,.04);margin-bottom:4px;background:#fff}
+.student-row:hover{background:rgba(0,0,0,.01);border-color:rgba(0,0,0,.08)}
+.accordion-body{display:none;border-top:1px solid rgba(0,0,0,.04);padding:16px;background:rgba(0,0,0,.01)}
+.accordion-body.open{display:block}
+.tab-filter{display:inline-flex;padding:4px 14px;border-radius:9999px;font-size:13px;cursor:pointer;border:1px solid rgba(0,0,0,.08);color:#555;background:transparent;transition:.15s}
+.tab-filter.active{background:#b43c28;color:#fff;border-color:#b43c28}
+.progress-bar{height:5px;background:#e8e4de;border-radius:9999px;overflow:hidden}
+.progress-fill{height:100%;border-radius:9999px;transition:width .4s ease}
+.plan-card{border-left:3px solid #b43c28;padding:10px 14px;background:rgba(0,0,0,.01);border-radius:4px;margin-bottom:8px}
+.plan-day-row{display:flex;gap:8px;padding:6px 10px;margin-bottom:3px;border-radius:4px;background:rgba(0,0,0,.02);font-size:13px}
+.plan-day-row .day-tag{min-width:70px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;color:#b43c28}
+.empty-state{text-align:center;padding:48px;color:#999}
+</style></head><body>
+<aside class="sidebar">
+<div class="brand-area"><h1>智辅化学</h1><p class="sub">CHEMAI · 教师工作台</p></div>
+<a href="/" class="home-link">AI 教研助手</a>
+<nav class="flex-1 overflow-y-auto flex flex-col" id="sidebar-nav" style="padding:4px 0"></nav>
+<div style="padding:8px 12px;border-top:1px solid rgba(0,0,0,.04)"><a class="elem-nav" href="#" onclick="ChemAI.logout()" style="font-size:12px;color:#999">退出登录</a></div>
+</aside>
+<main class="main">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><h1 class="page-title" style="margin:0">障碍诊断</h1><button class="btn" onclick="togglePlanPanel()">已生成计划</button></div>
+<div class="card"><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end"><div style="flex:1;min-width:160px"><label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">选择班级</label><select id="diag-class" class="input"><option value="">请选择班级...</option></select></div><div style="flex:1;min-width:160px"><label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">选择考试</label><select id="diag-exam" class="input"><option value="">先选班级...</option></select></div><button class="btn" onclick="runDiagnosis()">开始诊断</button></div></div>
+<div id="diag-result"></div>
+<div id="diag-charts" style="display:none;margin-bottom:16px">
+  <div class="card" style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+    <div style="width:280px;height:280px"><canvas id="barrier-doughnut"></canvas></div>
+    <div style="flex:1;min-width:200px"><h3 style="font-family:'Cormorant Garamond',serif;font-size:18px;margin:0 0 8px">班级障碍分布</h3><p style="font-size:13px;color:#999" id="chart-summary"></p></div>
+  </div>
+</div>
+<div id="plan-panel" style="display:none"><div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:600">已生成的学习计划</span><button class="btn btn-sm" onclick="togglePlanPanel()">关闭</button></div><div id="plan-list"></div></div></div>
+</main>
+<script src="/app.js"></script><script src="/js/diagnosis.js"></script>
+<script>(function(){var n=sessionStorage.getItem('chemai_navigate');if(!n)return;try{n=JSON.parse(n)}catch(e){return}window.__chemai_bridge=n;sessionStorage.removeItem('chemai_navigate')})()</script></body></html>

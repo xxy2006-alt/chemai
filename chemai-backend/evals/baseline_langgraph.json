@@ -1,0 +1,141 @@
+{
+  "timestamp": "2026-06-18T21:10:44",
+  "results": {
+    "chat-greeting": {
+      "tools_called": [],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 5.26,
+      "output_preview": "嗨！你好呀！👋\n\n我是你的高中化学AI辅导老师，很高兴能帮你学习化学！\n\n无论你是想问化学概念、解题目、搜真题，还是需要实验模拟、配平方程式，我都乐意为你一步步引导讲解。\n\n**告诉我你想学什么吧？** 比如：\n- 🤔 有不懂的化学题需要讲解？\n- 🔬 想了解某个化学实验？\n- 📝 需要练习某个知识点的题目？\n- ⚖️ 检查方程式配平？\n- 🔍 搜索高考真题？\n\n随时可以问我哦！😊"
+    },
+    "knowledge-redox": {
+      "tools_called": [
+        "chemistry_tutor"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 7.6,
+      "output_preview": "好的，我来引导你理解这个核心概念！\n\n你先想一想：**\"氧化\"和\"还原\"这两个词，字面意思上分别和什么有关？**\n\n比如，你听说过\"铁生锈\"是氧化，那\"生锈\"的过程里，铁发生了什么变化？另外，在化学里，\"还原\"又让你联想到什么？"
+    },
+    "search-exam-bank": {
+      "tools_called": [
+        "search_exam_bank"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 10.17,
+      "output_preview": "好的，我搜索到了3条盐类水解相关的高考真题，下面为你详细呈现：\n\n---\n\n## 🔬 盐类水解高考真题（共3条）\n\n---\n\n### 第1题（2023年全国卷）\n**题目：** 下列关于盐类水解的说法正确的是  \n**选项（参考）：**\n- A. 盐类水解反应都是吸热反应  \n- B. 盐类水解后溶液一定呈中性  \n- C. 强酸强碱盐一定不水解  \n- D. 盐类水解的离子方程式都写可逆符号  "
+    },
+    "gen-questions-no-student": {
+      "tools_called": [
+        "generate_questions"
+      ],
+      "navigate_detected": true,
+      "navigate_page": "exam-v2",
+      "latency_s": 24.94,
+      "output_preview": "好的！以下是为您出的 **5道电化学中等难度选择题**，请查收 👇\n\n---\n\n### 第1题\n**将锌片和铜片用导线连接后插入稀硫酸中，构成原电池。下列叙述正确的是**  \nA. 锌片为负极，发生还原反应  \nB. 铜片为正极，铜片表面产生氢气  \nC. 电子从铜片经导线流向锌片  \nD. 溶液中的 H⁺ 向锌片移动  \n\n> ✅ **答案：B**  \n> **解析**：锌比铜活泼，锌片为负极（"
+    },
+    "gen-questions-with-student": {
+      "tools_called": [
+        "generate_questions"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 18.14,
+      "output_preview": "好的，张三！这是为你出的 **3道氧化还原反应选择题**，请认真作答 😊\n\n---\n\n### 第1题\n在反应 **3Cl₂ + 6KOH → 5KCl + KClO₃ + 3H₂O** 中，被氧化的氯元素与被还原的氯元素的质量比为\n\n- A. 1:5  \n- B. 5:1  \n- C. 1:1  \n- D. 3:5  \n\n---\n\n### 第2题\n已知反应：**2Fe³⁺ + 2I⁻ → 2Fe²"
+    },
+    "diagnose-single": {
+      "tools_called": [
+        "diagnose_barrier"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 6.82,
+      "output_preview": "根据诊断结果，张梦琪同学近期的情况如下：\n\n## 📊 张梦琪学习诊断报告\n\n### 障碍类型分布（较均衡）\n| 障碍类型 | 占比 |\n|---------|:----:|\n| 🧠 **概念理解障碍** | 33% |\n| 📖 **审题障碍** | 33% |\n| ✍️ **表述障碍（主因）** | **34%** |\n\n### 关键发现\n- **主要障碍**：表述障碍（34%，略高于其他两项）\n"
+    },
+    "diagnose-class": {
+      "tools_called": [],
+      "navigate_detected": true,
+      "navigate_page": "diagnosis",
+      "latency_s": 1.37,
+      "output_preview": ""
+    },
+    "weekly-report": {
+      "tools_called": [
+        "weekly_report"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 15.66,
+      "output_preview": "好的，这是张梦琪同学本周的化学学习情况汇报，请您查收 😊\n\n---\n\n## 🌟 本周学习总结\n\n梦琪这周表现非常棒！她**完成了18次课堂练习**，学习态度特别积极认真，看得出对化学很上心。\n\n她的学习状态很**均衡**——在理解概念、阅读材料和表达想法这三方面花的时间差不多，没有偏科，这是一个非常好的学习习惯。\n\n## 📖 学了什么\n\n虽然详细的知识点清单暂未列出，但从学习表现来看，她已经进入了"
+    },
+    "balance-equation": {
+      "tools_called": [
+        "balance_equation"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 8.01,
+      "output_preview": "好的，我来帮你一步步配平这个方程式。先看看目前的情况：\n\n**原方程式：** Fe + O₂ → Fe₂O₃\n\n**检查结果：**\n- Fe：左边 1 个，右边 2 个 ❌\n- O：左边 2 个，右边 3 个 ❌\n\n两边原子数不一致，需要配平。我们一步步来：\n\n---\n\n### 第一步：先配氧（O）\n\n左边 O₂ 有 2 个氧，右边 Fe₂O₃ 有 3 个氧。\n\n➡ 找 **2 和 3 的最小公倍"
+    },
+    "navigate-exam": {
+      "tools_called": [],
+      "navigate_detected": true,
+      "navigate_page": "exam-v2",
+      "latency_s": 1.08,
+      "output_preview": ""
+    },
+    "navigate-diagnosis": {
+      "tools_called": [],
+      "navigate_detected": true,
+      "navigate_page": "diagnosis",
+      "latency_s": 1.09,
+      "output_preview": ""
+    },
+    "ambiguous-exam-request": {
+      "tools_called": [
+        "generate_questions"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 54.83,
+      "output_preview": "出题时遇到了一点技术问题，让我换个方式帮你准备！请问你目前**几年级**？以及**期中考试范围**是哪些内容？（比如：物质结构、元素周期律、化学反应原理、有机化学基础等）\n\n这样我可以更有针对性地帮你准备复习资料和练习题~ 😊"
+    },
+    "import-paper": {
+      "tools_called": [
+        "import_exam_paper"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 6.07,
+      "output_preview": "看起来您没有提供具体的PDF文件路径。请您将试卷PDF文件上传或提供文件的路径，我再为您导入。\n\n您可以通过以下方式操作：\n1. **直接上传文件** — 将PDF文件拖拽到对话框中\n2. **提供文件路径** — 告诉我文件在电脑上的具体位置（如 `D:\\试卷\\2025高考化学模拟卷.pdf`）\n3. **提供下载链接** — 如果有网盘或网页链接也可以\n\n请提供文件后，我会自动完成：\n- 📄 "
+    },
+    "adaptive-practice": {
+      "tools_called": [
+        "assign_adaptive_practice"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 6.03,
+      "output_preview": "看起来系统提示\"班级\"中没有学生信息，无法生成自适应练习。为了让您正常使用该功能，我需要您提供以下**必要信息**：\n\n---\n\n### 🔍 请补充以下信息：\n\n| 项目 | 说明 |\n|------|------|\n| **班级名称/ID** | 例如：高三(1)班、2025届A班 |\n| **知识点范围** | 例如：氧化还原反应、化学平衡、有机化学等 |\n| **题目数量** | 默认5题，"
+    },
+    "simulate-experiment": {
+      "tools_called": [
+        "simulate_experiment"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 24.27,
+      "output_preview": "# 🧪 酸碱中和滴定实验模拟\n\n---\n\n## 📌 实验目的\n1. 掌握酸碱中和滴定的原理与操作方法\n2. 学会使用**滴定管**和**锥形瓶**进行定量分析\n3. 通过实验测定**未知浓度酸（或碱）** 的浓度\n\n---\n\n## 🧰 实验器材\n\n| 器材 | 用途 |\n|------|------|\n| 🔬 酸式滴定管（或碱式滴定管） | 精确量取标准溶液 |\n| ⚗️ 锥形瓶（250 mL） "
+    },
+    "web-search": {
+      "tools_called": [
+        "web_search"
+      ],
+      "navigate_detected": false,
+      "navigate_page": null,
+      "latency_s": 26.46,
+      "output_preview": "根据搜索结果，我为你整理了关于**2025年高考化学大纲变化**的分析。由于官方最新版大纲尚未正式发布，以下内容基于近年改革趋势和课程标准方向进行预测，供你参考：\n\n---\n\n## 📌 2025年高考化学大纲可能的变化方向\n\n### 一、整体趋势：核心素养导向更明确\n高考化学将更注重 **五大核心素养**：\n1. **宏观辨识与微观探析**\n2. **变化观念与平衡思想**\n3. **证据推理与模"
+    }
+  }
+}

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 教研助手 · 智辅化学</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/mhchem.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{ink:"#1a1a1a",paper:"#faf7f0",paperWarm:"#f5efe0",inkLight:"#555",congoRed:"#b43c28",methylGreen:"#2c6e49"},fontFamily:{sans:["IBM Plex Sans"],mono:["JetBrains Mono"],serif:["Cormorant Garamond","Georgia","serif"]}}}}</script>
+<style>
+/* ─── B · 实验室手稿 — 首页 ─── */
+
+body{background:#f7f4ed;font-family:'IBM Plex Sans',sans-serif;color:#1a1a1a}
+
+/* ─── 侧边栏 ─── */
+.sidebar{
+  width:240px;position:fixed;left:0;top:0;height:100vh;z-index:50;
+  background:#f5efe0;border-right:1px solid rgba(0,0,0,.05);
+  display:flex;flex-direction:column;
+}
+.sidebar .brand-area{padding:20px 16px 4px}
+.sidebar .brand-area h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:600;line-height:1.1}
+.sidebar .brand-area .sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;margin-top:3px;letter-spacing:.5px}
+.sidebar .new-chat-btn{margin:14px 12px 10px;padding:9px 0;text-align:center;font-size:14px;font-family:'IBM Plex Sans',sans-serif;border:1px solid rgba(0,0,0,.1);background:transparent;color:#555;border-radius:4px;cursor:pointer;transition:.15s}
+.sidebar .new-chat-btn:hover{border-color:#b43c28;color:#b43c28}
+
+/* ─── 元素符号导航 ─── */
+.elem-nav{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 8px;
+  border-radius:4px;text-decoration:none;color:#555;font-size:15px;transition:.12s;
+}
+.elem-nav .sym{
+  font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:17px;
+  min-width:32px;text-align:center;padding:4px 6px;border-radius:3px;
+  background:rgba(0,0,0,.03);color:#1a1a1a;
+}
+.elem-nav:hover{background:rgba(0,0,0,.02)}
+.elem-nav:hover .sym{background:#1a1a1a;color:#faf7f0}
+.elem-nav.active{background:rgba(0,0,0,.03);font-weight:500}
+.elem-nav.active .sym{background:#b43c28;color:#fff}
+.elem-nav:nth-child(1){animation:nav-in .3s 0s ease both}
+.elem-nav:nth-child(2){animation:nav-in .3s .04s ease both}
+.elem-nav:nth-child(3){animation:nav-in .3s .08s ease both}
+.elem-nav:nth-child(4){animation:nav-in .3s .12s ease both}
+.elem-nav:nth-child(5){animation:nav-in .3s .16s ease both}
+@keyframes nav-in{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+/* ─── 主区域 ─── */
+.main{margin-left:240px;height:100vh;display:flex;flex-direction:column;
+  background-image:linear-gradient(rgba(0,0,0,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.012) 1px,transparent 1px);
+  background-size:28px 28px;background-position:-1px -1px}
+
+/* ─── 聊天消息 ─── */
+.chat-area{flex:1;overflow-y:auto;min-height:0;padding:24px 32px;display:flex;flex-direction:column;gap:16px}
+#chat-messages{min-height:0}
+.msg-ai{
+  align-self:flex-start;max-width:78%;padding:16px 20px;border-radius:4px;
+  background:#f5efe0;border:1px solid rgba(0,0,0,.04);font-size:15px;line-height:1.7;
+  position:relative;
+}
+.msg-ai .avatar{font-family:'JetBrains Mono',monospace;font-size:11px;color:#b43c28;margin-bottom:6px;letter-spacing:.5px}
+.msg-user{
+  align-self:flex-end;max-width:72%;padding:12px 16px;border-radius:6px 6px 2px 6px;
+  background:#1a1a1a;color:#fff;font-size:15px;line-height:1.6;
+}
+
+/* ─── 思考动画 ─── */
+.think-dots{display:flex;gap:5px;padding:4px 0}
+.think-dots span{width:6px;height:6px;border-radius:50%;background:#b43c28;animation:think .8s ease-in-out infinite}
+.think-dots span:nth-child(2){animation-delay:.15s}
+.think-dots span:nth-child(3){animation-delay:.3s}
+@keyframes think{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1.2)}}
+
+/* ─── Collapsible body (shared) ─── */
+.collapsible-body{
+  display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease;
+}
+.collapsible-body.open{grid-template-rows:1fr}
+.collapsible-body>.collapsible-inner{overflow:hidden;min-height:0}
+.collapsible-body.open>.collapsible-inner{overflow-y:auto;max-height:400px}
+
+/* ─── ToolCard ─── */
+.tool-card{
+  align-self:flex-start;max-width:92%;min-width:0;
+  background:#fff;border:1px solid rgba(0,0,0,.06);
+  border-left:3px solid #b43c28;border-radius:4px;padding:10px 14px;margin:4px 0;
+  font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;
+  animation:tool-in .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+.tool-card.running{border-left-color:#e6a817;background:#fffdf5}
+.tool-card.done{border-left-color:#2c6e49}
+.tool-card.error{border-left-color:#b43c28;background:#fef5f5}
+@keyframes tool-in{0%{opacity:0;transform:translateY(6px) scale(.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.tool-card-header{display:flex;align-items:center;gap:8px;color:#555;user-select:none}
+.tool-card-body{margin-top:6px}
+
+/* ─── 快捷提问 ─── */
+.chips-area{padding:10px 32px;display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  padding:8px 18px;border-radius:9999px;border:1px solid rgba(0,0,0,.08);
+  background:transparent;font-size:14px;font-family:'IBM Plex Sans',sans-serif;
+  cursor:pointer;color:#555;transition:.15s;
+}
+.chip:hover{border-color:#b43c28;color:#b43c28;background:rgba(180,60,40,.03)}
+
+/* ─── 化学式预览 ─── */
+.chem-preview{display:none;padding:6px 32px;font-family:'JetBrains Mono',monospace;font-size:15px;color:#2c6e49;background:rgba(44,110,73,.04);border-top:1px solid rgba(44,110,73,.1);min-height:28px;line-height:28px;white-space:pre-wrap;word-break:break-all}
+.chem-preview.show{display:block}
+.chem-preview .arrow{color:#b43c28}
+.chem-preview .charge{color:#1a56db}
+
+/* ─── 输入区 ─── */
+.input-area{padding:12px 32px;display:flex;gap:12px;border-top:1px solid rgba(0,0,0,.04)}
+.input-area textarea{
+  flex:1;border:none;outline:none;background:transparent;padding:10px 4px;
+  font-size:16px;font-family:'IBM Plex Sans',sans-serif;resize:none;
+  min-height:20px;max-height:120px;border-bottom:1.5px solid rgba(0,0,0,.08);
+  transition:border-color .3s,box-shadow .3s;
+}
+.input-area textarea:focus{border-bottom-color:#b43c28;box-shadow:0 4px 12px -4px rgba(180,60,40,.1)}
+.input-area textarea:disabled{opacity:.4}
+.btn-upload{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:none;background:transparent;font-size:18px;border-radius:6px;cursor:pointer;transition:.15s;color:#999;flex-shrink:0}
+.btn-upload:hover{background:rgba(0,0,0,.04);color:#b43c28}
+.btn-send{
+  padding:10px 28px;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;
+  font-size:15px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;letter-spacing:.5px;
+  border-radius:4px;transition:.15s;align-self:flex-end;
+}
+.btn-send:hover{background:#1a1a1a;color:#faf7f0}
+.btn-send:disabled{opacity:.3;cursor:wait}
+
+/* ─── 上下文指示器 ─── */
+.ctx-bar{display:none;align-items:center;gap:8px;padding:6px 32px;border-top:1px solid rgba(0,0,0,.03);font-size:12px;background:rgba(0,0,0,.01)}
+.ctx-bar .ctx-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.5px}
+.ctx-bar .ctx-tag{padding:2px 10px;border-radius:9999px;font-size:11px;font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.04);color:#555}
+
+/* ─── 气泡内思考状态 ─── */
+.think-status{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#b43c28;margin-bottom:8px}
+.think-status .dot{width:5px;height:5px;border-radius:50%;background:#b43c28;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ─── AI 输出排版 ─── */
+.msg-ai h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:600;color:#1a1a1a;margin:16px 0 6px;line-height:1.3}
+.msg-ai h3:first-child{margin-top:0}
+.msg-ai h4{font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;font-weight:600;color:#1a1a1a;margin:12px 0 4px}
+.msg-ai p{margin:0 0 8px}
+.msg-ai p:last-child{margin-bottom:0}
+.msg-ai ul,.msg-ai ol{margin:4px 0 8px;padding-left:20px}
+.msg-ai li{margin-bottom:4px;line-height:1.6}
+.msg-ai strong{color:#b43c28;font-weight:600}
+.msg-ai code{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(0,0,0,.04);padding:2px 6px;border-radius:3px;color:#b43c28}
+.msg-ai pre{background:rgba(0,0,0,.02);border:1px solid rgba(0,0,0,.04);border-radius:4px;padding:12px 14px;overflow-x:auto;margin:8px 0;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6}
+.msg-ai pre code{background:none;padding:0;color:#1a1a1a}
+.msg-ai blockquote{border-left:3px solid #b43c28;margin:8px 0;padding:4px 12px;color:#555;font-style:italic}
+.msg-ai table{border-collapse:collapse;width:100%;margin:8px 0;font-size:13px}
+.msg-ai table th{text-align:left;padding:8px 12px;border-bottom:2px solid rgba(0,0,0,.06);font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;text-transform:uppercase}
+.msg-ai table td{padding:8px 12px;border-bottom:1px solid rgba(0,0,0,.04)}
+.msg-ai hr{border:none;height:1px;background:linear-gradient(90deg,rgba(180,60,40,.2),rgba(180,60,40,.04) 70%,transparent);margin:16px 0}
+
+/* ─── 侧边栏对话历史 ─── */
+.history-item{display:flex;align-items:center;padding:7px 8px;margin:1px 0;border-radius:4px;cursor:pointer;transition:.1s;font-size:13px;color:#555;gap:6px}
+.history-item:hover{background:rgba(0,0,0,.03)}
+.history-item.active{background:rgba(0,0,0,.04);color:#1a1a1a}
+.history-item .title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'IBM Plex Sans',sans-serif}
+.history-item .del{opacity:0;background:none;border:none;cursor:pointer;color:#999;font-size:14px;padding:0 2px;transition:.1s}
+.history-item:hover .del{opacity:.6}
+.history-item .del:hover{opacity:1;color:#b43c28}
+
+/* ─── Agent 状态栏 ─── */
+.agent-status{display:none;align-items:center;gap:6px;padding:4px 32px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#999}
+.agent-status .status-icon{color:#b43c28;font-size:14px}
+.agent-status .status-time{color:#555}
+
+/* ─── Live ticking timer ─── */
+.live-timer.ticking{animation:timerPulse 2s ease-in-out infinite}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ─── 路由卡 ─── */
+.route-card{animation:routeSlideIn .3s ease-out}
+@keyframes routeSlideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── 子Agent面板 ─── */
+.sub-agent-panel{
+  align-self:flex-start;max-width:92%;min-width:0;
+  border:1.5px solid #e0e0e0;border-radius:8px;margin:4px 0;background:#fcfcfc;
+  animation:panelSlideIn .25s ease-out;
+}
+@keyframes panelSlideIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.sub-agent-panel .sa-header:hover{background:#f5f5f5 !important}
+.sub-agent-panel .sa-body{overflow:hidden}
+.sub-agent-panel .sa-text{font-family:'JetBrains Mono','IBM Plex Sans',monospace;max-height:300px;overflow-y:auto}
+
+/* ─── Route card ─── */
+.route-card{max-width:92%;min-width:0}
+
+/* ─── Plan card fold ─── */
+.plan-card .plan-card-body{
+  display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease;
+}
+.plan-card:not(.collapsed) .plan-card-body{grid-template-rows:1fr}
+.plan-card .plan-card-body-inner{overflow:hidden}
+.plan-card .plan-card-summary{cursor:pointer;user-select:none}
+
+/* ─── 响应式 ─── */
+@media (max-width: 768px) {
+  .sidebar{transform:translateX(-240px);transition:transform .25s cubic-bezier(.22,.61,.36,1)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .chips-area{padding:8px 16px;gap:4px}
+  .chip{padding:6px 12px;font-size:12px}
+  .input-area{padding:10px 16px}
+  .agent-status{padding:4px 16px 8px}
+}
+/* Mobile hamburger */
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:60;width:36px;height:36px;border:1px solid rgba(0,0,0,.08);background:#faf7f0;border-radius:4px;cursor:pointer;align-items:center;justify-content:center}
+@media (max-width:768px){.mobile-toggle{display:flex}}
+</style>
+</head>
+<body>
+
+<button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')"><span class="material-symbols-outlined" style="font-size:20px">menu</span></button>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="brand-area"><h1>智辅化学</h1><p class="sub">CHEMAI · 教师工作台</p></div>
+  <button class="new-chat-btn" onclick="newConversation()">+ 新建对话</button>
+  <nav class="flex-1 overflow-y-auto flex flex-col" id="sidebar-nav" style="padding:4px 0"></nav>
+  <div style="padding:8px 12px;border-top:1px solid rgba(0,0,0,.04)">
+    <a class="elem-nav" href="#" onclick="ChemAI.logout()" style="font-size:12px;color:#999">退出登录</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+  <div class="chat-area" id="chat-messages">
+    <div class="msg-ai">
+      <div class="avatar">CHEMAI · 教研助手</div>
+      <p>你好，老师。</p>
+      <p style="font-size:13px;color:#555;margin-top:4px;line-height:1.7">我能帮你：配平化学方程式 · 生成练习题 · 诊断学习障碍 · 搜索历年真题 · 模拟化学实验 · 生成学习报告</p>
+    </div>
+  </div>
+
+  <div class="ctx-bar" id="agent-context">
+    <span class="ctx-label">上下文</span>
+    <span class="ctx-tag" id="ctx-class" style="display:none"></span>
+    <span class="ctx-tag" id="ctx-exam" style="display:none"></span>
+    <span class="ctx-tag" id="ctx-student" style="display:none"></span>
+    <button onclick="clearContext()" style="background:none;border:none;cursor:pointer;color:#999;font-size:14px;padding:0 4px">&times;</button>
+  </div>
+
+  <div class="chips-area" id="chips">
+    <button class="chip" data-prompt="请帮我配平化学方程式：">配平方程式</button>
+    <button class="chip" data-prompt="请出几道关于">出题练习</button>
+    <button class="chip" data-prompt="请模拟">模拟实验</button>
+    <button class="chip" data-prompt="请讲解">讲解概念</button>
+    <button class="chip" data-prompt="请搜索关于">查真题</button>
+    <button class="chip" data-prompt="请分析">错题诊断</button>
+  </div>
+
+  <div class="chem-preview" id="chem-preview"></div>
+  <div class="input-area">
+    <textarea id="chat-input" placeholder="输入化学教学问题，Enter 发送..." rows="1"></textarea>
+    <input type="file" id="chat-file-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="handleFileUpload(event)">
+    <button class="btn-upload" id="chat-upload-btn" onclick="document.getElementById('chat-file-input').click()" title="上传文件">📎</button>
+    <input type="file" id="chat-batch-input" accept="image/*" multiple style="display:none" onchange="handleBatchUpload(event)">
+    <button class="btn-upload" id="chat-batch-btn" onclick="document.getElementById('chat-batch-input').click()" title="批量上传答题卡（≤10张）">📄</button>
+    <button class="btn-send" id="chat-send" onclick="sendMessage()">发送</button>
+  </div>
+  <div class="agent-status" id="agent-status"><span class="material-symbols-outlined status-icon" style="font-size:14px">smart_toy</span><span id="status-tool">就绪</span><span class="status-time" id="status-time"></span></div>
+
+</main>
+
+<script src="/app.js?v=7"></script>
+<script src="/js/chem-markdown.js"></script>
+<script src="/js/agent-renderers.js?v=17"></script>
+<script src="/js/agent.js?v=32"></script>
+</body>
+</html>

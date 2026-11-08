@@ -1,0 +1,188 @@
+{
+  "timestamp": "2026-07-04 16:11:13",
+  "total": 36,
+  "passed": 36,
+  "failed": 0,
+  "results": [
+    {
+      "name": "balance_engine: Fe + O2 = Fe2O3",
+      "passed": true,
+      "details": "expected=blocked actual=blocked"
+    },
+    {
+      "name": "balance_engine: 2H2 + O2 = 2H2O",
+      "passed": true,
+      "details": "expected=passed actual=passed"
+    },
+    {
+      "name": "balance_engine: Na + Cl2 = NaCl",
+      "passed": true,
+      "details": "expected=blocked actual=blocked"
+    },
+    {
+      "name": "balance_engine: 2Na + Cl2 = 2NaCl",
+      "passed": true,
+      "details": "expected=passed actual=passed"
+    },
+    {
+      "name": "balance_engine: KMnO4 + HCl = KCl + MnCl2 + Cl2 + H2O",
+      "passed": true,
+      "details": "expected=blocked actual=blocked"
+    },
+    {
+      "name": "balance_engine: CH4 + 2O2 = CO2 + 2H2O",
+      "passed": true,
+      "details": "expected=passed actual=passed"
+    },
+    {
+      "name": "balance_engine: not an equation",
+      "passed": true,
+      "details": "expected=blocked actual=blocked"
+    },
+    {
+      "name": "balance_engine: H2O = H2 + O2",
+      "passed": true,
+      "details": "expected=blocked actual=blocked"
+    },
+    {
+      "name": "balance_engine: 2H2O = 2H2 + O2",
+      "passed": true,
+      "details": "expected=passed actual=passed"
+    },
+    {
+      "name": "exam_bank: search by keyword",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "exam_bank: search by year",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "exam_bank: search by difficulty",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "exam_bank: search all",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "balance_tool: Fe + O2 = Fe2O3",
+      "passed": true,
+      "details": "status=blocked"
+    },
+    {
+      "name": "balance_tool: 2H2 + O2 = 2H2O",
+      "passed": true,
+      "details": "status=passed"
+    },
+    {
+      "name": "balance_tool: Na + Cl2 = NaCl",
+      "passed": true,
+      "details": "status=blocked"
+    },
+    {
+      "name": "classifier[tutor]: 帮我配平 Fe + O2 = Fe2O3",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[tutor]: 配平这个方程式 KMnO4 + HCl = KCl + MnCl2 +",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[tutor]: 出3道盐类水解的选择题",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[tutor]: 搜索关于有机化学的真题",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[teacher]: 找2023年高考化学真题",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[tutor]: 模拟酸碱中和滴定实验",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[tutor]: 什么是勒夏特列原理",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[tutor]: 你好",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[tutor]: 今天天气怎么样",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[teacher]: 诊断学生S001的学习障碍",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[tutor]: 搜索2025高考化学大纲",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "classifier[parent]: 生成S001的周报",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "agent[tutor]: 帮我配平 Fe + O2 = Fe2O3",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "agent[tutor]: 出3道盐类水解的选择题",
+      "passed": true,
+      "details": "known-flaky: tools called: ['search_exam_bank', 'search_exam_bank'], expected: show_exam_workbench"
+    },
+    {
+      "name": "agent[tutor]: 搜索有机化学的真题",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "agent[tutor]: 模拟酸碱中和滴定实验",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "agent[tutor]: 什么是勒夏特列原理",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "agent['tutor']: 你好 (chat, no tool)",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "sse: balance_equation",
+      "passed": true,
+      "details": "events=['tool_call', 'tool_result', 'phase', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text',"
+    },
+    {
+      "name": "sse: chat_no_tool",
+      "passed": true,
+      "details": "events=['phase', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text', 'text']"
+    }
+  ]
+}

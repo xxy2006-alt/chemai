@@ -1,0 +1,115 @@
+# 维度 5: 边界情况 — 边界层
+# 验证: Agent 在异常/边界输入下的鲁棒性
+# 场景数: 12, 通过标准: >=80%
+
+scenarios:
+  # ===== 缺失信息 (4) =====
+  - id: EDGE-001
+    name: missing_knowledge_point
+    description: "出题请求未指定知识点"
+    input: "出一道题"
+    assertions:
+      - {type: has_text_response}
+      - {type: not_tool_called, tool: generate_questions}
+      - {type: no_error}
+
+  - id: EDGE-002
+    name: missing_student_id
+    description: "诊断请求未指定学生ID"
+    input: "诊断学生的学习障碍"
+    assertions:
+      - {type: has_text_response}
+      - {type: not_tool_called, tool: diagnose_barrier}
+      - {type: no_error}
+
+  - id: EDGE-003
+    name: missing_exam
+    description: "变种题请求未指定蓝本"
+    input: "生成一道变种题"
+    assertions:
+      - {type: has_text_response}
+      - {type: not_tool_called, tool: create_variant}
+      - {type: no_error}
+
+  - id: EDGE-004
+    name: empty_input
+    description: "空输入"
+    input: ""
+    assertions:
+      - {type: has_text_response}
+      - {type: not_tool_called, tool: generate_questions}
+      - {type: not_tool_called, tool: chemistry_tutor}
+      - {type: no_error}
+
+  # ===== 模糊意图 (2) =====
+  - id: EDGE-005
+    name: ambiguous_equation
+    description: "用户输入的不是标准化学方程式"
+    input: "配平那个铁和盐酸的反应"
+    assertions:
+      - {type: has_text_response}
+      - {type: tool_called, tool: balance_equation}
+      - {type: no_error}
+
+  - id: EDGE-006
+    name: ambiguous_question_request
+    description: "出题请求模糊不清"
+    input: "来点题"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  # ===== 工具调用限制 (3) =====
+  - id: EDGE-007
+    name: max_tool_calls
+    description: "复杂的多步骤操作，但不应超过合理上限"
+    input: "生成10道不同的化学题，分别覆盖化学平衡、氧化还原、电化学、有机化学、无机化学、热化学、动力学、溶液化学、配位化学、酸碱平衡这10个知识点"
+    assertions:
+      - {type: max_tool_calls, value: 15}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: EDGE-008
+    name: dedup_repeated
+    description: "Agent 不应重复调用相同工具"
+    input: "诊断一下学生202610101，诊断为学号202610101做诊断分析，给202610101再做一次学习诊断"
+    assertions:
+      - {type: tool_called, tool: diagnose_barrier}
+      - {type: no_error}
+
+  - id: EDGE-009
+    name: loop_detection
+    description: "Agent 不应陷入工具调用循环"
+    input: "搜索题目，搜索题目，一直搜索氧化还原相关的题目"
+    assertions:
+      - {type: tool_called, tool: search_exam_bank}
+      - {type: tool_count, lte: 8}
+      - {type: no_error}
+
+  # ===== 不存在资源 (3) =====
+  - id: EDGE-010
+    name: nonexistent_student
+    description: "查询不存在的学生ID"
+    input: "诊断学号为999999999的学生的学习障碍"
+    assertions:
+      - {type: tool_called, tool: diagnose_barrier}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: EDGE-011
+    name: nonexistent_exam
+    description: "搜索不存在的考题"
+    input: "搜索2030年火星高考化学题"
+    assertions:
+      - {type: tool_called, tool: search_exam_bank}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: EDGE-012
+    name: invalid_equation
+    description: "配平不存在的化合物方程式"
+    input: "配平 Xx + Yy = Zz"
+    assertions:
+      - {type: tool_called, tool: balance_equation}
+      - {type: has_text_response}
+      - {type: no_error}

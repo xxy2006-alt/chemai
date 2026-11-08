@@ -1,0 +1,2 @@
+{"timestamp": "2026-06-01T11:45:10.676857+00:00", "persona": "teacher", "skill_name": "test", "args": {"password": "***", "keyword": "y"}, "result_summary": "", "duration_ms": 50, "error": null}
+{"timestamp": "2026-06-01T11:45:11.629150+00:00", "persona": "", "skill_name": "search_exam_bank", "args": {"keyword": "test"}, "result_summary": "{'total': 0, 'questions': []}", "duration_ms": 952.3, "error": null}

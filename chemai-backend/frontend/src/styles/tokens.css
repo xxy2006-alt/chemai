@@ -1,0 +1,99 @@
+/* ============================================================
+   ChemAI 设计 tokens · v2 教师端（Academic Catalyst × Linear）
+   唯一事实来源：design/教师端.md（总册 DESIGN.md ①索引）
+   品牌锚点不动：牛津蓝主色 / 学术青 AI 声 / 语义色 / JetBrains Mono
+   v2 新增：薰衣草蓝交互微强调（岗位四限 R-T-C2）
+           深色 AI 嵌板 token 区（R-T-L1）/ 登录页深色 moment（R-T-F1）
+           4px 基数间距档（GAP-01）
+   ============================================================ */
+:root {
+  /* 品牌色（锚点，三端通用） */
+  --color-primary: #002147;        /* 牛津蓝 · 系统的声音：主按钮/侧边栏 */
+  --color-primary-hover: #001a38;
+  --color-primary-soft: #e8eef5;   /* 主色浅底 */
+  --color-teal: #0d7377;           /* 学术青 · AI 的声音 */
+  --color-teal-hover: #0a5c5f;
+  --color-teal-soft: #e6f2f2;
+  --color-teal-bright: #2dd4bf;    /* AI 元素在深底上的提亮变体（对比度） */
+
+  /* 交互微强调（薰衣草蓝 · 焦点环/链接/选中/悬停，NEVER 主按钮/大面积/AI） */
+  --color-accent-interactive: #5e6ad2;
+  --color-accent-interactive-hover: #828fff;
+  --color-accent-interactive-subtle: #eceefe;
+
+  /* 表面与背景：氛围底图（main-bg 手绘化学线稿）+ 玻璃卡分层 */
+  --color-bg: #f2f6fb;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f6f6;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
+  /* 品牌渐变（GAP-02 复活：学术青 → 靛蓝，主操作/发送/AI 舱光晕） */
+  --gradient-primary: linear-gradient(135deg, #0d7377 0%, #2563eb 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #0a5c5f 0%, #1e4fd6 100%);
+
+  /* 文字三级 */
+  --color-text: #111318;
+  --color-text-secondary: #5b616e;
+  --color-text-muted: #9aa0ab;
+
+  /* 语义色（浅底深字标签式，沿用 v1） */
+  --color-success: #2c6e49;
+  --color-success-soft: #e7f2ec;
+  --color-warning: #b45309;
+  --color-warning-soft: #fdf3e3;
+  --color-error: #b43c28;
+  --color-error-soft: #fbeae7;
+  --color-error-bright: #f3727f;   /* 错误色深底提亮变体（嵌板/深色端用） */
+  --color-link: #5e6ad2;           /* 链接并入薰衣草蓝（v2 变更） */
+
+  /* 深色 AI 嵌板（Linear 原值 · 仅 .ai-panel-dark 作用域内使用，R-T-L1） */
+  --panel-bg: #010102;
+  --panel-surface: #0f1011;
+  --panel-surface-2: #141516;
+  --panel-border: #23252a;
+  --panel-border-strong: #34343a;
+  --panel-ink: #f7f8f8;
+  --panel-ink-muted: #d0d6e0;
+  --panel-ink-subtle: #8a8f98;
+  --panel-focus: #5e69d1;
+  --panel-teal-bubble: rgba(13, 115, 119, 0.16);
+
+  /* 登录页深色品牌时刻（R-T-F1：仅登录页） */
+  --login-canvas: #010102;
+
+  /* 圆角（v1 不变） */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* 阴影：浅色区以边框代阴影；仅抽屉/弹窗/Popover 浮层使用（Linear 纪律） */
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-md: 0 4px 12px rgb(15 23 42 / 0.08);
+  --shadow-lg: 0 12px 32px rgb(15 23 42 / 0.12);
+
+  /* 字体（正文系统栈；display 子集自托管，见 main.tsx fontsource 引入） */
+  --font-sans: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, 'Courier New', monospace;
+
+  /* 动效 */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+
+  /* 间距 4px 基数八档（GAP-01 定案） */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 96px;
+
+  /* 布局 */
+  --sidebar-width: 232px;
+  --container-max: 1280px;
+}

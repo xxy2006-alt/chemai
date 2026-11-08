@@ -1,0 +1,59 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Render Diag</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+</head><body style="font-family:sans-serif;padding:20px"><h2>Render Diagnostic</h2>
+<div id="out"></div>
+<script>
+var out=document.getElementById('out')
+function log(s,c){out.innerHTML+='<div style="color:'+(c||'#333')+'">'+s+'</div>'}
+
+log('katex: '+(typeof katex!=='undefined'),'green')
+log('marked: '+(typeof marked!=='undefined'),'green')
+
+// Minimal renderChemistry
+function rChem(t){
+  if(!t)return''
+  try{
+    var idx=0,blocks=[],h=t
+    h=h.replace(/\$\$([\s\S]*?)\$\$/g,function(m,e){var k='\uE000'+idx+'\uE001';blocks.push({k:k,t:e,d:1});idx++;return k})
+    h=h.replace(/\$(?!\$)([\s\S]*?)\$/g,function(m,e){if(e.length<400){var k='\uE000'+idx+'\uE001';blocks.push({k:k,t:e,d:0});idx++;return k}return m})
+    h=h.replace(/\$/g,'$')
+    h=marked.parse(h,{breaks:true,gfm:true})
+    blocks.forEach(function(b){try{var r=katex.renderToString(b.t,{displayMode:!!b.d,throwOnError:false});h=h.replace(b.k,r)}catch(e){h=h.replace(b.k,b.t)}})
+    return h
+  }catch(e){return'<p>'+t+'</p>'}
+}
+
+// Test cases
+var tests=[
+  ['Simple', 'Hello $x^2$ world'],
+  ['Image', 'Text ![](https://via.placeholder.com/50) more'],
+  ['Table', '|A|B|\n|---|---|\n|1|2|'],
+  ['Chem', '$\\mathrm{H_2SO_4}$ and $\\mathrm{NaOH}$'],
+]
+
+tests.forEach(function(t){
+  var r=rChem(t[1])
+  log('<b>'+t[0]+':</b> '+r.substring(0,200))
+})
+
+// Now test real content from API
+fetch('/api/exam-bank/historical?region=%E5%85%A8%E5%9B%BD%E5%8D%B7&year=2020&page_size=2',
+  {headers:{'Authorization':'Bearer '+((JSON.parse(sessionStorage.getItem('chemai_user')||'{}').token)||localStorage.getItem('token')||'')}})
+.then(function(r){return r.json()}).then(function(d){
+  var qs=(d.data||d).questions||[]
+  log('<hr><b>Real Q1:</b>')
+  if(qs[0]){
+    var content=qs[0].content||''
+    log('content length: '+content.length)
+    log('has $: '+/\$/.test(content))
+    log('has ![: '+/!\[/.test(content))
+    var ren=rChem(content)
+    var hasImg=/<img/.test(ren)
+    var hasKatex=/katex/.test(ren)
+    log('rendered: img='+hasImg+' katex='+hasKatex)
+    out.innerHTML+='<div style="margin:10px;padding:10px;border:1px solid #ccc;max-width:600px">'+ren+'</div>'
+  }
+})
+</script></body></html>

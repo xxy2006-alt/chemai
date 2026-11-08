@@ -1,0 +1,102 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>错题本</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+.material-icons{font-size:24px;line-height:1;vertical-align:middle}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  background:#f7f4ed;color:#1a1a1a;
+  display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;min-height:100dvh;
+  -webkit-tap-highlight-color:transparent;
+}
+.page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px}
+.card{
+  padding:14px 16px;border-radius:10px;border:1px solid rgba(0,0,0,.06);
+  margin-bottom:8px;background:#fff;cursor:pointer;transition:.15s;
+}
+.card .q{font-size:14px;line-height:1.6;margin-bottom:6px}
+.card .q b{color:#b43c28;font-weight:600}
+.card .meta{font-size:11px;color:#888;margin-bottom:6px}
+.tag{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:8px;background:rgba(180,60,40,.06);color:#b43c28;margin-right:4px}
+.detail{
+  margin-top:10px;padding:12px;border-radius:8px;
+  background:rgba(180,60,40,.04);border:1px solid rgba(180,60,40,.1);
+  font-size:13px;line-height:1.6;color:#555;
+}
+.detail .my{color:#b43c28}
+.detail .correct{color:#2c6e49}
+.btn-outline{
+  display:inline-block;font-size:11.5px;padding:5px 12px;border-radius:14px;
+  border:1px solid #b43c28;color:#b43c28;cursor:pointer;margin-right:6px;margin-top:8px;
+}
+.loading{text-align:center;padding:40px;color:#888;font-size:14px}
+</style>
+</head><body>
+
+<div id="header"></div>
+<div id="content" class="page"><div class="loading">加载中...</div></div>
+<div id="tabbar"></div>
+
+<script src="/m/app.js"></script>
+<script>
+var u=requireAuth();if(!u)throw new Error('no auth')
+document.getElementById('header').appendChild(renderHeader('错题本','Review'))
+document.getElementById('tabbar').appendChild(renderTabBar('wrong'))
+
+var el=document.getElementById('content')
+var expanded=null
+
+// Load wrong questions from dedicated wrong/list API
+function loadWrongs(){
+  el.innerHTML='<div class="loading">加载中...</div>'
+  api('/api/practice/wrong/list?student_id='+u.id+'&limit=30').then(function(d){
+    var qs=(d.data&&d.data.wrong_questions)||d.wrong_questions||[]
+    if(!qs.length){el.innerHTML='<div class="loading" style="color:#888">暂无错题记录</div>';return}
+    var wrongs=[]
+    qs.forEach(function(q){
+      wrongs.push({
+        q:q.content||'',
+        ans:q.answer||'—',
+        mine:q.your_answer||'—',
+        kp:(q.knowledge_points||[])[0]||'综合',
+        date:formatDate(q.last_error_at||''),
+        reason:(q.analysis||'')+' · 做错'+q.wrong_count+'次',
+        qid:q.question_id
+      })
+    })
+    renderList(wrongs)
+  }).catch(function(e){el.innerHTML='<div class="loading">加载失败: '+e.message+'</div>'})
+}
+
+function renderList(wrongs){
+  var h='<div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">'+
+    '共 '+wrongs.length+' 道错题</div>'
+  wrongs.forEach(function(w,i){
+    h+='<div class="card" onclick="toggle('+i+')">'
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+    h+='<div style="flex:1"><div class="meta"><span class="tag">'+esc(w.kp)+'</span> '+esc(w.date)+'</div>'
+    h+='<div class="q">'+esc(w.q)+'</div>'
+    if(expanded===i){
+      h+='<div class="detail"><div>你的答案: <span class="my">'+esc(w.mine)+'</span></div>'
+      h+='<div>正确答案: <span class="correct">'+esc(w.ans)+'</span></div>'
+      h+='<div style="margin-top:4px">'+esc(w.reason)+'</div>'
+      h+='<div><span class="btn-outline">做变式题</span><span class="btn-outline" style="border-color:rgba(0,0,0,.2);color:#888">标记已掌握</span></div>'
+      h+='</div>'
+    }
+    h+='</div>'
+    h+='<span class="material-icons" style="color:#bbb;font-size:20px;transition:.2s;'+(expanded===i?'transform:rotate(180deg)':'')+'">expand_more</span>'
+    h+='</div></div>'
+  })
+  el.innerHTML=h
+}
+
+function toggle(i){expanded=expanded===i?null:i;loadWrongs()}
+
+loadWrongs()
+</script>
+</body></html>

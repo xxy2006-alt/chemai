@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>答题卡识别 · 智辅化学</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/common.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script><script>tailwind.config={darkMode:"class",theme:{extend:{colors:{ink:"#1a1a1a",paper:"#faf7f0",paperWarm:"#f5efe0",inkLight:"#555",congoRed:"#b43c28",methylGreen:"#2c6e49"},fontFamily:{sans:["IBM Plex Sans"],mono:["JetBrains Mono"],serif:["Cormorant Garamond","Georgia","serif"]}}}}</script>
+<style>
+body{font-family:'IBM Plex Sans',sans-serif;background:#f7f4ed;color:#1a1a1a;margin:0}
+.sidebar{width:240px;position:fixed;left:0;top:0;height:100vh;z-index:50;background:#f5efe0;border-right:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column}
+.sidebar .brand-area{padding:20px 16px 4px}
+.sidebar .brand-area h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:600;line-height:1.1;margin:0}
+.sidebar .brand-area .sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;margin-top:3px;letter-spacing:.5px}
+.sidebar .home-link{margin:14px 12px 10px;padding:9px 0;text-align:center;font-size:14px;font-family:'IBM Plex Sans',sans-serif;border:1px solid rgba(0,0,0,.1);background:transparent;color:#555;border-radius:4px;cursor:pointer;transition:.15s;text-decoration:none;display:block}
+.sidebar .home-link:hover{border-color:#b43c28;color:#b43c28}
+.elem-nav{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 8px;border-radius:4px;text-decoration:none;color:#555;font-size:15px;transition:.12s}
+.elem-nav .sym{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:17px;min-width:32px;text-align:center;padding:4px 6px;border-radius:3px;background:rgba(0,0,0,.03);color:#1a1a1a}
+.elem-nav:hover{background:rgba(0,0,0,.02)}.elem-nav:hover .sym{background:#1a1a1a;color:#faf7f0}
+.elem-nav.active{background:rgba(0,0,0,.03);font-weight:500}.elem-nav.active .sym{background:#b43c28;color:#fff}
+.main{margin-left:240px;padding:32px;min-height:100vh;background-image:linear-gradient(rgba(0,0,0,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.012) 1px,transparent 1px);background-size:28px 28px;background-position:-1px -1px}
+.page-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:600;color:#1a1a1a;margin:0 0 8px}
+.card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:4px;padding:20px;margin-bottom:16px}
+.btn{padding:8px 18px;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;font-size:14px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;border-radius:4px;transition:.15s}
+.btn:hover{background:#1a1a1a;color:#faf7f0}
+.input{width:100%;border:none;border-bottom:1.5px solid rgba(0,0,0,.08);background:transparent;padding:9px 4px;font-size:15px;font-family:'IBM Plex Sans',sans-serif;outline:none;transition:border-color .3s}
+.input:focus{border-bottom-color:#b43c28}
+select.input{-webkit-appearance:none;border-radius:0}
+.drop-zone{border:2px dashed rgba(0,0,0,.08);border-radius:4px;padding:48px;text-align:center;cursor:pointer;transition:.2s}
+.drop-zone:hover,.drop-zone.dragover{border-color:#b43c28;background:rgba(180,60,40,.02)}
+.data-table{width:100%;border-collapse:collapse}.data-table th{text-align:left;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;border-bottom:2px solid rgba(0,0,0,.06);text-transform:uppercase;letter-spacing:.5px}.data-table td{padding:10px 14px;font-size:14px;border-bottom:1px solid rgba(0,0,0,.04)}
+.progress-bar{height:5px;background:#e8e4de;border-radius:9999px;overflow:hidden}
+.progress-fill{height:100%;background:#b43c28;border-radius:9999px;transition:width .3s ease}
+.empty-state{text-align:center;padding:48px;color:#999}
+</style></head><body>
+<aside class="sidebar">
+<div class="brand-area"><h1>智辅化学</h1><p class="sub">CHEMAI · 教师工作台</p></div>
+<a href="/" class="home-link">AI 教研助手</a>
+<nav class="flex-1 overflow-y-auto flex flex-col" id="sidebar-nav" style="padding:4px 0"></nav>
+<div style="padding:8px 12px;border-top:1px solid rgba(0,0,0,.04)"><a class="elem-nav" href="#" onclick="ChemAI.logout()" style="font-size:12px;color:#999">退出登录</a></div>
+</aside>
+<main class="main">
+<h1 class="page-title">答题卡识别</h1>
+<div class="card"><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end"><div style="flex:1;min-width:160px"><label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">选择班级</label><select id="ocr-class" class="input"><option value="">请选择班级...</option></select></div></div></div>
+<div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"><div style="font-size:48px;color:#b43c28;margin-bottom:8px">+</div><p style="font-size:16px;font-weight:500">点击或拖拽上传答题卡</p><p style="font-size:13px;color:#999;margin-top:4px">支持 JPG / PNG / PDF，可批量上传</p><input type="file" id="file-input" accept="image/*,.pdf" style="display:none" multiple onchange="handleFiles(this.files)"></div>
+<div id="ocr-progress" style="display:none"></div>
+<div id="ocr-results"></div>
+</main>
+<script src="/app.js"></script><script src="/js/ocr.js"></script>
+</body></html>

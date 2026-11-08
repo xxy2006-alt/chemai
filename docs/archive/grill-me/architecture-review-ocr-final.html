@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>ChemAI OCR — Final Architecture</title>
+<script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,theme:'default'});</script>
+<style>body{font-family:'Inter','Noto Sans SC',sans-serif;background:#f8fafc;color:#1e293b}.card{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04)}.badge-strong{background:#16a34a;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}.badge-old{background:#dc2626;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}h2{font-size:20px;font-weight:700}</style>
+</head>
+<body class="max-w-5xl mx-auto py-8 px-4">
+<div class="mb-10">
+  <h1 class="text-4xl font-extrabold mb-2">ChemAI OCR — 最终架构方案</h1>
+  <p class="text-slate-500 text-lg">百度全线废弃。Qwen-VL-OCR + PyMuPDF 图片提取 + DeepSeek 元数据</p>
+</div>
+
+<!-- Industry standard -->
+<div class="card p-6 mb-6">
+  <h2 class="mb-4">业界标准流水线（调研结论）</h2>
+  <p class="text-sm text-slate-600 mb-3">调研了 MinerU、PaddleOCR、Chandra OCR、OvisOCR、olmOCR、GLM-OCR 等项目。行业共识的文档解析流水线：</p>
+  <pre class="mermaid">
+graph LR
+  A[PDF/图片] --> B[版面分析]
+  B --> C[文字OCR]
+  B --> D[公式识别]
+  B --> E[图片提取]
+  B --> F[表格识别]
+  C --> G[阅读顺序还原]
+  D --> G
+  E --> G
+  F --> G
+  G --> H[Markdown 输出]
+  </pre>
+</div>
+
+<!-- The problem -->
+<div class="card p-6 mb-6">
+  <h2 class="mb-4">化学试卷的特殊难点</h2>
+  <div class="grid grid-cols-3 gap-3 text-sm">
+    <div class="bg-red-50 p-3 rounded-lg border border-red-200">
+      <p class="font-bold mb-1">🧪 化学方程式</p>
+      <p class="text-slate-600">H₂SO₄、CH₃COOOH<br/>Fe³⁺ + e⁻ → Fe²⁺<br/>OCR 容易把下标/上标/<br/>箭头读成乱码</p>
+    </div>
+    <div class="bg-red-50 p-3 rounded-lg border border-red-200">
+      <p class="font-bold mb-1">🏗️ 有机结构式</p>
+      <p class="text-slate-600">苯环、碳骨架、<br/>空间结构图<br/>纯图片，不是文字</p>
+    </div>
+    <div class="bg-red-50 p-3 rounded-lg border border-red-200">
+      <p class="font-bold mb-1">📊 实验装置/曲线图</p>
+      <p class="text-slate-600">滴定曲线、反应机理、<br/>流程图、催化剂循环<br/>图片为主，文字为辅</p>
+    </div>
+  </div>
+  <p class="text-sm text-slate-600 mt-3"><strong>结论</strong>：纯文字 OCR 解决不了化学试卷。"图片必须在题目中作为一等公民存在。"</p>
+</div>
+
+<!-- The solution -->
+<div class="card p-6 mb-6">
+  <h2 class="mb-4">推荐架构</h2>
+  <pre class="mermaid">
+graph TD
+    PDF["📄 PDF 试卷"] --> Extract["🔧 PyMuPDF 图片提取"]
+    PDF --> OCR["👁️ Qwen-VL-OCR<br/>逐页扫 → Markdown"]
+    Extract --> ImgDir["🖼️ figures/ 目录<br/>每张图独立文件"]
+    OCR --> MD["📝 完整 Markdown<br/>含 LaTeX 公式"]
+    MD --> Split["✂️ Markdown Splitter<br/>按题号 '## N.' 拆分"]
+    Split --> Questions["12 道题 × {content, answer, analysis}"]
+    Questions --> DeepSeek["🤖 DeepSeek<br/>填知识点/难度"]
+    DeepSeek --> Save["💾 保存<br/>questions 表 + JSON"]
+    ImgDir --> Frontend["🖥️ 前端 Markdown 渲染<br/>KaTeX 公式 + img 标签"]
+    Save --> Frontend
+  </pre>
+</div>
+
+<!-- Candidates -->
+<div class="card p-6 mb-6">
+  <h2 class="mb-4">三个核心改动</h2>
+
+  <!-- Candidate 1 -->
+  <div class="mb-5 bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="badge-strong">推荐</span>
+      <span class="font-bold">1. Qwen-VL-OCR 替代百度全家桶</span>
+    </div>
+    <p class="text-sm text-slate-600">已验证：Markdown + Unicode 上下标 + LaTeX 数学全对。无日限额（阿里百炼按量付费）。</p>
+    <p class="text-sm text-slate-600"><strong>删除</strong>: ocr_service.py 中所有百度调用、paper_cut_client.py、grading_client.py、baidu_auth.py</p>
+  </div>
+
+  <!-- Candidate 2 -->
+  <div class="mb-5 bg-amber-50 p-4 rounded-lg border-l-4 border-amber-500">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="badge-old" style="background:#d97706">优先级 2</span>
+      <span class="font-bold">2. Markdown Splitter — 按题号拆分</span>
+    </div>
+    <p class="text-sm text-slate-600">Qwen-VL-OCR 输出是连续的 Markdown。利用其自然结构（`## N.` 标题、`【答案】` 标记）正则拆分为独立题目。每道题目保留 Markdown 格式。</p>
+  </div>
+
+  <!-- Candidate 3 -->
+  <div class="mb-5 bg-amber-50 p-4 rounded-lg border-l-4 border-amber-500">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="badge-old" style="background:#d97706">优先级 2</span>
+      <span class="font-bold">3. 图片提取 + 内联渲染</span>
+    </div>
+    <p class="text-sm text-slate-600">PyMuPDF 从 PDF 提取嵌入图片到 figures/ 目录。Qwen-VL-OCR 文本中保留 `![figure](figures/img_001.png)` 引用。前端 Markdown 渲染器解析 img 标签，正确显示结构式/曲线图。</p>
+  </div>
+
+  <!-- Candidate 4 -->
+  <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+    <div class="flex items-center gap-2 mb-2">
+      <span style="background:#6b7280;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600">优先级 3</span>
+      <span class="font-bold">4. 前端 Markdown 渲染增强</span>
+    </div>
+    <p class="text-sm text-slate-600">题目详情页支持完整 Markdown 渲染（marked.js）+ KaTeX 公式 + 内嵌图片。替代当前的 renderChem 纯文本方案。</p>
+  </div>
+</div>
+
+<!-- What gets deleted -->
+<div class="card p-6 mb-6 bg-red-50 border-2 border-red-200">
+  <h2 class="mb-3">删除清单（百度全家桶）</h2>
+  <div class="grid grid-cols-2 gap-2 text-sm">
+    <div><code>app/services/baidu_auth.py</code></div><div>🗑️ 全删</div>
+    <div><code>app/services/paper_cut_client.py</code></div><div>🗑️ 全删</div>
+    <div><code>app/services/grading_client.py</code></div><div>🗑️ 全删</div>
+    <div><code>app/services/ocr_service.py</code></div><div>✂️ 只保留 recognize() + rich_ocr()</div>
+    <div><code>app/mcp/server.py</code></div><div>✂️ 移除百度 OCR 工具</div>
+    <div><code>app/api/ocr.py</code></div><div>✂️ 简化端点</div>
+    <div><code>.env</code></div><div>✂️ 移除百度 keys</div>
+  </div>
+</div>
+
+<!-- Final recommendation -->
+<div class="card p-6 bg-gradient-to-br from-green-50 to-white border-2 border-green-200">
+  <h2 class="mb-3">实施顺序</h2>
+  <div class="space-y-3">
+    <div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">1</div><div><p class="font-bold">Qwen-VL-OCR 逐页扫 + 存 Markdown + 提取图片 → 22页全卷入库</p><p class="text-sm text-slate-600">先跑通 2020 全国卷。这是最小可行路径。</p></div></div>
+    <div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-sm">2</div><div><p class="font-bold">Markdown Splitter 拆分题目 → 元数据标记</p><p class="text-sm text-slate-600">12 道题独立存储，答案/解析分开。</p></div></div>
+    <div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-slate-400 text-white flex items-center justify-center font-bold text-sm">3</div><div><p class="font-bold">前端 Markdown 渲染器</p><p class="text-sm text-slate-600">marked.js + KaTeX + 内嵌图片。告别 renderChem 纯文本。</p></div></div>
+  </div>
+</div>
+
+<p class="text-slate-400 text-sm text-center mt-8">D:\化学\architecture-review-ocr-final.html</p>
+</body></html>

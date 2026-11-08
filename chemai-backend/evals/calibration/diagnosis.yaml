@@ -1,0 +1,25 @@
+# 校准集：诊断族（diagnosis）— 障碍类型判断 concept/reading/expression
+# 状态：种子样本，未经人工标注复核；启用门槛 ≥20 条人工标注样本（Spec 04）
+# 数据源约定：诊断/方案族用项目历史数据；本文件当前为管线种子。
+family: diagnosis
+samples:
+  - id: dx-001
+    input: 学生反复错「离子方程式书写」类题目，但概念选择题全对
+    output: 诊断：concept（概念理解障碍）
+    reference: 应为 expression（表述障碍）— 概念懂、书写格式错
+    human_score: 20
+    note: 类型判断错误
+
+  - id: dx-002
+    input: 学生「氧化还原」相关题目大面积失分，概念题与计算题均错
+    output: 诊断：concept。理由：概念题与计算题均错，说明化合价判断未掌握
+    reference: concept
+    human_score: 90
+    note: 判断正确且有证据支撑
+
+  - id: dx-003
+    input: 学生读题常漏条件（如「标准状况」「过量」）
+    output: 诊断：reading（审题仔细度障碍）
+    reference: reading
+    human_score: 95
+    note: 判断正确

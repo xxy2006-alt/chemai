@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>复习中心</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+<style>
+.material-icons{font-size:24px;line-height:1;vertical-align:middle}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  background:#f7f4ed;color:#1a1a1a;
+  display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;min-height:100dvh;
+  -webkit-tap-highlight-color:transparent;
+}
+.back{display:flex;align-items:center;gap:6px;padding:12px 14px;border-bottom:1px solid rgba(0,0,0,.06);cursor:pointer}
+.page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 14px}
+.card{
+  padding:14px;border-radius:10px;border:1px solid rgba(0,0,0,.06);
+  margin-bottom:8px;background:#fff;
+}
+.card .q{font-size:14px;line-height:1.5;margin-bottom:8px}
+.card .meta{font-size:11px;color:#888}
+.empty{text-align:center;padding:40px 20px;color:#888}
+.bar{width:100%;height:4px;background:#eee;border-radius:2px;margin-top:6px}
+.bar .fill{height:100%;border-radius:2px;background:#b43c28}
+</style>
+</head><body>
+
+<div class="back" onclick="location.href='/m/report.html'">
+  <span class="material-icons" style="font-size:22px">arrow_back</span>
+  <span style="font-weight:600">复习中心</span>
+</div>
+<div class="page" id="list"></div>
+
+<script src="/m/app.js"></script>
+<script>
+var u=requireAuth(); if(!u)throw new Error('no auth')
+var list=document.getElementById('list')
+
+api('/api/practice/wrong/list?student_id='+u.id+'&limit=30').then(function(d){
+  var qs=d.wrong_questions||[]
+  if(qs.length===0){
+    list.innerHTML='<div class="empty"><span class="material-icons" style="font-size:40px;display:block;margin-bottom:8px">check_circle</span>暂无错题，继续保持！</div>'
+    return
+  }
+  for(var i=0;i<qs.length;i++){
+    var q=qs[i]
+    var card=document.createElement('div');card.className='card'
+    card.innerHTML='<div class="q">'+renderMD(q.content||'')+'</div>'+
+      '<div class="meta">知识点: '+(q.knowledge_points||[]).join(', ')+' · 做错'+q.wrong_count+'次 · 你的答案: '+esc(q.your_answer||'--')+' · 正确答案: '+esc(q.answer||'--')+'</div>'+
+      (q.analysis?'<div class="meta" style="margin-top:4px;color:#2c6e49">解析: '+esc(q.analysis).substring(0,100)+'</div>':'')
+    list.appendChild(card)
+  }
+}).catch(function(e){
+  list.innerHTML='<div class="empty">加载失败: '+e.message+'</div>'
+})
+</script>
+</body></html>

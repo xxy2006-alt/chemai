@@ -1,0 +1,74 @@
+# 维度 2: 工具调用准确性 — 基线 Golden 场景
+# 验证: Agent 在路由正确后调用正确的工具和参数
+# 来源: S9 课程体系
+# 场景数: 8, 通过标准: 100%
+
+scenarios:
+  - id: TOOL-001
+    input: "生成氧化还原反应的选择题，知识点：电子转移"
+    assertions:
+      - {type: tool_called, tool: generate_questions}
+      - {type: tool_arg_contains, param: knowledge_point, value: "电子转移"}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}
+
+  - id: TOOL-002
+    input: "把这道题保存到题库，题目编号 2026-Q1-003"
+    assertions:
+      - {type: tool_called, tool: save_question}
+      - {type: tool_arg_contains, param: question_id, value: "2026-Q1-003"}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}
+
+  - id: TOOL-003
+    input: "以2020全国卷T3为蓝本，创建一道关于电化学的变种题"
+    assertions:
+      - {type: tool_called, tool: create_variant}
+      - {type: tool_arg_contains, param: source_exam, value: "2020全国卷"}
+      - {type: tool_arg_contains, param: source_question, value: "T3"}
+      - {type: tool_arg_contains, param: topic, value: "电化学"}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}
+
+  - id: TOOL-004
+    input: "诊断学号为202610101的学生在化学平衡章节的学习障碍"
+    assertions:
+      - {type: tool_called, tool: diagnose_barrier}
+      - {type: tool_arg_contains, param: student_id, value: "202610101"}
+      - {type: tool_arg_contains, param: chapter, value: "化学平衡"}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}
+
+  - id: TOOL-005
+    input: "根据诊断结果，为学号202610101的学生布置自适应练习"
+    assertions:
+      - {type: tool_called, tool: assign_adaptive_practice}
+      - {type: tool_arg_contains, param: student_id, value: "202610101"}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}
+
+  - id: TOOL-006
+    input: "配平方程式 Fe + Cl2 = FeCl3"
+    assertions:
+      - {type: tool_called, tool: balance_equation}
+      - {type: tool_arg_contains, param: equation, value: "Fe + Cl2 = FeCl3"}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}
+
+  - id: TOOL-007
+    input: "搜索题库中含有离子反应关键词的选择题，难度中等"
+    assertions:
+      - {type: tool_called, tool: search_exam_bank}
+      - {type: tool_arg_contains, param: keyword, value: "离子反应"}
+      - {type: tool_arg_contains, param: type, value: "选择题"}
+      - {type: tool_arg_contains, param: difficulty, value: "中等"}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}
+
+  - id: TOOL-008
+    input: "讲解勒夏特列原理的概念和应用场景"
+    assertions:
+      - {type: tool_called, tool: chemistry_tutor}
+      - {type: tool_arg_contains, param: topic, value: "勒夏特列原理"}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}

@@ -1,0 +1,118 @@
+# 维度 3: 多工具组合工作流 — 基线 Golden 场景
+# 验证: Agent 在需要多步操作时正确编排工具调用顺序
+# 场景数: 12, 通过标准: 100%
+
+scenarios:
+  # ===== 多工具链 (4) =====
+  - id: WORKFLOW-001
+    name: search_then_generate
+    input: "先去题库里找关于电化学的真题，参考它们出3道新题"
+    assertions:
+      - {type: tool_called, tool: search_exam_bank}
+      - {type: tool_called, tool: generate_questions}
+      - {type: tool_trajectory_order, tools: [search_exam_bank, generate_questions]}
+      - {type: tool_count, lte: 8}
+      - {type: no_error}
+
+  - id: WORKFLOW-002
+    name: diagnose_then_practice
+    input: "诊断学生202610102的薄弱点，然后布置针对性的自适应练习"
+    assertions:
+      - {type: tool_called, tool: diagnose_barrier}
+      - {type: tool_called, tool: assign_adaptive_practice}
+      - {type: tool_trajectory_order, tools: [diagnose_barrier, assign_adaptive_practice]}
+      - {type: tool_count, lte: 8}
+      - {type: no_error}
+
+  - id: WORKFLOW-003
+    name: generate_then_save
+    input: "出5道有机化学推断题，然后全部保存到题库"
+    assertions:
+      - {type: tool_called, tool: generate_questions}
+      - {type: tool_called, tool: save_question}
+      - {type: tool_trajectory_order, tools: [generate_questions, save_question]}
+      - {type: tool_count, lte: 8}
+      - {type: no_error}
+
+  - id: WORKFLOW-004
+    name: scan_then_diagnose
+    input: "先扫描题库中高二上学期所有化学题，然后分析哪些知识点学生容易出错"
+    assertions:
+      - {type: tool_called, tool: search_exam_bank}
+      - {type: tool_called, tool: diagnose_barrier}
+      - {type: tool_trajectory_order, tools: [search_exam_bank, diagnose_barrier]}
+      - {type: tool_count, lte: 10}
+      - {type: no_error}
+
+  # ===== 审批流 (3) =====
+  - id: WORKFLOW-005
+    name: exam_approval_interrupt
+    input: "为高一(3)班生成一套期末模拟试卷"
+    assertions:
+      - {type: tool_called, tool: generate_questions}
+      - {type: tool_called, tool: save_question}
+      - {type: interrupt_triggered}
+      - {type: tool_count, lte: 8}
+      - {type: no_error}
+
+  - id: WORKFLOW-006
+    name: approval_resume
+    input: "确认保存，同意发布这套试卷"
+    assertions:
+      - {type: tool_called, tool: save_question}
+      - {type: tool_trajectory_order, tools: [save_question]}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}
+
+  - id: WORKFLOW-007
+    name: approval_reject
+    input: "不同意，这道题太难了，降低难度重新出"
+    assertions:
+      - {type: tool_called, tool: generate_questions}
+      - {type: not_tool_called, tool: save_question}
+      - {type: tool_count, lte: 8}
+      - {type: no_error}
+
+  # ===== 导航 (3) =====
+  - id: WORKFLOW-008
+    name: nav_to_exam
+    input: "带我去出题工作台"
+    assertions:
+      - {type: route_assertion, route: exam_workbench}
+      - {type: tool_count, lte: 3}
+      - {type: no_error}
+
+  - id: WORKFLOW-009
+    name: nav_to_diagnosis
+    input: "打开学情诊断面板"
+    assertions:
+      - {type: route_assertion, route: diagnosis_dashboard}
+      - {type: tool_count, lte: 3}
+      - {type: no_error}
+
+  - id: WORKFLOW-010
+    name: nav_to_students
+    input: "查看学生列表"
+    assertions:
+      - {type: route_assertion, route: students}
+      - {type: tool_count, lte: 3}
+      - {type: no_error}
+
+  # ===== 多轮上下文 (2) =====
+  - id: WORKFLOW-011
+    name: multiturn_context
+    input: "你刚才提到勒夏特列原理有三个要点，能分别举例说明吗"
+    assertions:
+      - {type: tool_called, tool: chemistry_tutor}
+      - {type: has_text_response}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}
+
+  - id: WORKFLOW-012
+    name: multiturn_followup
+    input: "好的，那这道题里的压强变化对平衡有什么影响"
+    assertions:
+      - {type: tool_called, tool: chemistry_tutor}
+      - {type: has_text_response}
+      - {type: tool_count, lte: 5}
+      - {type: no_error}

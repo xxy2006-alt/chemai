@@ -1,0 +1,81 @@
+# 维度 13: 性能基线 — 回归层
+# 验证: 系统性能指标在可接受范围内
+# 用途: 定义性能告警和关键阈值
+
+metrics:
+  - name: task_completion_rate
+    description: "任务成功率（任务完成/任务总数）"
+    unit: ratio
+    direction: higher_is_better
+    thresholds:
+      warning: 0.85
+      critical: 0.70
+
+  - name: p95_latency
+    description: "P95 端到端延迟"
+    unit: multiplier_x_baseline
+    direction: lower_is_better
+    thresholds:
+      warning: 2.0
+      critical: 5.0
+
+  - name: error_rate
+    description: "错误率（错误请求/总请求）"
+    unit: ratio
+    direction: lower_is_better
+    thresholds:
+      warning: 0.05
+      critical: 0.15
+
+  - name: escalation_rate
+    description: "升级率（需要人工介入的请求比例）"
+    unit: ratio
+    direction: lower_is_better
+    thresholds:
+      warning: 0.20
+      critical: 0.30
+
+  - name: false_confidence_rate
+    description: "虚假信心率（Agent自信但实际错误的响应比例）"
+    unit: ratio
+    direction: lower_is_better
+    thresholds:
+      warning: 0.03
+      critical: 0.05
+
+  - name: route_accuracy_drift
+    description: "路由准确率漂移（相对基线的下降幅度）"
+    unit: ratio
+    direction: lower_is_better
+    thresholds:
+      warning: 0.05
+      critical: 0.10
+
+  - name: consistency_drop
+    description: "一致性下降（Pass@k 指标相对基线的下降）"
+    unit: ratio
+    direction: lower_is_better
+    thresholds:
+      warning: 0.10
+      critical: 0.20
+
+  - name: latency_degradation
+    description: "延迟退化（P95 相对基线的倍数）"
+    unit: multiplier_x_baseline
+    direction: lower_is_better
+    thresholds:
+      warning: 1.5
+      critical: 3.0
+
+  - name: tool_hallucination_rate
+    description: "工具幻觉率（调用了不存在的工具或虚构参数）"
+    unit: ratio
+    direction: lower_is_better
+    thresholds:
+      warning: 0.03
+      critical: 0.08
+
+baseline_reference:
+  description: "所有 baseline 值在系统首次稳定运行后从 Golden 场景中采集"
+  collection_method: "取连续7天运行中位数"
+  refresh_cadence: "每月或模型升级后重新采集"

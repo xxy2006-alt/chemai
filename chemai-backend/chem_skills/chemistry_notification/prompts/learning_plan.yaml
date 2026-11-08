@@ -1,0 +1,21 @@
+# 学习计划通知 Prompt
+
+## 用途
+生成个性化学习计划通知。
+
+## 输入
+- student_name: 学生姓名
+- barrier_type: 障碍类型
+- weak_kps: 薄弱知识点列表
+- plan_period: 计划周期
+- daily_tasks: 每日任务列表
+
+## Email 格式
+HTML 格式，包含:
+- 学习目标概览
+- 每日任务时间表
+- 知识点攻克路径
+- 计划链接
+
+## Telegram 格式
+结构化 Markdown，清晰展示每日任务

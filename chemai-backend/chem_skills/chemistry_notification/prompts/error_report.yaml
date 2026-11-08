@@ -1,0 +1,24 @@
+# 错题报告 Prompt
+
+## 用途
+生成个性化错题报告通知。
+
+## 输入
+- student_name: 学生姓名
+- exam_name: 考试名称
+- score: 得分率
+- class_avg: 班级平均分
+- weak_kps: 薄弱知识点 [{name, count}]
+
+## Email 格式
+HTML 格式，包含:
+- 成绩概览卡片
+- 薄弱知识点雷达图描述
+- 改进建议列表
+- 练习链接
+
+## Telegram 格式
+简洁 Markdown，包含:
+- 得分对比
+- Top 3 薄弱知识点
+- 快速行动链接

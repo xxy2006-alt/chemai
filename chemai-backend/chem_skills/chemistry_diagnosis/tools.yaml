@@ -1,0 +1,214 @@
+# chemistry-diagnosis Skill Tools
+# 障碍诊断相关 Tool 定义
+
+tools:
+  - name: diagnosis_barrier_class
+    description: 对班级所有学生进行障碍类型诊断，返回每个学生的障碍类型占比和班级分布
+    input_schema:
+      type: object
+      properties:
+        class_id:
+          type: string
+          description: "班级ID"
+        exam_record_id:
+          type: string
+          description: "考试记录ID"
+      required:
+        - class_id
+        - exam_record_id
+    output_schema:
+      type: object
+      properties:
+        class_id: {type: string}
+        exam_record_id: {type: string}
+        students:
+          type: array
+          items:
+            type: object
+            properties:
+              student_id: {type: string}
+              student_name: {type: string}
+              barrier_type:
+                type: object
+                properties:
+                  concept: {type: number}
+                  reading: {type: number}
+                  expression: {type: number}
+              dominant_barrier: {type: string}
+              weak_knowledge_points: {type: array, items: {type: string}}
+              recommended_intervention: {type: string}
+              last_updated: {type: string}
+        class_barrier_distribution:
+          type: object
+          properties:
+            concept: {type: integer}
+            reading: {type: integer}
+            expression: {type: integer}
+        avg_mastery: {type: number}
+
+  - name: diagnosis_barrier_student
+    description: 获取单个学生的障碍类型详情
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+          description: "学生ID"
+      required:
+        - student_id
+    output_schema:
+      type: object
+      properties:
+        student_id: {type: string}
+        student_name: {type: string}
+        barrier_type:
+          type: object
+          properties:
+            concept: {type: number}
+            reading: {type: number}
+            expression: {type: number}
+        dominant_barrier: {type: string}
+        weak_knowledge_points: {type: array, items: {type: string}}
+        recommended_intervention: {type: string}
+        last_updated: {type: string}
+
+  - name: diagnosis_plan_generate
+    description: 为学生生成个性化学习计划（调用LLM生成）
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+          description: "学生ID"
+        barrier_type:
+          type: string
+          enum: [concept, reading, expression]
+          description: "障碍类型"
+        weak_knowledge_points:
+          type: array
+          items: {type: string}
+          description: "薄弱知识点列表"
+        recent_performance:
+          type: object
+          description: "近期表现数据（可选）"
+          properties:
+            accuracy: {type: number}
+            total_questions: {type: integer}
+            correct_count: {type: integer}
+      required:
+        - student_id
+        - barrier_type
+        - weak_knowledge_points
+    output_schema:
+      type: object
+      properties:
+        student_id: {type: string}
+        student_name: {type: string}
+        plan:
+          type: object
+          description: "LLM生成的学习计划"
+        generated_at: {type: string}
+
+  - name: diagnosis_config_get
+    description: 获取老师的障碍诊断配置（阈值设置）
+    input_schema:
+      type: object
+      properties:
+        teacher_id:
+          type: string
+          description: "教师ID"
+      required:
+        - teacher_id
+    output_schema:
+      type: object
+      properties:
+        teacher_id: {type: string}
+        concept_threshold: {type: integer}
+        reading_threshold: {type: integer}
+        expression_threshold: {type: integer}
+        mastery_threshold: {type: integer}
+        auto_sync_to_student: {type: boolean}
+
+  - name: diagnosis_config_update
+    description: 更新老师的障碍诊断配置
+    input_schema:
+      type: object
+      properties:
+        teacher_id:
+          type: string
+          description: "教师ID"
+        concept_threshold:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: "概念理解型触发阈值"
+        reading_threshold:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: "审题障碍型触发阈值"
+        expression_threshold:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: "表述障碍型触发阈值"
+        mastery_threshold:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: "掌握标准阈值"
+        auto_sync_to_student:
+          type: boolean
+          description: "是否自动同步到学生端"
+      required:
+        - teacher_id
+    output_schema:
+      type: object
+      properties:
+        teacher_id: {type: string}
+        concept_threshold: {type: integer}
+        reading_threshold: {type: integer}
+        expression_threshold: {type: integer}
+        mastery_threshold: {type: integer}
+        auto_sync_to_student: {type: boolean}
+
+  - name: diagnosis_plan_apply
+    description: 将生成的学习计划应用到学生
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+          description: "学生ID"
+        plan_data:
+          type: object
+          description: "学习计划数据"
+      required:
+        - student_id
+        - plan_data
+    output_schema:
+      type: object
+      properties:
+        success: {type: boolean}
+        message: {type: string}
+        student_id: {type: string}
+
+  - name: diagnosis_plan_send_parent
+    description: 发送学生学习计划给家长
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+          description: "学生ID"
+        plan_data:
+          type: object
+          description: "学习计划数据（可选）"
+      required:
+        - student_id
+    output_schema:
+      type: object
+      properties:
+        success: {type: boolean}
+        message: {type: string}
+        student_id: {type: string}

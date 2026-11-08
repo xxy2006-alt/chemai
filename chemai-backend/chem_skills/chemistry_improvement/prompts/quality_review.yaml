@@ -1,0 +1,31 @@
+# 质量审核 Prompt
+
+## 用途
+分析题目审核结果，生成质量改进建议。
+
+## 输入
+- 审核结果列表 (status: approved/modified/rejected)
+- 拒绝原因分布
+- 知识点通过率
+
+## 输出格式
+```markdown
+# 质量审核分析报告
+
+## 审核概况
+- 总审核数: {total}
+- 通过率: {rate}%
+- 平均修改次数: {modifications}
+
+## 高频问题
+1. {problem_1} - {count}次
+2. {problem_2} - {count}次
+
+## 知识点分析
+| 知识点 | 通过率 | 建议 |
+|--------|--------|------|
+| {kp} | {rate}% | {suggestion} |
+
+## 改进建议
+{recommendations}
+```

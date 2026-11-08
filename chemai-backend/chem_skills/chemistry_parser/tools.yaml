@@ -1,0 +1,170 @@
+tools:
+  - name: parse_pdf_questions
+    description: Parse PDF document to extract chemical questions with LaTeX formulas
+    input_schema:
+      type: object
+      properties:
+        file_path:
+          type: string
+          description: Path to the PDF file
+        lang:
+          type: string
+          default: "ch"
+          description: Language code (ch/en/korean/etc.)
+        start_page:
+          type: integer
+          default: 0
+          description: Starting page (0-indexed)
+        end_page:
+          type: integer
+          default: null
+          description: Ending page (null = all pages)
+        backend:
+          type: string
+          default: "hybrid-auto-engine"
+          description: MinerU backend (pipeline/hybrid-auto-engine/vlm-auto-engine)
+      required: [file_path]
+
+  - name: parse_docx_questions
+    description: Parse Word document to extract chemical questions
+    input_schema:
+      type: object
+      properties:
+        file_path:
+          type: string
+          description: Path to the Word document
+        lang:
+          type: string
+          default: "ch"
+          description: Language code
+      required: [file_path]
+
+  - name: parse_image_chemical
+    description: Parse image file to extract chemical formulas and reactions
+    input_schema:
+      type: object
+      properties:
+        file_path:
+          type: string
+          description: Path to the image file (PNG/JPG)
+        lang:
+          type: string
+          default: "ch"
+          description: Language code
+      required: [file_path]
+
+  - name: standardize_chemical_formula
+    description: Standardize chemical formula notation to consistent format
+    input_schema:
+      type: object
+      properties:
+        formula:
+          type: string
+          description: Chemical formula to standardize
+      required: [formula]
+
+  - name: classify_question_type
+    description: Classify extracted text into question types (fill-blank/short-answer/calculation)
+    input_schema:
+      type: object
+      properties:
+        question_text:
+          type: string
+          description: The question text to classify
+      required: [question_text]
+
+  - name: extract_answer_from_ocr
+    description: Extract and verify answer content from OCR-parsed chemical question
+    input_schema:
+      type: object
+      properties:
+        ocr_content:
+          type: string
+          description: Raw OCR content from document parsing
+        question_type:
+          type: string
+          default: "auto"
+          description: Expected question type (fill-blank/short-answer/calculation/auto)
+      required: [ocr_content]
+
+  - name: batch_parse_documents
+    description: Batch parse multiple PDF/Word documents in a directory
+    input_schema:
+      type: object
+      properties:
+        directory_path:
+          type: string
+          description: Path to directory containing documents
+        file_pattern:
+          type: string
+          default: "*.pdf"
+          description: File pattern to match (e.g., *.pdf, *.docx)
+        lang:
+          type: string
+          default: "ch"
+          description: Language code
+      required: [directory_path]
+
+  - name: validate_parsed_result
+    description: Validate parsed question content for chemical accuracy and completeness
+    input_schema:
+      type: object
+      properties:
+        parsed_content:
+          type: string
+          description: Parsed content to validate
+        check_formulas:
+          type: boolean
+          default: true
+          description: Whether to validate chemical formulas
+      required: [parsed_content]
+
+  - name: smart_parse_document
+    description: Smart document parsing - automatically selects best parsing method (OCR/MinerU/Vision) based on file type
+    input_schema:
+      type: object
+      properties:
+        file_data:
+          type: string
+          description: Base64 encoded file content
+        file_type:
+          type: string
+          default: "auto"
+          description: File type ("auto", "pdf", "image")
+        task:
+          type: string
+          default: "extract_questions"
+          description: Task type ("extract_questions", "answer_sheet", "chemical_formula")
+      required: [file_data]
+
+  - name: import_question_bank
+    description: Import exam questions to question bank with smart recognition (OCR/MinerU/Vision)
+    input_schema:
+      type: object
+      properties:
+        file_data:
+          type: string
+          description: Base64 encoded file content
+        file_type:
+          type: string
+          default: "auto"
+          description: File type ("auto", "pdf", "image")
+        source_name:
+          type: string
+          default: "老师导入"
+          description: Source name (e.g., "2024年长沙市一模")
+        year:
+          type: integer
+          default: 2024
+          description: Exam year
+        region:
+          type: string
+          default: "通用"
+          description: Region
+      required: [file_data]
+
+  - name: get_services_status
+    description: Get the availability status of all parsing services (OCR, MinerU, Vision)
+    input_schema:
+      type: object
+      properties: {}

@@ -1,0 +1,38 @@
+# 维度 9: 状态转换与检查点回放 — 边界层
+# 验证: Agent 轨迹的稳定性和可回放性
+# 场景数: 3, 通过标准: >=85%
+
+scenarios:
+  - id: REPLAY-001
+    name: replay_tutor_trajectory
+    description: "化学教学会话的检查点回放，验证轨迹稳定"
+    input: "讲解氧化还原反应的基本概念，然后举例说明氧化剂和还原剂"
+    assertions:
+      - {type: trajectory_hash_stable}
+      - {type: node_sequence_stable}
+      - {type: edge_routing_stable}
+      - {type: no_error}
+
+  - id: REPLAY-002
+    name: replay_exam_trajectory
+    description: "出题工作流会话的检查点回放"
+    input: "搜索电化学真题，然后根据真题风格出一道变种题"
+    assertions:
+      - {type: tool_called, tool: search_exam_bank}
+      - {type: tool_called, tool: create_variant}
+      - {type: trajectory_hash_stable}
+      - {type: node_sequence_stable}
+      - {type: edge_routing_stable}
+      - {type: no_error}
+
+  - id: REPLAY-003
+    name: replay_search_then_generate
+    description: "搜索后生成的工作流会话回放"
+    input: "查找3道有机化学题，然后生成类似的新题"
+    assertions:
+      - {type: tool_called, tool: search_exam_bank}
+      - {type: tool_called, tool: generate_questions}
+      - {type: trajectory_hash_stable}
+      - {type: node_sequence_stable}
+      - {type: edge_routing_stable}
+      - {type: no_error}

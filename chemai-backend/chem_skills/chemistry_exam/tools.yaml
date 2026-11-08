@@ -1,0 +1,375 @@
+# chemistry-exam Skill Tools
+# AI出题与安全审核相关 Tool 定义
+
+tools:
+  - name: exam_generate
+    description: 使用AI生成化学练习题目（生成后需人工审核）
+    input_schema:
+      type: object
+      properties:
+        knowledge_points:
+          type: array
+          items: {type: string}
+          description: "知识点列表，如['盐类水解', '电离']"
+        difficulty:
+          type: string
+          enum: [easy, medium, hard, competition]
+          default: medium
+          description: "题目难度"
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+          description: "生成题目数量"
+        exam_type:
+          type: string
+          default: 单元练习
+          description: "考试类型：单元练习/月考/期中/期末"
+      required:
+        - knowledge_points
+    output_schema:
+      type: object
+      properties:
+        success: {type: boolean}
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              question_id: {type: string}
+              content: {type: string}
+              options: {type: array, items: {type: string}}
+              answer: {type: string}
+              knowledge_points: {type: array, items: {type: string}}
+              difficulty: {type: string}
+              coefficient_audit: {type: object}
+              condition_audit: {type: object}
+              product_audit: {type: object}
+              structure_audit: {type: object}
+              overall_status: {type: string}
+              trap_hints: {type: array, items: {type: string}}
+              historical_matches: {type: array}
+              is_from_rag: {type: boolean}
+              source_question_id: {type: string}
+              similarity: {type: number}
+              match_method: {type: string}
+        generate_time_ms: {type: integer}
+        total_cost: {type: number}
+
+  - name: exam_audit
+    description: 对单道题目进行四维安全审核
+    input_schema:
+      type: object
+      properties:
+        question_content:
+          type: string
+          description: "题目内容"
+        options:
+          type: array
+          items: {type: string}
+          description: "选项列表（可选）"
+      required:
+        - question_content
+    output_schema:
+      type: object
+      properties:
+        question_id: {type: string}
+        content: {type: string}
+        options: {type: array}
+        answer: {type: string}
+        knowledge_points: {type: array}
+        difficulty: {type: string}
+        coefficient_audit: {type: object}
+        condition_audit: {type: object}
+        product_audit: {type: object}
+        structure_audit: {type: object}
+        overall_status: {type: string}
+        trap_hints: {type: array}
+        historical_matches: {type: array}
+
+  - name: exam_search_historical
+    description: 检索历年真题库
+    input_schema:
+      type: object
+      properties:
+        source:
+          type: string
+          description: "来源，如'全国卷2024'（可选）"
+        year:
+          type: integer
+          description: "年份（可选）"
+        difficulty:
+          type: string
+          description: "难度筛选（可选）"
+        knowledge_point:
+          type: string
+          description: "知识点筛选（可选）"
+        keyword:
+          type: string
+          description: "关键词搜索（可选）"
+    output_schema:
+      type: object
+      properties:
+        total: {type: integer}
+        source: {type: string}
+        year: {type: string}
+        knowledge_point: {type: string}
+        difficulty: {type: string}
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              exam_id: {type: string}
+              source: {type: string}
+              year: {type: integer}
+              question_number: {type: string}
+              content: {type: string}
+              options: {type: array}
+              answer: {type: string}
+              knowledge_points: {type: array}
+              difficulty: {type: string}
+              discrimination: {type: number}
+
+  - name: exam_get_exam_sets
+    description: 获取真题集列表（不含题目详情，用于懒加载）
+    input_schema:
+      type: object
+      properties: {}
+    output_schema:
+      type: object
+      properties:
+        total: {type: integer}
+        exam_sets:
+          type: array
+          items:
+            type: object
+            properties:
+              source: {type: string}
+              year: {type: integer}
+              region: {type: string}
+              paper_name: {type: string}
+              question_count: {type: integer}
+
+  - name: exam_get_exam_set_detail
+    description: 获取指定真题集的题目详情
+    input_schema:
+      type: object
+      properties:
+        source:
+          type: string
+          description: "真题集名称，如'全国卷2024'"
+      required:
+        - source
+    output_schema:
+      type: object
+      properties:
+        source: {type: string}
+        year: {type: integer}
+        region: {type: string}
+        paper_name: {type: string}
+        total_score: {type: number}
+        question_count: {type: integer}
+        questions:
+          type: array
+          items:
+            type: object
+
+  - name: exam_find_similar
+    description: 查找与指定知识点相似的历年真题
+    input_schema:
+      type: object
+      properties:
+        knowledge_points:
+          type: array
+          items: {type: string}
+          description: "知识点列表"
+        difficulty:
+          type: string
+          default: medium
+          description: "难度筛选"
+        limit:
+          type: integer
+          default: 5
+          minimum: 1
+          maximum: 20
+          description: "返回数量限制"
+      required:
+        - knowledge_points
+    output_schema:
+      type: object
+      properties:
+        query_knowledge_points: {type: array}
+        query_difficulty: {type: string}
+        found_count: {type: integer}
+        similar_questions:
+          type: array
+          items:
+            type: object
+            properties:
+              exam_id: {type: string}
+              source: {type: string}
+              year: {type: integer}
+              question_number: {type: string}
+              content: {type: string}
+              answer: {type: string}
+              knowledge_points: {type: array}
+              difficulty: {type: string}
+              discrimination: {type: number}
+
+  - name: exam_manual_select
+    description: 手动选题（教师从历年真题库选择）+ AI安全审核
+    input_schema:
+      type: object
+      properties:
+        exam_ids:
+          type: array
+          items: {type: string}
+          description: "历年真题ID列表"
+      required:
+        - exam_ids
+    output_schema:
+      type: array
+      items:
+        type: object
+        properties:
+          question_id: {type: string}
+          content: {type: string}
+          options: {type: array}
+          answer: {type: string}
+          knowledge_points: {type: array}
+          difficulty: {type: string}
+          coefficient_audit: {type: object}
+          condition_audit: {type: object}
+          product_audit: {type: object}
+          structure_audit: {type: object}
+          overall_status: {type: string}
+          trap_hints: {type: array}
+          historical_matches: {type: array}
+
+  - name: exam_import
+    description: 老师自助导入题目到真题库
+    input_schema:
+      type: object
+      properties:
+        source_name:
+          type: string
+          description: "来源名称，如'2024年长沙市一模'"
+        region:
+          type: string
+          default: 老师导入
+          description: "地区"
+        year:
+          type: integer
+          description: "年份"
+        questions:
+          type: array
+          description: "题目列表"
+      required:
+        - source_name
+        - year
+        - questions
+    output_schema:
+      type: object
+      properties:
+        success: {type: boolean}
+        imported_count: {type: integer}
+        total_submitted: {type: integer}
+        errors: {type: array}
+        message: {type: string}
+
+  - name: exam_import_batch
+    description: 批量导入题目（Base64编码文件）
+    input_schema:
+      type: object
+      properties:
+        source_name:
+          type: string
+          description: "来源名称"
+        region:
+          type: string
+          default: 老师导入
+          description: "地区"
+        year:
+          type: integer
+          description: "年份"
+        file_content:
+          type: string
+          description: "Base64编码的文件内容"
+      required:
+        - source_name
+        - year
+        - file_content
+    output_schema:
+      type: object
+
+  - name: exam_import_ocr
+    description: 通过OCR扫描试卷导入题目
+    input_schema:
+      type: object
+      properties:
+        source_name:
+          type: string
+          description: "来源名称"
+        region:
+          type: string
+          default: 老师导入
+          description: "地区"
+        year:
+          type: integer
+          description: "年份"
+        file_path:
+          type: string
+          description: "试卷文件路径（JPG/PNG/PDF）"
+      required:
+        - source_name
+        - year
+        - file_path
+    output_schema:
+      type: object
+      properties:
+        success: {type: boolean}
+        source_name: {type: string}
+        region: {type: string}
+        year: {type: integer}
+        detected_count: {type: integer}
+        questions: {type: array}
+        message: {type: string}
+
+  - name: exam_balance_check
+    description: 化学方程式配平检查（独立工具）
+    input_schema:
+      type: object
+      properties:
+        equation:
+          type: string
+          description: "化学方程式，如'2H2 + O2 → 2H2O'"
+      required:
+        - equation
+    output_schema:
+      type: object
+      properties:
+        is_balanced: {type: boolean}
+        left_elements: {type: object}
+        right_elements: {type: object}
+        message: {type: string}
+        overall_status: {type: string}
+
+  - name: exam_parse_questions_from_text
+    description: 从文本中解析题目结构（内部工具）
+    input_schema:
+      type: object
+      properties:
+        text:
+          type: string
+          description: "试卷文本内容"
+        year:
+          type: integer
+          description: "年份"
+        region:
+          type: string
+          description: "地区"
+      required:
+        - text
+        - year

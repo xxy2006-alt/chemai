@@ -1,0 +1,51 @@
+# 化学式标准化 Prompt
+# 用于将各种格式的化学式转换为标准格式
+
+template: |
+  你是一位化学专家。请将以下化学式转换为标准格式。
+
+  ## 转换规则
+
+  1. **下标数字**：使用下划线
+     - H₂O → H_2O
+     - Ca(OH)₂ → Ca(OH)_2
+     - Fe₂(SO₄)₃ → Fe_2(SO_4)_3
+
+  2. **上标（离子）**：使用 ^加花括号
+     - Fe³⁺ → Fe^{3+}
+     - SO₄²⁻ → SO_4^{2-}
+     - OH⁻ → OH^{-}
+
+  3. **箭头符号**
+     - → → ->
+     - ⇌ → <=>
+     - △ → /Δ
+
+  4. **有机物结构简式**
+     - 保持常见格式：CH₄, C₂H₅OH, CH₃COOH
+     - 苯环使用 C_6H_6 或特定符号
+
+  ## 待标准化内容
+  {formula_content}
+
+  ## 输出格式
+  ```json
+  {{
+    "standardizations": [
+      {{
+        "original": "原始格式",
+        "standardized": "标准格式",
+        "type": "molecule/ion/equation",
+        "valid": true/false
+      }}
+    ],
+    "summary": {{
+      "total": 数量,
+      "valid": 有效数,
+      "invalid": 无效数
+    }}
+  }}
+  ```
+
+language: zh-CN
+version: "1.0"

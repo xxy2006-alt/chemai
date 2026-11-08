@@ -1,0 +1,48 @@
+# 维度 1: 路由准确性 — 基线 Golden 场景
+# 验证: Agent 将用户输入路由到正确的子专家
+# 场景数: 8, 通过标准: 100%
+
+scenarios:
+  - id: ROUTE-001
+    input: "氧化还原反应的本质是什么"
+    assertions:
+      - {type: tool_called, tool: chemistry_tutor}
+      - {type: not_tool_called, tool: generate_questions}
+      - {type: no_error}
+
+  - id: ROUTE-002
+    input: "出3道氧化还原的选择题"
+    assertions:
+      - {type: tool_called, tool: generate_questions}
+      - {type: not_tool_called, tool: chemistry_tutor}
+
+  - id: ROUTE-003
+    input: "找2020年全国卷的化学题"
+    assertions:
+      - {type: tool_called, tool: search_exam_bank}
+      - {type: not_tool_called, tool: web_search}
+
+  - id: ROUTE-004
+    input: "搜索2025年诺贝尔化学奖得主"
+    assertions:
+      - {type: tool_called, tool: web_search}
+
+  - id: ROUTE-005
+    input: "诊断学生202610101的学习障碍"
+    assertions:
+      - {type: tool_called, tool: diagnose_barrier}
+
+  - id: ROUTE-006
+    input: "配平 KMnO4 + HCl = KCl + MnCl2 + Cl2 + H2O"
+    assertions:
+      - {type: tool_called, tool: balance_equation}
+
+  - id: ROUTE-007
+    input: "模拟钠和水的反应实验"
+    assertions:
+      - {type: tool_called, tool: simulate_experiment}
+
+  - id: ROUTE-008
+    input: "生成本周学情周报"
+    assertions:
+      - {type: tool_called, tool: weekly_report}

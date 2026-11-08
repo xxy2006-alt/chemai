@@ -1,0 +1,23 @@
+tools:
+  - name: ionic_equation_tutor
+    description: 离子方程式书写指导 — 引导学生用"拆写删查"四步法写出离子方程式
+    input_schema:
+      type: object
+      properties:
+        equation:
+          type: string
+          description: "学生要写的化学方程式（如 NaOH + HCl → NaCl + H₂O）"
+        student_input:
+          type: string
+          description: "学生对当前步骤的回答"
+    output_schema:
+      type: object
+      properties:
+        step: {type: integer}
+        total_steps: {type: integer}
+        title: {type: string}
+        equation: {type: string}
+        guidance: {type: string}
+        hint: {type: string}
+        feedback: {type: string}
+        steps: {type: array}

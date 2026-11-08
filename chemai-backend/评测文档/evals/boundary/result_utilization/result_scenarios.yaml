@@ -1,0 +1,24 @@
+# 维度 7: 工具结果利用 — 边界层
+# 验证: Agent 真正使用工具返回结果，而非用模型知识替代
+# 场景数: 2, 通过标准: >=80%
+
+scenarios:
+  - id: RESULT-001
+    name: result_search_used
+    description: "搜索题库后，Agent 应使用搜索结果中的真实题目信息"
+    input: "搜索2020年全国卷化学第28题，然后告诉我这道题考的知识点"
+    assertions:
+      - {type: tool_called, tool: search_exam_bank}
+      - {type: result_referenced, tool: search_exam_bank}
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: RESULT-002
+    name: result_diagnose_used
+    description: "诊断后，Agent 应根据诊断结果给出具体建议"
+    input: "诊断学生202610101的学习障碍，然后详细分析薄弱点"
+    assertions:
+      - {type: tool_called, tool: diagnose_barrier}
+      - {type: result_referenced, tool: diagnose_barrier}
+      - {type: has_text_response}
+      - {type: no_error}

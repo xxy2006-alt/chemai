@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChemAI Agent 系统设计 — 方向2 暗色终端风</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0A0A0B; display: flex; flex-direction: column; align-items: center; gap: 48px; padding: 48px 24px; }
+  .slide-label { font: 13px/1.4 'JetBrains Mono', monospace; color: #52525B; letter-spacing: 0.1em; margin-bottom: -32px; }
+  .slide {
+    width: 960px; height: 540px; background: #0D1117; border-radius: 6px;
+    box-shadow: 0 0 0 1px #1E2127, 0 8px 40px rgba(0,0,0,0.5);
+    position: relative; overflow: hidden; font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ═══ Cover ═══ */
+  .cover .grid-bg {
+    position: absolute; inset: 0; opacity: 0.03;
+    background-image: linear-gradient(#3B82F6 1px, transparent 1px), linear-gradient(90deg, #3B82F6 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .cover .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, #F59E0B, #F59E0B 60px, #1E2127 60px); }
+  .cover .cursor { display: inline-block; width: 10px; height: 20px; background: #F59E0B; animation: blink 1s step-end infinite; vertical-align: text-bottom; margin-left: 2px; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .cover .doc-num { position: absolute; left: 72px; top: 72px; font: 400 12px/1 'JetBrains Mono', monospace; color: #52525B; letter-spacing: 0.1em; }
+  .cover h1 { position: absolute; left: 72px; top: 116px; font: 700 44px/1.2 'JetBrains Mono', monospace; color: #E5E7EB; max-width: 680px; letter-spacing: -0.02em; }
+  .cover h1 .accent { color: #F59E0B; }
+  .cover h1 .dim { color: #52525B; font-weight: 400; }
+  .cover .path-line { position: absolute; left: 72px; top: 256px; font: 400 13px/1.5 'JetBrains Mono', monospace; color: #6B7280; }
+  .cover .path-line .prompt { color: #F59E0B; }
+  .cover .path-line .dir { color: #3B82F6; }
+  .cover .path-line .file { color: #10B981; }
+  .cover .tags { position: absolute; left: 72px; bottom: 64px; display: flex; gap: 8px; }
+  .cover .tags span { font: 400 11px/1 'JetBrains Mono', monospace; color: #6B7280; padding: 4px 10px; border: 1px solid #1E2127; border-radius: 3px; }
+  .cover .tags span.active { color: #F59E0B; border-color: #F59E0B33; background: #F59E0B0A; }
+  .cover .big-hex { position: absolute; right: -80px; bottom: -40px; font: 400 240px/1 'JetBrains Mono', monospace; color: #111318; user-select: none; pointer-events: none; }
+
+  /* ═══ Content ═══ */
+  .content .top-bar-c { position: absolute; top: 0; left: 0; right: 0; height: 1px; background: #1E2127; }
+  .content .breadcrumb { position: absolute; left: 72px; top: 36px; font: 400 12px/1 'JetBrains Mono', monospace; color: #52525B; }
+  .content .breadcrumb .sel { color: #F59E0B; }
+  .content .section-title { position: absolute; left: 72px; top: 68px; font: 600 24px/1.1 'JetBrains Mono', monospace; color: #F9FAFB; }
+  .content .section-title .num { color: #F59E0B; font-weight: 400; }
+  .content .line-ref { position: absolute; right: 72px; top: 74px; font: 400 12px/1 'JetBrains Mono', monospace; color: #3B82F6; }
+
+  .content .layers { position: absolute; left: 72px; top: 128px; right: 72px; display: flex; gap: 16px; }
+  .content .layer-card {
+    flex: 1; background: #111318; border: 1px solid #1E2127; border-radius: 6px;
+    padding: 20px; position: relative; overflow: hidden;
+  }
+  .content .layer-card .l-num { font: 700 48px/1 'JetBrains Mono', monospace; color: #1A1D23; position: absolute; right: 12px; top: 4px; user-select: none; }
+  .content .layer-card .l-tag { font: 500 10px/1 'JetBrains Mono', monospace; color: #F59E0B; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+  .content .layer-card h4 { font: 600 15px/1.3 'JetBrains Mono', monospace; color: #E5E7EB; margin-bottom: 8px; }
+  .content .layer-card p { font: 400 12px/1.6 'JetBrains Mono', monospace; color: #6B7280; }
+  .content .layer-card .kw { color: #3B82F6; }
+
+  .content .specs { position: absolute; left: 72px; bottom: 72px; right: 72px; display: flex; gap: 32px; }
+  .content .spec-item { display: flex; align-items: baseline; gap: 8px; }
+  .content .spec-val { font: 600 22px/1 'JetBrains Mono', monospace; color: #F59E0B; }
+  .content .spec-lab { font: 400 11px/1 'JetBrains Mono', monospace; color: #52525B; }
+  .content .file-ref { position: absolute; right: 72px; bottom: 72px; font: 400 11px/1 'JetBrains Mono', monospace; color: #10B981; }
+</style>
+</head>
+<body>
+
+<div class="slide-label">封面 · 方向2 暗色终端风</div>
+<div class="slide cover">
+  <div class="grid-bg"></div>
+  <div class="top-bar"></div>
+  <div class="big-hex">0x30</div>
+  <div class="doc-num">$ cat doc-30-agent.md  |  head -22</div>
+  <h1><span class="dim">#30.</span> Agent<br>对话系统<br><span class="accent">底层架构</span><span class="cursor"></span></h1>
+  <div class="path-line"><span class="prompt">❯</span> <span class="dir">chemai-backend/agent/</span><span class="file">context_manager.py</span> · <span class="file">memory.py</span> · <span class="file">audit.py</span> · <span class="file">errors.py</span> · <span class="file">langgraph_sse_v2.py</span></div>
+  <div class="tags">
+    <span class="active">§8 上下文</span><span>§9 记忆</span><span>§10 审计</span><span>§11 错误</span><span>§12 MCP</span><span>§13 SSE</span><span>+10</span>
+  </div>
+</div>
+
+<div class="slide-label">正文页 · §8 上下文管理</div>
+<div class="slide content">
+  <div class="top-bar-c"></div>
+  <div class="breadcrumb">chemai-backend/<span class="sel">agent/context_manager.py</span></div>
+  <div class="section-title"><span class="num">§08</span> 上下文管理 · 三层裁剪</div>
+  <div class="line-ref">src: agent/context_manager.py:20</div>
+
+  <div class="layers">
+    <div class="layer-card">
+      <div class="l-num">01</div>
+      <div class="l-tag">Unconditional</div>
+      <h4>无条件保留</h4>
+      <p>最近 <span class="kw">6 条消息</span>（约 3 轮对话）始终保留，确保对话连续性不中断。</p>
+    </div>
+    <div class="layer-card">
+      <div class="l-num">02</div>
+      <div class="l-tag">Keyword Match</div>
+      <h4>条件保留</h4>
+      <p>含 <span class="kw">14 个教学关键词</span>（学生/诊断/障碍/考试/题目/知识点/分数/薄弱/学习计划/错题/成绩/练习/班级/教师）的消息额外保留。</p>
+    </div>
+    <div class="layer-card">
+      <div class="l-num">03</div>
+      <div class="l-tag">LLM Summarize</div>
+      <h4>LLM 摘要</h4>
+      <p>丢弃消息 ≥ 10 条时，调用 LLM 压缩为 ≤ <span class="kw">200 字</span>中文摘要。摘要失败则直接丢弃，仅保留关键词命中部分。</p>
+    </div>
+  </div>
+
+  <div class="specs">
+    <div class="spec-item"><span class="spec-val">30</span><span class="spec-lab">触发阈值（条消息）</span></div>
+    <div class="spec-item"><span class="spec-val">6</span><span class="spec-lab">无条件保留（条）</span></div>
+    <div class="spec-item"><span class="spec-val">14</span><span class="spec-lab">关键词数量</span></div>
+    <div class="spec-item"><span class="spec-val">10</span><span class="spec-lab">摘要触发（条丢弃）</span></div>
+    <div class="spec-item"><span class="spec-val">200</span><span class="spec-lab">摘要上限（字）</span></div>
+  </div>
+
+  <div class="file-ref">[摘要] → [关键词命中] → [最近6条] → [当前输入]</div>
+</div>
+
+</body>
+</html>

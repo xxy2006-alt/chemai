@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班级学情面板 · 智辅化学</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/common.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script src="https://unpkg.com/chart.js@4/dist/chart.umd.js"></script>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{ink:"#1a1a1a",paper:"#faf7f0",paperWarm:"#f5efe0",inkLight:"#555",congoRed:"#b43c28",methylGreen:"#2c6e49"},fontFamily:{sans:["IBM Plex Sans"],mono:["JetBrains Mono"],serif:["Cormorant Garamond","Georgia","serif"]}}}}</script>
+<style>
+body{font-family:'IBM Plex Sans',sans-serif;background:#f7f4ed;color:#1a1a1a;margin:0}
+
+/* ─── 侧边栏 ─── */
+.sidebar{width:240px;position:fixed;left:0;top:0;height:100vh;z-index:50;background:#f5efe0;border-right:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column}
+.sidebar .brand-area{padding:20px 16px 4px}
+.sidebar .brand-area h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:600;line-height:1.1;margin:0}
+.sidebar .brand-area .sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;margin-top:3px;letter-spacing:.5px}
+.sidebar .home-link{margin:14px 12px 10px;padding:9px 0;text-align:center;font-size:14px;font-family:'IBM Plex Sans',sans-serif;border:1px solid rgba(0,0,0,.1);background:transparent;color:#555;border-radius:4px;cursor:pointer;transition:.15s;text-decoration:none;display:block}
+.sidebar .home-link:hover{border-color:#b43c28;color:#b43c28}
+.elem-nav{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 8px;border-radius:4px;text-decoration:none;color:#555;font-size:15px;transition:.12s}
+.elem-nav .sym{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:17px;min-width:32px;text-align:center;padding:4px 6px;border-radius:3px;background:rgba(0,0,0,.03);color:#1a1a1a}
+.elem-nav:hover{background:rgba(0,0,0,.02)}.elem-nav:hover .sym{background:#1a1a1a;color:#faf7f0}
+.elem-nav.active{background:rgba(0,0,0,.03);font-weight:500}.elem-nav.active .sym{background:#b43c28;color:#fff}
+
+/* ─── 主区域 ─── */
+.main{margin-left:240px;min-height:100vh;padding:32px;
+  background-image:linear-gradient(rgba(0,0,0,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.012) 1px,transparent 1px);
+  background-size:28px 28px;background-position:-1px -1px}
+
+/* ─── 页面标题 ─── */
+.page-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:600;color:#1a1a1a;margin:0 0 4px}
+.page-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:#999;letter-spacing:.5px;margin-bottom:24px}
+
+/* ─── 班级选择器行 ─── */
+.toolbar{display:flex;align-items:flex-end;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.toolbar .field{flex:1;min-width:180px;max-width:280px}
+.toolbar .field label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.toolbar select.input{-webkit-appearance:none;border-radius:0;background:transparent}
+
+/* ─── 输入 ─── */
+.input{width:100%;border:none;border-bottom:1.5px solid rgba(0,0,0,.08);background:transparent;padding:9px 4px;font-size:15px;font-family:'IBM Plex Sans',sans-serif;outline:none;transition:border-color .3s}
+.input:focus{border-bottom-color:#b43c28}
+
+/* ─── 概要卡片 ─── */
+.summary-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:4px;padding:20px 24px;position:relative;overflow:hidden}
+.stat-card .stat-value{font-family:'Cormorant Garamond',Georgia,serif;font-size:42px;font-weight:600;line-height:1;color:#1a1a1a}
+.stat-card .stat-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-top:6px}
+.stat-card.warn .stat-value{color:#b43c28}
+.stat-card.ok .stat-value{color:#2c6e49}
+.stat-card::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:transparent;transition:background .3s}
+.stat-card.warn::after{background:#b43c28}
+.stat-card.ok::after{background:#2c6e49}
+.stat-card:not(.warn):not(.ok)::after{background:rgba(0,0,0,.04)}
+
+/* ─── 卡片 ─── */
+.card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:4px;padding:20px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-header h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:600;color:#1a1a1a;margin:0}
+
+/* ─── 图表网格 ─── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.charts-grid .card canvas{max-height:280px}
+
+/* ─── 表格 ─── */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;color:#999;border-bottom:2px solid rgba(0,0,0,.06);text-transform:uppercase;letter-spacing:.5px}
+.data-table td{padding:12px 16px;font-size:14px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle}
+.data-table tbody tr{transition:background .12s}
+.data-table tbody tr:hover{background:rgba(0,0,0,.01)}
+
+/* ─── 标签 ─── */
+.tag{display:inline-block;padding:2px 10px;border-radius:9999px;font-size:12px;font-weight:500;font-family:'JetBrains Mono',monospace}
+.tag-concept{background:#eaddff;color:#5429a6}
+.tag-reading{background:#d6e3ff;color:#2d476f}
+.tag-expression{background:#a5eff0;color:#004f50}
+
+/* ─── 加载/空状态 ─── */
+.empty-state{text-align:center;padding:48px;color:#999;font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* ─── 按钮 ─── */
+.btn{padding:8px 18px;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;font-size:14px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;border-radius:4px;transition:.15s}
+.btn:hover{background:#1a1a1a;color:#faf7f0}
+
+/* ─── 学生详情弹窗 ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:500}
+.modal-box{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:4px;padding:28px 32px;max-width:560px;width:90vw;max-height:80vh;overflow-y:auto}
+.modal-box h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:600;margin:0 0 16px}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#999;padding:0;line-height:1}
+.modal-close:hover{color:#b43c28}
+
+/* ─── 重点关注学生横条 ─── */
+.attention-strip{display:flex;gap:12px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.attention-strip::-webkit-scrollbar{display:none}
+.attn-card{display:flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid rgba(0,0,0,.06);border-radius:4px;background:#faf7f0;text-decoration:none;color:#1a1a1a;transition:.15s;flex-shrink:0;min-width:180px}
+.attn-card:hover{border-color:#b43c28;background:#fff}
+.attn-avatar{width:32px;height:32px;border-radius:50%;background:#1a1a1a;color:#faf7f0;font-family:'Cormorant Garamond',Georgia,serif;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.attn-name{font-size:14px;font-weight:500;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<!-- ═══ 侧边栏 ═══ -->
+<aside class="sidebar">
+  <div class="brand-area">
+    <h1>智辅化学</h1>
+    <p class="sub">CHEMAI · 教师工作台</p>
+  </div>
+  <a href="/" class="home-link">AI 教研助手</a>
+  <nav class="flex-1 overflow-y-auto flex flex-col" id="sidebar-nav" style="padding:4px 0"></nav>
+  <div style="padding:8px 12px;border-top:1px solid rgba(0,0,0,.04)">
+    <a class="elem-nav" href="#" onclick="ChemAI.logout()" style="font-size:12px;color:#999">退出登录</a>
+  </div>
+</aside>
+
+<!-- ═══ 主区域 ═══ -->
+<main class="main">
+
+  <!-- 页面标题 -->
+  <h1 class="page-title">班级学情面板</h1>
+  <p class="page-sub">LEARNING ANALYTICS · DASHBOARD
+  </p>
+
+  <!-- 班级选择器 -->
+  <div class="toolbar">
+    <div class="field">
+      <label>选择班级</label>
+      <select id="classSelect" class="input" onchange="loadDashboard()">
+        <option value="">加载中...</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 概要卡片 -->
+  <div class="summary-cards" id="cards">
+    <div class="stat-card"><div class="stat-value">--</div><div class="stat-label">平均分</div></div>
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">考试次数</div></div>
+    <div class="stat-card warn"><div class="stat-value">0</div><div class="stat-label">需关注学生</div></div>
+    <div class="stat-card ok"><div class="stat-value">0</div><div class="stat-label">班级人数</div></div>
+  </div>
+
+  <!-- 图表 -->
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-header"><h3>知识点错误率</h3></div>
+      <canvas id="kpChart"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>障碍类型分布</h3></div>
+      <canvas id="barrierChart"></canvas>
+    </div>
+  </div>
+
+  <!-- 成绩趋势（全宽）-->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-header"><h3>成绩趋势</h3></div>
+    <canvas id="trendChart" style="max-height:240px"></canvas>
+  </div>
+
+  <!-- 重点关注学生 -->
+  <div class="card" id="attention-card" style="display:none">
+    <div class="card-header"><h3>重点关注学生</h3><a href="/pages/students.html" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;text-decoration:none;transition:.15s" onmouseover="this.style.color='#b43c28'" onmouseout="this.style.color='#999'">查看全部 →</a></div>
+    <div class="attention-strip" id="attention-strip"></div>
+  </div>
+
+</main>
+
+<script src="/app.js"></script>
+<script>
+// ─── API ───
+function getToken() {
+  var u = sessionStorage.getItem('chemai_user');
+  if (u) { try { return JSON.parse(u).token || ''; } catch(e) {} }
+  return localStorage.getItem('token') || '';
+}
+var TOKEN = getToken();
+
+async function api(url) {
+  var r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+  return r.json();
+}
+
+// ─── Chart instances ───
+var charts = {};
+var CHART_COLORS = {
+  bar: ['#b43c28', '#1a1a1a', '#2c6e49', '#d4956b', '#7B2D8E', '#3B5BA5', '#00a08a', '#e65100'],
+  doughnut: ['#b43c28', '#d4956b', '#2c6e49'],
+  line: '#1a1a1a'
+};
+
+// ─── Load ───
+async function loadDashboard() {
+  var sel = document.getElementById('classSelect');
+  var cid = sel.value;
+  if (!cid || cid.indexOf('加载') >= 0) return;
+
+  var panel, barrier, students;
+  try {
+    [panel, barrier, students] = await Promise.all([
+      api('/api/panel/class/' + cid),
+      api('/api/diagnosis/class/' + cid + '/stats'),
+      api('/api/classes/' + cid + '/students'),
+    ]);
+  } catch(e) { panel = barrier = students = null }
+
+  if (!panel) { document.getElementById('cards').innerHTML = '<div class=\"empty-state\">数据加载失败</div>'; return; }
+
+  // 真实 API 字段映射
+  var overview = panel.class_overview || panel.overview || {};
+  var kpData = panel.knowledge_points || panel.top_errors || [];
+
+  var dist = {};
+  if (barrier && barrier.distribution) {
+    dist = barrier.distribution;
+  } else if (panel.barrier_distribution) {
+    // API 返回的 barrier 计数转 distribution 格式
+    var bd = panel.barrier_distribution;
+    dist = { concept: {count: bd.concept||0}, reading: {count: bd.reading||0}, expression: {count: bd.expression||0} };
+  }
+  var warnCount = (dist.concept?.count || 0) + (dist.reading?.count || 0) + (dist.expression?.count || 0);
+  var slist = (students && students.students) || (students && students.data) || [];
+
+  var cardsEl = document.getElementById('cards');
+  cardsEl.innerHTML =
+    '<div class="stat-card"><div class="stat-value">' + (overview.exam_count || 0) + '</div><div class="stat-label">考试次数</div></div>' +
+    '<div class="stat-card warn"><div class="stat-value">' + warnCount + '</div><div class="stat-label">需关注学生</div></div>' +
+    '<div class="stat-card ok"><div class="stat-value">' + (overview.total_students || slist.length || 0) + '</div><div class="stat-label">班级人数</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + (overview.recent_exam_avg ? (overview.recent_exam_avg*100).toFixed(0)+'%' : '--') + '</div><div class="stat-label">最近均分</div></div>';
+
+  // ── 知识点错误率 ──
+  if (kpData.length) renderBar(kpData.slice(0, 8));
+  else document.getElementById('kpChart').parentElement.innerHTML += '<div class=\"empty-state\">暂无知识点数据</div>';
+
+  // ── 障碍分布 ──
+  renderDoughnut(dist);
+
+  // ── 成绩趋势 ──
+  try {
+    var trend = await api('/api/panel/class/' + cid + '/trend');
+    if (trend && (trend.trend || []).length) renderLine(trend.trend);
+    else {
+      // 用 overview 的 avg_score_trend 兜底
+      if (overview.avg_score_trend && overview.avg_score_trend.length) {
+        var dummyTrend = overview.avg_score_trend.map(function(v, i) { return {date: '考试'+(i+1), avg_score: Math.round(v*100)} });
+        renderLine(dummyTrend);
+      }
+    }
+  } catch(e) { document.getElementById('trendChart').parentElement.innerHTML += '<div class=\"empty-state\">暂无趋势数据</div>' }
+
+  // ── 学生列表 ──
+  if (slist.length) renderAttentionStudents(slist);
+  else document.getElementById('studentList').innerHTML = '<div class=\"empty-state\">暂无学生数据</div>';
+}
+
+// ── 知识点柱状图 ──
+function renderBar(data) {
+  if (charts.kp) charts.kp.destroy();
+  var ctx = document.getElementById('kpChart').getContext('2d');
+  if (!data.length) { ctx.canvas.parentElement.innerHTML += '<div class="empty-state">暂无数据</div>'; return }
+  charts.kp = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.map(function(d) { return d.knowledge_point || '' }),
+      datasets: [{
+        label: '错误率 %',
+        data: data.map(function(d) { return Math.round((d.error_rate || 0) * 100) }),
+        backgroundColor: data.map(function(_, i) { return CHART_COLORS.bar[i % CHART_COLORS.bar.length] }),
+        borderRadius: 2
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { font: { family: '"JetBrains Mono", monospace', size: 9 }, color: '#999' }, grid: { display: false } },
+        y: { beginAtZero: true, max: 100, ticks: { font: { family: '"JetBrains Mono", monospace', size: 10 }, color: '#999', callback: function(v) { return v + '%' } }, grid: { color: 'rgba(0,0,0,.04)' } }
+      }
+    }
+  });
+}
+
+// ── 障碍环形图 ──
+function renderDoughnut(dist) {
+  if (charts.barrier) charts.barrier.destroy();
+  var ctx = document.getElementById('barrierChart').getContext('2d');
+  var counts = [dist.concept?.count || 0, dist.reading?.count || 0, dist.expression?.count || 0];
+  if (counts.every(function(v) { return v === 0 })) { ctx.canvas.parentElement.innerHTML += '<div class="empty-state">暂无诊断数据</div>'; return }
+  charts.barrier = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['概念理解型', '审题障碍型', '表述障碍型'],
+      datasets: [{ data: counts, backgroundColor: CHART_COLORS.doughnut, borderColor: '#fff', borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: '"IBM Plex Sans", sans-serif', size: 12 }, color: '#555', padding: 16, usePointStyle: true, pointStyleWidth: 8 } }
+      }
+    }
+  });
+}
+
+// ── 成绩趋势折线图 ──
+function renderLine(data) {
+  if (charts.trend) charts.trend.destroy();
+  var ctx = document.getElementById('trendChart').getContext('2d');
+  if (!data.length) { ctx.canvas.parentElement.innerHTML += '<div class="empty-state">暂无趋势数据</div>'; return }
+  charts.trend = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(function(d) { return d.date || d.exam_date || '' }),
+      datasets: [{
+        label: '平均分',
+        data: data.map(function(d) { return d.avg_score || d.score || 0 }),
+        borderColor: CHART_COLORS.line,
+        backgroundColor: 'rgba(26,26,26,.04)',
+        tension: 0.3,
+        borderWidth: 2,
+        pointBackgroundColor: '#b43c28',
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { font: { family: '"JetBrains Mono", monospace', size: 10 }, color: '#999' }, grid: { display: false } },
+        y: { ticks: { font: { family: '"JetBrains Mono", monospace', size: 10 }, color: '#999' }, grid: { color: 'rgba(0,0,0,.04)' } }
+      }
+    }
+  });
+}
+
+// ── 重点关注学生横条 ──
+function renderAttentionStudents(slist) {
+  var card = document.getElementById('attention-card');
+  var strip = document.getElementById('attention-strip');
+  if (!slist.length) { card.style.display = 'none'; return; }
+
+  // 按障碍程度排序，取 top 5
+  var scored = slist.map(function(s) {
+    var bt = s.barrier_type || {};
+    var max = 0;
+    Object.keys(bt).forEach(function(k) { if (bt[k] > max) max = bt[k]; });
+    return { student: s, score: max };
+  }).sort(function(a, b) { return b.score - a.score }).slice(0, 5);
+
+  if (!scored.length || scored[0].score === 0) { card.style.display = 'none'; return; }
+
+  card.style.display = '';
+  strip.innerHTML = scored.map(function(item) {
+    var s = item.student;
+    var bt = s.barrier_type || {};
+    var keys = Object.keys(bt);
+    var maxKey = keys.length ? keys.reduce(function(a, b) { return (bt[a] || 0) > (bt[b] || 0) ? a : b }, keys[0]) : '';
+    var labels = { concept: '概念', reading: '审题', expression: '表述' };
+    var label = labels[maxKey] || '';
+    var pct = bt[maxKey] ? Math.round((bt[maxKey] || 0) * 100) : 0;
+    var initial = (s.name || s.student_name || '?').charAt(0);
+    return '<a class="attn-card" href="/pages/students.html" onclick="sessionStorage.setItem(\'chemai_focus_student\',\'' + (s.id || s.student_id || '') + '\')">' +
+      '<span class="attn-avatar">' + initial + '</span>' +
+      '<span class="attn-name">' + (s.name || s.student_name || '') + '</span>' +
+      (maxKey ? '<span class="tag tag-' + maxKey + '">' + label + ' ' + pct + '%</span>' : '') +
+      '</a>';
+  }).join('');
+}
+
+function escHtmlFn(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ─── 初始加载 ───
+document.addEventListener('DOMContentLoaded', function() {
+  api('/api/classes').then(function(classes) {
+    var sel = document.getElementById('classSelect');
+    var list = [];
+    if (classes && classes.success) {
+      list = (classes.data && classes.data.classes) || classes.classes || [];
+    }
+    if (list.length > 0) {
+      sel.innerHTML = list.map(function(c) {
+        return '<option value="' + (c.class_id || c.id) + '">' + (c.name || c.class_name || '') + '</option>';
+      }).join('');
+      sel.value = list[0].class_id || list[0].id;
+      loadDashboard();
+    } else {
+      sel.innerHTML = '<option value="__demo__">📋 演示班级（Mock数据）</option>';
+      sel.value = '__demo__';
+      loadDashboard();
+    }
+  }).catch(function() {
+    var sel = document.getElementById('classSelect');
+    sel.innerHTML = '<option value="__demo__">📋 演示班级（Mock数据）</option>';
+    sel.value = '__demo__';
+    loadDashboard();
+  });
+});
+
+// 如果是演示模式则跳过真实API
+var _origLoadDashboard = loadDashboard;
+loadDashboard = function() {
+  var sel = document.getElementById('classSelect');
+  if (sel.value === '__demo__') {
+    var panel = mockPanelData(), barrier = mockBarrierData(), students = mockStudentsData()
+    var overview = panel.overview, dist = barrier.distribution
+    var warnCount = (dist.concept?.count||0)+(dist.reading?.count||0)+(dist.expression?.count||0)
+    var slist = students.students
+    var cardsEl = document.getElementById('cards')
+    cardsEl.innerHTML =
+      '<div class="stat-card"><div class="stat-value">78</div><div class="stat-label">平均分</div></div>' +
+      '<div class="stat-card"><div class="stat-value">12</div><div class="stat-label">考试次数</div></div>' +
+      '<div class="stat-card warn"><div class="stat-value">'+warnCount+'</div><div class="stat-label">需关注学生</div></div>' +
+      '<div class="stat-card ok"><div class="stat-value">42</div><div class="stat-label">班级人数</div></div>'
+    document.getElementById('mock-badge').style.display = 'inline-block'
+    renderBar(overview.knowledge_point_stats.slice(0,8))
+    renderDoughnut(dist)
+    renderLine(mockTrendData().trend)
+    renderAttentionStudents(slist)
+    return
+  }
+  _origLoadDashboard()
+}
+</script>
+<script>
+(function(){
+  var n = sessionStorage.getItem('chemai_navigate')
+  if(!n) return
+  try { n = JSON.parse(n) } catch(e) { return }
+  window.__chemai_bridge = n
+  sessionStorage.removeItem('chemai_navigate')
+
+  document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () {
+      var bridge = window.__chemai_bridge
+      if (!bridge) return
+
+      if (bridge.actions) {
+        bridge.actions.forEach(function (act) {
+          if (act.action === 'showClass') {
+            var clsName = act.payload || ''
+            if (clsName) {
+              var sel = document.getElementById('classSelect')
+              if (sel) {
+                for (var i = 0; i < sel.options.length; i++) {
+                  if (sel.options[i].textContent.includes(clsName)) {
+                    sel.selectedIndex = i
+                    sel.dispatchEvent(new Event('change'))
+                    break
+                  }
+                }
+              }
+            }
+          }
+          if (act.action === 'openWarnings') {
+            var wEl = document.getElementById('warnings-panel')
+            if (wEl) wEl.scrollIntoView({ behavior: 'smooth' })
+          }
+        })
+      }
+      if (bridge.navigate && bridge.navigate.params) {
+        var p = bridge.navigate.params
+        if (p.class_name) {
+          var sel = document.getElementById('classSelect')
+          if (sel) {
+            for (var i = 0; i < sel.options.length; i++) {
+              if (sel.options[i].textContent.includes(p.class_name)) {
+                sel.selectedIndex = i; sel.dispatchEvent(new Event('change')); break
+              }
+            }
+          }
+        }
+      }
+      window.__chemai_bridge = null
+    }, 300)
+  })
+})()
+</script>
+</body>
+</html>

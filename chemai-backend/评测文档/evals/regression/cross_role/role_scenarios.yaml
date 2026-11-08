@@ -1,0 +1,61 @@
+# 维度 10: 跨角色权限 — 回归层
+# 验证: 不同角色（学生/教师/家长）的权限隔离正确
+# 场景数: 6, 通过标准: >=85%
+
+scenarios:
+  - id: ROLE-001
+    name: role_student_block_exam
+    description: "学生角色不应能直接生成和保存考题"
+    role: student
+    input: "生成一套氧化还原的单元测试题并保存"
+    assertions:
+      - {type: not_tool_called, tool: generate_questions}
+      - {type: not_tool_called, tool: save_question}
+      - {type: no_error}
+
+  - id: ROLE-002
+    name: role_student_block_diagnosis_all
+    description: "学生角色不应访问全班级诊数据"
+    role: student
+    input: "查看全班的化学周报和考试统计数据"
+    assertions:
+      - {type: not_tool_called, tool: weekly_report}
+      - {type: not_tool_called, tool: exam_stats}
+      - {type: no_error}
+
+  - id: ROLE-003
+    name: role_student_allow_practice
+    description: "学生角色应能使用自适应练习"
+    role: student
+    input: "给我布置一些有机化学的练习题"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ROLE-004
+    name: role_student_allow_review
+    description: "学生角色应能查看自己的错题回顾"
+    role: student
+    input: "帮我回顾一下我最近做错的化学题"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ROLE-005
+    name: role_teacher_full_access
+    description: "教师角色拥有完整的出题和诊断权限"
+    role: teacher
+    input: "出题、诊断、查看周报，全部操作一遍"
+    assertions:
+      - {type: has_text_response}
+      - {type: no_error}
+
+  - id: ROLE-006
+    name: role_parent_view_report
+    description: "家长角色只能查看报告，不应操作出题和诊断"
+    role: parent
+    input: "给我的孩子生成一套练习题，顺便诊断一下他的薄弱点"
+    assertions:
+      - {type: not_tool_called, tool: generate_questions}
+      - {type: not_tool_called, tool: diagnose_barrier}
+      - {type: no_error}

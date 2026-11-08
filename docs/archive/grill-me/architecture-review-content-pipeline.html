@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>ChemAI Content Pipeline — Architecture Review</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:'default'});</script>
+<style>body{font-family:'Inter','Noto Sans SC',sans-serif;background:#f8fafc;color:#1e293b}.card{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04)}.badge-strong{background:#dc2626;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}.badge-explore{background:#d97706;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}.file-tag{background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:4px;font-family:monospace;font-size:12px}</style>
+</head>
+<body class="max-w-5xl mx-auto py-8 px-4">
+<div class="mb-10">
+  <h1 class="text-3xl font-extrabold mb-2">Content Pipeline — Why Imported Questions Suck</h1>
+  <p class="text-slate-500">Three problems, one root cause: no Content Enricher between OCR and display.</p>
+</div>
+
+<pre class="mermaid mb-8">
+graph LR
+    PDF["PDF 试卷"] --> Cut["paper_cut_edu 切题"]
+    Cut --> OCR["doc_analysis OCR"]
+    OCR --> Words["words_result 纯文本"]
+    OCR --> Formula["formula_result LaTeX"]
+    Formula -->|"🗑️ DISCARDED"| X["Never used"]
+    Words --> LLM["LLM 结构化"]
+    LLM --> JSON["题目 JSON"]
+    JSON --> API["/historical API"]
+    API --> Frontend["renderChem=KaTeX"]
+    Frontend --> Display["👎 纯文本墙"]
+    style Formula fill:#fef2f2,stroke:#fca5a5
+    style X fill:#fef2f2,stroke:#fca5a5,stroke-dasharray:5 5
+    style Display fill:#fef2f2,stroke:#fca5a5
+</pre>
+
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">1. formula_result — Discarded Gold</h2>
+    <span class="badge-strong">Strong</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">import_single_paper.py</span>
+    <span class="file-tag">app/services/ocr_service.py</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <h3 class="font-semibold text-red-700 mb-2">Problem</h3>
+      <p class="text-sm text-slate-600"><code>doc_analysis</code> 返回两个结果：<code>words_result</code>（纯文本）和 <code>formula_result</code>（LaTeX 格式的化学式，如 <code>V _ { 2 } O _ { 5 }</code>、<code>Fe ^ { 3 + }</code>）。但导入脚本 <strong>只取了 words_result 的纯文本，丢弃了 formula_result</strong>。</p>
+      <p class="text-sm text-slate-600 mt-2">结果：OCR 把 <code>SO₃</code> 当纯文本输出成乱码，而 formula_result 里的 <code>S O _ { 3 }</code> 本可以转成 KaTeX 渲染。LLM 收到的已经是污染的文本，无法还原正确的化学式。</p>
+    </div>
+    <div>
+      <h3 class="font-semibold text-green-700 mb-2">Solution</h3>
+      <p class="text-sm text-slate-600"><strong>导入时合并 formula_result。</strong>利用每个 formula 的 <code>form_location</code>（位置坐标）和 words_result 里每个 word 的 <code>location</code>，按位置对齐——OCR 文本中对应位置的乱码片段，替换为 <code>\ce{...}</code> 或 <code>\frac{...}{...}</code> 包裹的 LaTeX。</p>
+      <p class="text-sm text-slate-600 mt-2">替换后的文本传给 LLM → LLM 输出中保留 LaTeX 标记 → 前端 KaTeX 正确渲染。</p>
+    </div>
+  </div>
+</div>
+
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">2. LLM Output Is a Wall of Text</h2>
+    <span class="badge-strong">Strong</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">import_single_paper.py</span>
+    <span class="file-tag">frontend/pages/exam-v2.html</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <h3 class="font-semibold text-red-700 mb-2">Problem</h3>
+      <p class="text-sm text-slate-600">LLM 输出的 content 是单行纯文本——没有段落分隔、没有换行、没有 LaTeX 标记。用户看到的是一片连续文字："硫酸是一种重要的基本化工产品。接触法制硫酸..." 里面图(a)图(b)的引用悬在空中，公式像乱码。</p>
+      <p class="text-sm text-slate-600 mt-2">真正的高考题排版是：题目题干 → 选项分行 → 子问题编号。但现在全糊在一起。</p>
+    </div>
+    <div>
+      <h3 class="font-semibold text-green-700 mb-2">Solution</h3>
+      <p class="text-sm text-slate-600"><strong>LLM 输出结构化 HTML/Markdown。</strong>在 LLM 提示词里要求用 Markdown 格式：<code>content</code> 字段支持双换行分段，子问题用 <code>**(1)**</code>  编号。前端 <code>renderChem</code> 函数在渲染前做 Markdown→HTML 转换，并调用 KaTeX 渲染 <code>\ce{}</code> 和 <code>$...$</code> 块。</p>
+      <p class="text-sm text-slate-600 mt-2">另外，题目带"如图所示"/"如图(a)"的，前端在文字上方展示对应的 page_image。</p>
+    </div>
+  </div>
+</div>
+
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">3. renderChem Only Renders \ce{}</h2>
+    <span class="badge-explore">Worth exploring</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">frontend/js/agent.js:952-959</span>
+    <span class="file-tag">frontend/pages/exam-v2.html:624</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <h3 class="font-semibold text-red-700 mb-2">Problem</h3>
+      <p class="text-sm text-slate-600"><code>window.renderChemistry()</code> 只处理 <code>\ce{...}</code>，不支持行内数学 <code>$...$</code> 和分数 <code>\frac{}{}</code>。OCR 输出的公式可能用这些格式，但前端无法渲染。而且 <code>exam-v2.html</code> 的 <code>renderChem</code> 只是透传到 <code>renderChemistry</code>，没有做 Markdown→HTML 的转换。</p>
+    </div>
+    <div>
+      <h3 class="font-semibold text-green-700 mb-2">Solution</h3>
+      <p class="text-sm text-slate-600">增强 <code>renderChem</code> 为三阶段管道：<strong>Markdown 分段 → KaTeX 公式渲染 → HTML 输出</strong>。先按双换行分段加 <code>&lt;p&gt;</code>，再识别 <code>$...$</code> 和 <code>\ce{...}</code> 调用 KaTeX，最后输出。</p>
+    </div>
+  </div>
+</div>
+
+<div class="card p-6 mb-8 bg-gradient-to-br from-blue-50 to-white border-2 border-blue-200">
+  <h2 class="text-xl font-bold mb-3">Top Recommendation</h2>
+  <p class="text-slate-700 mb-4">三个问题的根因是一条链上的三个断裂点。按顺序修：</p>
+  <div class="space-y-3">
+    <div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">1</div><div><p class="font-bold">合并 formula_result（Candidate 1）</p><p class="text-sm text-slate-600">在导入脚本中，用 formula 的位置坐标替换 words_result 中对应位置的乱码文本为 LaTeX 标记。这是唯一的正确输入源。约 30 行改动。</p></div></div>
+    <div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">2</div><div><p class="font-bold">LLM 输出 Markdown（Candidate 2）</p><p class="text-sm text-slate-600">改 LLM 提示词，要求用双换行分段、子问题编号。content 保留 LaTeX 标记。约 5 行改动。</p></div></div>
+    <div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-slate-400 text-white flex items-center justify-center font-bold text-sm">3</div><div><p class="font-bold">增强 renderChem（Candidate 3）</p><p class="text-sm text-slate-600">加上 Markdown 分段 + 完整 KaTeX 支持（$...$ 和 \ce{}）。约 20 行改动。</p></div></div>
+  </div>
+</div>
+
+<p class="text-slate-400 text-sm text-center">D:\化学\architecture-review-content-pipeline.html</p>
+</body></html>

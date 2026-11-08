@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ChemAI · 家长端</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   ChemAI 家长端 · 设计假设
+   ─────────────────────────────────────────────────────────────────
+   视觉路线: 温和稳重型 — 纸质报告质感, 暖灰墨绿, 不花哨
+   信息架构: 面板型 — Dashboard + "问AI"入口, 打开3秒看到核心
+   字号策略: 大字版 — 基础16px, 卡片大块, 每屏2-3个信息块
+   情感基调: 信任、安心、不制造焦虑
+   目标用户: 40-55岁高中家长, 手机浏览为主, 操作习惯偏阅读
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --bg:        #f5f0e8;
+  --card:      #fdfbf7;
+  --ink:       #2c2c2c;
+  --ink-soft:  #5e5e5e;
+  --ink-light: #8a8a8a;
+  --accent:    #2d5a4b;
+  --accent-soft: #e8f0ec;
+  --accent-gold:#b8935a;
+  --divider:   rgba(0,0,0,.06);
+  --green:     #3d8b5e;
+  --amber:     #c4883c;
+  --red-soft:  #b45a4a;
+  --radius:    14px;
+  --shadow:    0 1px 4px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.03);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  max-width: 450px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* ── Header ── */
+.header {
+  padding: 20px 18px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header .left { display: flex; align-items: center; gap: 10px; }
+.header .avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c4d8ce, #8aada0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: #fff;
+}
+.header .label { font-size: 14px; color: var(--ink-light); }
+.header .name { font-size: 18px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+.header .right { display: flex; gap: 12px; }
+.header .icon-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: none; background: var(--card); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow); color: var(--ink-soft); transition: .15s;
+}
+.header .icon-btn:active { background: var(--accent-soft); }
+.header .icon-btn .material-icons { font-size: 20px; }
+
+/* ── Child selector ── */
+.child-bar {
+  margin: 0 18px; padding: 10px 14px;
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 12px;
+}
+.child-bar .child-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 600; flex-shrink: 0;
+}
+.child-bar .info { flex: 1; min-width: 0; }
+.child-bar .c-name { font-size: 16px; font-weight: 600; }
+.child-bar .c-class { font-size: 13px; color: var(--ink-light); }
+.child-bar .expand {
+  color: var(--ink-light); font-size: 20px;
+  cursor: pointer; flex-shrink: 0;
+}
+
+/* ── Content area ── */
+.content { padding: 14px 18px 100px; display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Summary cards row ── */
+.summary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.stat-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 16px 14px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-card .stat-label { font-size: 13px; color: var(--ink-light); }
+.stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: -.5px; }
+.stat-card .stat-unit { font-size: 14px; font-weight: 400; color: var(--ink-soft); }
+.stat-card .stat-sub {
+  font-size: 13px; color: var(--green); margin-top: 2px;
+  display: flex; align-items: center; gap: 3px;
+}
+.stat-card .stat-sub .material-icons { font-size: 14px; }
+
+/* ── Main report card ── */
+.report-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 18px; box-shadow: var(--shadow);
+}
+.report-card .card-title {
+  font-size: 17px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+}
+.report-card .card-title .material-icons { color: var(--accent); font-size: 22px; }
+
+/* Barrier visualization */
+.barrier-section { margin-bottom: 16px; }
+.barrier-section .section-label { font-size: 14px; color: var(--ink-light); margin-bottom: 8px; }
+.barrier-item { margin-bottom: 8px; }
+.barrier-item .barrier-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 4px;
+}
+.barrier-item .bar-name { font-size: 15px; font-weight: 500; }
+.barrier-item .bar-pct { font-size: 14px; color: var(--ink-soft); }
+.barrier-item .bar-track {
+  height: 8px; border-radius: 4px; background: var(--bg); overflow: hidden;
+}
+.barrier-item .bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+.bar-fill.concept { background: #c9a87c; }
+.bar-fill.reading { background: #7ea8b4; }
+.bar-fill.expression { background: #9dab86; }
+
+/* Plain language diagnosis */
+.diagnosis-text {
+  background: var(--accent-soft); border-radius: 10px;
+  padding: 14px; font-size: 15px; line-height: 1.7; color: var(--ink);
+  margin-top: 12px;
+}
+.diagnosis-text .highlight { color: var(--accent); font-weight: 600; }
+
+/* Weekly content */
+.weekly-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.weekly-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--divider);
+}
+.weekly-item:last-child { border-bottom: none; }
+.weekly-item .w-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.weekly-item .w-icon .material-icons { font-size: 18px; }
+.w-icon.knowledge { background: #e8f0ec; color: var(--accent); }
+.w-icon.improve { background: #f0ece4; color: var(--accent-gold); }
+.w-icon.suggest { background: #f0e8e4; color: var(--amber); }
+.weekly-item .w-text { flex: 1; min-width: 0; }
+.weekly-item .w-label { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.weekly-item .w-detail { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+
+/* Notifications */
+.notif-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 16px 18px; box-shadow: var(--shadow);
+}
+.notif-card .card-title {
+  font-size: 17px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.notif-card .card-title .material-icons { color: var(--accent); font-size: 22px; }
+.notif-item {
+  display: flex; gap: 10px; padding: 10px 0;
+  border-bottom: 1px solid var(--divider); align-items: flex-start;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item .n-dot {
+  width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0;
+  background: var(--accent);
+}
+.notif-item.read .n-dot { background: transparent; }
+.notif-item .n-content { flex: 1; min-width: 0; }
+.notif-item .n-title { font-size: 15px; font-weight: 500; }
+.notif-item .n-time { font-size: 12px; color: var(--ink-light); margin-top: 2px; }
+
+/* ── Empty state ── */
+.empty-state {
+  text-align: center; padding: 40px 20px;
+}
+.empty-state .material-icons { font-size: 56px; color: #d0ccc2; margin-bottom: 12px; }
+.empty-state h3 { font-size: 17px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
+.empty-state p { font-size: 14px; color: var(--ink-light); line-height: 1.6; }
+
+/* ── Ask AI button (floating) ── */
+.ask-ai {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  width: calc(100% - 36px); max-width: 414px;
+  padding: 16px 20px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 16px;
+  font-size: 17px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 4px 16px rgba(45,90,75,.3);
+  transition: transform .15s, box-shadow .15s;
+  z-index: 10;
+}
+.ask-ai:active { transform: translateX(-50%) scale(.97); box-shadow: 0 2px 8px rgba(45,90,75,.25); }
+.ask-ai .material-icons { font-size: 22px; }
+.ask-ai .badge {
+  background: rgba(255,255,255,.2); border-radius: 10px;
+  padding: 2px 8px; font-size: 11px; font-weight: 500;
+}
+
+/* ── Chat overlay ── */
+.chat-overlay {
+  position: fixed; inset: 0; z-index: 100; background: var(--bg);
+  display: none; flex-direction: column;
+}
+.chat-overlay.open { display: flex; }
+.chat-overlay .chat-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; background: var(--card);
+  border-bottom: 1px solid var(--divider);
+}
+.chat-overlay .chat-head .back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: none; background: var(--bg); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-size: 20px;
+}
+.chat-overlay .chat-head .title { font-size: 17px; font-weight: 600; }
+.chat-overlay .chat-body {
+  flex: 1; overflow-y: auto; padding: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.chat-overlay .chat-input-bar {
+  display: flex; gap: 8px; padding: 10px 14px;
+  background: var(--card); border-top: 1px solid var(--divider);
+}
+.chat-overlay .chat-input-bar input {
+  flex: 1; padding: 12px 16px; border: 1.5px solid #e0dcd4;
+  border-radius: 24px; font-size: 16px; outline: none; background: var(--bg);
+}
+.chat-overlay .chat-input-bar input:focus { border-color: var(--accent); }
+.chat-overlay .chat-input-bar button {
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: var(--accent); color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(45,90,75,.25);
+}
+.chat-overlay .chat-input-bar button:active { transform: scale(.9); }
+/* Quick prompts in chat */
+.quick-prompts {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 14px 10px;
+}
+.quick-prompt {
+  padding: 9px 14px; border-radius: 20px; border: 1px solid #d5d0c6;
+  background: var(--card); font-size: 14px; color: var(--ink-soft);
+  cursor: pointer; white-space: nowrap; transition: .15s;
+}
+.quick-prompt:active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* ── Bind child modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.25); z-index: 200;
+  display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--card); border-radius: 18px;
+  padding: 24px 20px; width: calc(100% - 48px); max-width: 390px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.1);
+}
+.modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+.modal label { font-size: 14px; color: var(--ink-soft); display: block; margin-bottom: 4px; }
+.modal input {
+  width: 100%; padding: 12px 14px; border: 1.5px solid #e0dcd4;
+  border-radius: 10px; font-size: 16px; outline: none; margin-bottom: 12px;
+}
+.modal input:focus { border-color: var(--accent); }
+.modal .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+.modal .btn {
+  flex: 1; padding: 12px; border-radius: 12px;
+  border: none; font-size: 16px; font-weight: 600; cursor: pointer;
+}
+.modal .btn-cancel { background: var(--bg); color: var(--ink-soft); }
+.modal .btn-confirm { background: var(--accent); color: #fff; }
+.modal .btn-confirm:active { opacity: .85; }
+
+/* ── Footer ── */
+.footer {
+  text-align: center; padding: 8px 18px 24px;
+  font-size: 12px; color: var(--ink-light);
+}
+.footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- ═══ Header ═══ -->
+<div class="header">
+  <div class="left">
+    <div class="avatar"><span class="material-icons">person</span></div>
+    <div>
+      <div class="label">下午好</div>
+      <div class="name">张女士</div>
+    </div>
+  </div>
+  <div class="right">
+    <button class="icon-btn" onclick="openModal()"><span class="material-icons">add_link</span></button>
+    <button class="icon-btn"><span class="material-icons">settings</span></button>
+  </div>
+</div>
+
+<!-- ═══ Child bar ═══ -->
+<div class="child-bar">
+  <div class="child-icon">张</div>
+  <div class="info">
+    <div class="c-name">张小宁</div>
+    <div class="c-class">长沙县一中 · 高一(1)班</div>
+  </div>
+  <span class="expand material-icons">expand_more</span>
+</div>
+
+<!-- ═══ Content ═══ -->
+<div class="content">
+
+  <!-- Summary stats -->
+  <div class="summary-row">
+    <div class="stat-card">
+      <div class="stat-label">本周练习</div>
+      <div class="stat-value">12<span class="stat-unit"> 道</span></div>
+      <div class="stat-sub"><span class="material-icons">trending_up</span> 比上周多 3 道</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">正确率</div>
+      <div class="stat-value">75<span class="stat-unit">%</span></div>
+      <div class="stat-sub"><span class="material-icons">trending_up</span> 提升 10%</div>
+    </div>
+  </div>
+
+  <!-- Barrier diagnosis -->
+  <div class="report-card">
+    <div class="card-title"><span class="material-icons">psychology</span>学习特点</div>
+
+    <div class="barrier-section">
+      <div class="barrier-item">
+        <div class="barrier-header"><span class="bar-name">概念理解</span><span class="bar-pct">30%</span></div>
+        <div class="bar-track"><div class="bar-fill concept" style="width:30%"></div></div>
+      </div>
+      <div class="barrier-item">
+        <div class="barrier-header"><span class="bar-name">审题仔细度</span><span class="bar-pct">50%</span></div>
+        <div class="bar-track"><div class="bar-fill reading" style="width:50%"></div></div>
+      </div>
+      <div class="barrier-item">
+        <div class="barrier-header"><span class="bar-name">答题表述</span><span class="bar-pct">20%</span></div>
+        <div class="bar-track"><div class="bar-fill expression" style="width:20%"></div></div>
+      </div>
+    </div>
+
+    <div class="diagnosis-text">
+      <span class="highlight">主要成长空间：审题仔细度。</span>孩子对化学概念的理解不错，但在读题时容易忽略关键条件。建议每天花 5 分钟陪孩子一起读一道题，让他/她把「题目给了什么条件」说出来。
+    </div>
+  </div>
+
+  <!-- Weekly summary -->
+  <div class="report-card">
+    <div class="card-title"><span class="material-icons">auto_stories</span>本周学习内容</div>
+    <div class="weekly-list">
+      <div class="weekly-item">
+        <div class="w-icon knowledge"><span class="material-icons">science</span></div>
+        <div class="w-text">
+          <div class="w-label">盐类水解</div>
+          <div class="w-detail">掌握了水解规律和 pH 判断，离子方程式书写还需练习</div>
+        </div>
+      </div>
+      <div class="weekly-item">
+        <div class="w-icon improve"><span class="material-icons">trending_up</span></div>
+        <div class="w-text">
+          <div class="w-label">离子方程式 — 有进步</div>
+          <div class="w-detail">正确率从 50% 提升到 75%，「拆写删查」四步法用得更熟练了</div>
+        </div>
+      </div>
+      <div class="weekly-item">
+        <div class="w-icon suggest"><span class="material-icons">lightbulb</span></div>
+        <div class="w-text">
+          <div class="w-label">家庭配合建议</div>
+          <div class="w-detail">周末可以跟孩子聊聊化学实验，增加学习兴趣。不要只问「考了多少分」，多问「今天学到了什么有趣的东西」</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="notif-card">
+    <div class="card-title"><span class="material-icons">notifications</span>消息</div>
+    <div class="notif-item">
+      <div class="n-dot"></div>
+      <div class="n-content">
+        <div class="n-title">本周练习已发布 — 盐类水解专题</div>
+        <div class="n-time">今天 08:30 · 海老师</div>
+      </div>
+    </div>
+    <div class="notif-item read">
+      <div class="n-dot"></div>
+      <div class="n-content">
+        <div class="n-title">上周学习报告已生成</div>
+        <div class="n-time">6月30日 · 系统</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ Floating ask AI ═══ -->
+<button class="ask-ai" onclick="openChat()">
+  <span class="material-icons">forum</span>
+  问问 AI 助手
+  <span class="badge">孩子这周怎么样?</span>
+</button>
+
+<!-- ═══ Chat overlay ═══ -->
+<div class="chat-overlay" id="chat">
+  <div class="chat-head">
+    <button class="back-btn" onclick="closeChat()"><span class="material-icons">arrow_back</span></button>
+    <span class="title">AI 学习助手</span>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div style="text-align:center;padding:30px 20px;color:var(--ink-light);font-size:15px;line-height:1.7">
+      我是 ChemAI 家长助手。<br>可以问我孩子的学习情况、<br>需要关注什么、怎么在家配合。
+    </div>
+  </div>
+  <div class="quick-prompts">
+    <span class="quick-prompt" onclick="sendQuick('孩子这周学习怎么样?')">孩子这周学习怎么样?</span>
+    <span class="quick-prompt" onclick="sendQuick('需要重点关注什么?')">需要重点关注什么?</span>
+    <span class="quick-prompt" onclick="sendQuick('在家可以怎么帮孩子?')">在家可以怎么帮孩子?</span>
+  </div>
+  <div class="chat-input-bar">
+    <input id="chatInput" type="text" placeholder="输入问题..." onkeydown="if(event.key==='Enter')sendMsg()">
+    <button onclick="sendMsg()"><span class="material-icons">send</span></button>
+  </div>
+</div>
+
+<!-- ═══ Bind modal ═══ -->
+<div class="modal-overlay" id="bindModal">
+  <div class="modal">
+    <h3>绑定孩子</h3>
+    <label>学生 ID</label>
+    <input type="text" id="bindSid" placeholder="输入孩子的学号">
+    <label>绑定码（由学生在自己客户端生成）</label>
+    <input type="text" id="bindCode" placeholder="6 位数字绑定码" maxlength="6">
+    <div class="btn-row">
+      <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn btn-confirm" onclick="doBind()">确认绑定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openChat() { document.getElementById('chat').classList.add('open'); }
+function closeChat() { document.getElementById('chat').classList.remove('open'); }
+function openModal() { document.getElementById('bindModal').classList.add('open'); }
+function closeModal() { document.getElementById('bindModal').classList.remove('open'); }
+
+function doBind() {
+  var sid = document.getElementById('bindSid').value.trim();
+  var code = document.getElementById('bindCode').value.trim();
+  if (!sid || !code) { alert('请填写完整信息'); return; }
+  // TODO: call parentService.bindStudent({ student_id: sid, bind_code: code })
+  alert('绑定成功!');
+  closeModal();
+}
+
+function sendMsg() {
+  var inp = document.getElementById('chatInput');
+  var text = inp.value.trim();
+  if (!text) return;
+  addChatMsg('user', text);
+  inp.value = '';
+  // Simulate AI response
+  setTimeout(function() {
+    var reply = '根据本周数据，孩子完成了 12 道练习，正确率 75%，比上周提升了 10%。主要成长空间是审题仔细度——建议每天花 5 分钟陪孩子一起读题。';
+    addChatMsg('ai', reply);
+  }, 800);
+}
+
+function sendQuick(text) {
+  addChatMsg('user', text);
+  setTimeout(function() {
+    addChatMsg('ai', '好的，我来帮您看看孩子的情况…');
+  }, 600);
+}
+
+function addChatMsg(role, text) {
+  var body = document.getElementById('chatBody');
+  var el = document.createElement('div');
+  var roleLabel = role === 'user' ? 'user' : 'ai';
+  // Use inline styles that match the student chat but with parent colors
+  var isUser = role === 'user';
+  el.style.cssText = [
+    'max-width:84%', 'padding:10px 14px', 'border-radius:18px',
+    'font-size:15px', 'line-height:1.6', 'word-break:break-word',
+    'animation:msgIn .2s ease',
+    isUser
+      ? 'align-self:flex-end;background:#2d5a4b;color:#fff;border-bottom-right-radius:6px;margin-left:auto'
+      : 'align-self:flex-start;background:#fff;color:#2c2c2c;border-bottom-left-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.04)'
+  ].join(';');
+  el.textContent = text;
+  body.appendChild(el);
+  body.scrollTop = body.scrollHeight;
+}
+</script>
+<style>
+@keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</body>
+</html>

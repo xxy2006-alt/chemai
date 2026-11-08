@@ -1,0 +1,109 @@
+# 维度 1: 路由准确性 — Gateway 关键词预路由测试
+# 来源: S9 课程定义 + 评测文档/ChemAI_Agent_v2.0_测评体系.md
+# 通过标准: 24/24 准确路由 (100%), 延迟 <5ms
+# 业界对标: Tool Selection (六维轨迹框架)
+
+gateway_tests:
+  - id: GW-001
+    input: "氧化还原反应的本质是什么"
+    expected_route: chemistry_tutor
+    keywords: ["氧化还原", "本质"]
+  - id: GW-002
+    input: "盐类水解怎么学"
+    expected_route: chemistry_tutor
+    keywords: ["盐类水解", "学"]
+  - id: GW-003
+    input: "讲解化学平衡的勒夏特列原理"
+    expected_route: chemistry_tutor
+    keywords: ["讲解", "化学平衡"]
+  - id: GW-004
+    input: "什么是有机化合物的同分异构体"
+    expected_route: chemistry_tutor
+    keywords: ["有机化合物", "同分异构体"]
+
+  - id: GW-005
+    input: "出3道氧化还原选择题"
+    expected_route: exam_expert
+    keywords: ["出", "选择题"]
+  - id: GW-006
+    input: "生成一道关于电化学的填空题"
+    expected_route: exam_expert
+    keywords: ["生成", "填空题"]
+  - id: GW-007
+    input: "以2020全国卷T3为蓝本生成变种题"
+    expected_route: exam_expert
+    keywords: ["变种题", "蓝本"]
+  - id: GW-008
+    input: "配平 KMnO4 + HCl = KCl + MnCl2 + Cl2 + H2O"
+    expected_route: exam_expert
+    keywords: ["配平"]
+  - id: GW-009
+    input: "出一道中等难度的有机合成题"
+    expected_route: exam_expert
+    keywords: ["出", "有机合成"]
+
+  - id: GW-010
+    input: "找2020年全国卷的化学题"
+    expected_route: search_expert
+    keywords: ["找", "全国卷"]
+  - id: GW-011
+    input: "搜索2025年诺贝尔化学奖得主"
+    expected_route: search_expert
+    keywords: ["搜索", "诺贝尔"]
+  - id: GW-012
+    input: "找几道关于离子反应的真题"
+    expected_route: search_expert
+    keywords: ["找", "真题"]
+
+  - id: GW-013
+    input: "诊断学生202610101的学习障碍"
+    expected_route: diagnosis_expert
+    keywords: ["诊断", "学习障碍"]
+  - id: GW-014
+    input: "分析班级的化学薄弱点"
+    expected_route: diagnosis_expert
+    keywords: ["分析", "薄弱点"]
+  - id: GW-015
+    input: "查看高一(1)班的学情"
+    expected_route: diagnosis_expert
+    keywords: ["查看", "学情"]
+  - id: GW-016
+    input: "生成学情周报"
+    expected_route: diagnosis_expert
+    keywords: ["生成", "周报"]
+
+  - id: GW-017
+    input: "浏览题库中的氧化还原题"
+    expected_route: bank_expert
+    keywords: ["浏览", "题库"]
+  - id: GW-018
+    input: "打开历史真题库"
+    expected_route: bank_expert
+    keywords: ["打开", "真题库"]
+  - id: GW-019
+    input: "把这道题保存到我的题库"
+    expected_route: bank_expert
+    keywords: ["保存", "题库"]
+
+  # 边界: 模糊/默认路由
+  - id: GW-020
+    input: "帮帮我"
+    expected_route: chemistry_tutor  # 默认路由
+  - id: GW-021
+    input: "你好"
+    expected_route: chemistry_tutor
+  - id: GW-022
+    input: ""
+    expected_route: null  # 空输入不路由
+
+  # 边界: 导航类路由
+  - id: GW-023
+    input: "打开出题工作台"
+    expected_route: exam_workbench  # 页面导航
+  - id: GW-024
+    input: "查看学生列表"
+    expected_route: students  # 页面导航
+
+performance_threshold:
+  max_latency_ms: 5
+  measurement_method: "纯关键词匹配, 不计 LLM 调用延迟"

@@ -1,0 +1,246 @@
+{
+  "电解质溶液": {
+    "category": "电解质溶液",
+    "description": "电解质在水溶液或熔融状态下的电离",
+    "related_kps": [
+      "电离",
+      "离子反应",
+      "盐类水解"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "medium",
+    "exam_frequency": "high"
+  },
+  "电离": {
+    "category": "电解质溶液",
+    "description": "电解质形成离子的过程",
+    "related_kps": [
+      "电解质溶液",
+      "离子反应"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "easy",
+    "exam_frequency": "high"
+  },
+  "盐类水解": {
+    "category": "电解质溶液",
+    "description": "盐溶液呈现酸碱性的原因",
+    "related_kps": [
+      "电解质溶液",
+      "水的离子积",
+      "电离常数"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "hard",
+    "exam_frequency": "very_high"
+  },
+  "离子反应": {
+    "category": "离子反应",
+    "description": "溶液中离子之间的反应",
+    "related_kps": [
+      "电离",
+      "电解质溶液"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "medium",
+    "exam_frequency": "high"
+  },
+  "氧化还原反应": {
+    "category": "氧化还原反应",
+    "description": "反应中电子的转移",
+    "related_kps": [
+      "电离",
+      "原电池",
+      "电解池"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "hard",
+    "exam_frequency": "very_high"
+  },
+  "原电池": {
+    "category": "电化学",
+    "description": "将化学能转化为电能的装置",
+    "related_kps": [
+      "氧化还原反应",
+      "电解池",
+      "金属腐蚀"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "hard",
+    "exam_frequency": "very_high"
+  },
+  "电解池": {
+    "category": "电化学",
+    "description": "将电能转化为化学能的装置",
+    "related_kps": [
+      "氧化还原反应",
+      "原电池",
+      "电离"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "hard",
+    "exam_frequency": "very_high"
+  },
+  "物质的量": {
+    "category": "化学计量",
+    "description": "表示一定数目粒子集合体的物理量",
+    "related_kps": [
+      "阿伏伽德罗常数",
+      "摩尔质量",
+      "气体摩尔体积"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "medium",
+    "exam_frequency": "very_high"
+  },
+  "阿伏伽德罗常数": {
+    "category": "化学计量",
+    "description": "1mol物质含有的粒子数",
+    "related_kps": [
+      "物质的量",
+      "摩尔质量"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "easy",
+    "exam_frequency": "high"
+  },
+  "摩尔质量": {
+    "category": "化学计量",
+    "description": "单位物质的量的物质具有的质量",
+    "related_kps": [
+      "物质的量",
+      "相对原子质量"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "easy",
+    "exam_frequency": "high"
+  },
+  "元素周期律": {
+    "category": "物质结构",
+    "description": "元素性质随原子序数的周期性变化",
+    "related_kps": [
+      "原子结构",
+      "离子半径",
+      "电负性"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "medium",
+    "exam_frequency": "high"
+  },
+  "原子结构": {
+    "category": "物质结构",
+    "description": "原子的组成及结构",
+    "related_kps": [
+      "元素周期律",
+      "核素",
+      "电子排布"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "medium",
+    "exam_frequency": "high"
+  },
+  "化学反应速率": {
+    "category": "化学反应速率与平衡",
+    "description": "化学反应进行的快慢",
+    "related_kps": [
+      "勒夏特列原理",
+      "化学平衡",
+      "活化能"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "hard",
+    "exam_frequency": "high"
+  },
+  "化学平衡": {
+    "category": "化学反应速率与平衡",
+    "description": "正逆反应速率相等时的状态",
+    "related_kps": [
+      "勒夏特列原理",
+      "化学反应速率",
+      "平衡常数"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "hard",
+    "exam_frequency": "very_high"
+  },
+  "勒夏特列原理": {
+    "category": "化学反应速率与平衡",
+    "description": "平衡移动原理",
+    "related_kps": [
+      "化学平衡",
+      "化学反应速率"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "medium",
+    "exam_frequency": "high"
+  },
+  "有机化合物": {
+    "category": "有机化学",
+    "description": "含碳的化合物",
+    "related_kps": [
+      "官能团",
+      "同分异构体",
+      "取代反应"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "medium",
+    "exam_frequency": "high"
+  },
+  "官能团": {
+    "category": "有机化学",
+    "description": "决定有机物性质的原子或原子团",
+    "related_kps": [
+      "有机化合物",
+      "同分异构体"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "medium",
+    "exam_frequency": "very_high"
+  },
+  "同分异构体": {
+    "category": "有机化学",
+    "description": "分子式相同但结构不同的化合物",
+    "related_kps": [
+      "官能团",
+      "有机化合物"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "hard",
+    "exam_frequency": "very_high"
+  },
+  "酯化反应": {
+    "category": "有机化学",
+    "description": "酸与醇生成酯和水的反应",
+    "related_kps": [
+      "官能团",
+      "酯",
+      "取代反应"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "hard",
+    "exam_frequency": "high"
+  },
+  "共价键": {
+    "category": "物质结构",
+    "description": "原子间通过共用电子形成的化学键",
+    "related_kps": [
+      "离子键",
+      "分子间作用力",
+      "氢键"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "medium",
+    "exam_frequency": "high"
+  },
+  "离子键": {
+    "category": "物质结构",
+    "description": "阴阳离子间的静电作用",
+    "related_kps": [
+      "共价键",
+      "电子式"
+    ],
+    "pubchem_cid": null,
+    "difficulty": "easy",
+    "exam_frequency": "high"
+  }
+}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChemAI Agent 系统设计 — 方向3 结构化杂志</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #E8E0D5; display: flex; flex-direction: column; align-items: center; gap: 48px; padding: 48px 24px; }
+  .slide-label { font: 13px/1.4 system-ui; color: #8B7355; letter-spacing: 0.1em; margin-bottom: -32px; }
+  .slide {
+    width: 960px; height: 540px; background: #FFFBF5; border-radius: 2px;
+    box-shadow: 0 2px 12px rgba(45,27,14,0.06), 0 8px 32px rgba(45,27,14,0.04);
+    position: relative; overflow: hidden; font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* ═══ Cover ═══ */
+  .cover .left-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: linear-gradient(180deg, #059669, #D97706); }
+  .cover .hero-area { position: absolute; left: 88px; top: 88px; max-width: 600px; }
+  .cover .kicker { font: 500 12px/1 system-ui; color: #059669; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 20px; }
+  .cover h1 { font: 600 52px/1.1 'Source Serif 4', serif; color: #2D1B0E; }
+  .cover h1 .em { font-style: italic; color: #059669; }
+  .cover h1 .dot { color: #D97706; }
+  .cover .deck { font: 400 16px/1.7 'Source Serif 4', serif; color: #6B5E4E; margin-top: 18px; max-width: 480px; }
+  .cover .cover-meta { position: absolute; left: 88px; bottom: 56px; display: flex; gap: 24px; align-items: center; }
+  .cover .cover-meta span { font: 400 13px/1 system-ui; color: #B8A898; }
+  .cover .cover-meta .sep { width: 1px; height: 12px; background: #DDD2C4; }
+  .cover .key-takeaway { position: absolute; right: 72px; bottom: 48px; font: 400 13px/1.6 'Source Serif 4', serif; font-style: italic; color: #B8A898; text-align: right; max-width: 240px; padding-right: 16px; border-right: 2px solid #05966922; }
+
+  /* ═══ Content ═══ */
+  .content .left-margin { position: absolute; left: 0; top: 0; bottom: 0; width: 88px; background: #FFFBF5; border-right: 1px solid #F0E8DA; }
+  .content .takeaway { position: absolute; left: 24px; top: 52px; width: 48px; writing-mode: vertical-rl; font: 500 13px/1.6 'Source Serif 4', serif; color: #059669; letter-spacing: 0.04em; }
+  .content .section-header { position: absolute; left: 112px; top: 48px; display: flex; align-items: baseline; gap: 14px; }
+  .content .section-num { font: 500 13px/1 'JetBrains Mono', monospace; color: #D97706; }
+  .content .section-title { font: 600 28px/1.2 'Source Serif 4', serif; color: #2D1B0E; }
+  .content .page-mark { position: absolute; right: 72px; top: 52px; font: 400 12px/1 'JetBrains Mono', monospace; color: #D1C4B0; }
+
+  .content .flow { position: absolute; left: 112px; top: 120px; right: 72px; display: flex; align-items: center; gap: 0; }
+  .content .flow-step { flex: 1; text-align: center; position: relative; }
+  .content .flow-icon { width: 48px; height: 48px; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font: 600 18px/1 'JetBrains Mono', monospace; }
+  .content .flow-step:nth-child(1) .flow-icon { background: #ECFDF5; color: #059669; }
+  .content .flow-step:nth-child(2) .flow-icon { background: #FEF3C7; color: #D97706; }
+  .content .flow-step:nth-child(3) .flow-icon { background: #FEE2E2; color: #DC2626; }
+  .content .flow-label { font: 500 13px/1.3 system-ui; color: #2D1B0E; margin-bottom: 4px; }
+  .content .flow-desc { font: 400 11px/1.5 system-ui; color: #8B7355; }
+  .content .flow-arrow { font: 400 20px/1 'JetBrains Mono', monospace; color: #D1C4B0; flex-shrink: 0; padding: 0 4px; margin-top: -16px; }
+
+  .content .detail-grid { position: absolute; left: 112px; top: 276px; right: 72px; display: flex; gap: 16px; }
+  .content .detail-card { flex: 1; background: #FDF9F2; border: 1px solid #F0E8DA; border-radius: 4px; padding: 18px; }
+  .content .detail-card .d-icon { font: 400 22px/1 'JetBrains Mono', monospace; margin-bottom: 8px; }
+  .content .detail-card h4 { font: 600 14px/1.3 'Source Serif 4', serif; color: #2D1B0E; margin-bottom: 6px; }
+  .content .detail-card p { font: 400 12px/1.6 system-ui; color: #6B5E4E; }
+  .content .detail-card .highlight { color: #059669; font-weight: 500; }
+
+  .content .source-line { position: absolute; left: 112px; bottom: 44px; font: 400 11px/1 system-ui; color: #C4B8A4; }
+  .content .source-line em { font-family: 'JetBrains Mono', monospace; font-style: normal; color: #8B7355; }
+</style>
+</head>
+<body>
+
+<div class="slide-label">封面 · 方向3 结构化杂志</div>
+<div class="slide cover">
+  <div class="left-stripe"></div>
+  <div class="hero-area">
+    <div class="kicker">ChemAI 技术深度 · 第五节课</div>
+    <h1>Agent<span class="dot">·</span><br><span class="em">对话系统</span><br>底层架构</h1>
+    <p class="deck">从上下文管理到工厂模式——<br>一个完整 AI Agent 系统的 15 个基础设施层。</p>
+  </div>
+  <div class="cover-meta">
+    <span>L3 课程</span><span class="sep"></span><span>30 号文档</span><span class="sep"></span><span>第八章至结尾</span><span class="sep"></span><span>~45 分钟</span>
+  </div>
+  <p class="key-takeaway">Key question<br>当对话超过 30 条，<br>系统如何不丢上下文<br>又不爆 token？</p>
+</div>
+
+<div class="slide-label">正文页 · §8 上下文管理</div>
+<div class="slide content">
+  <div class="left-margin"></div>
+  <div class="takeaway">三层裁剪：保留精华，压缩噪音</div>
+
+  <div class="section-header">
+    <div class="section-num">§ 08</div>
+    <div class="section-title">上下文管理</div>
+  </div>
+  <div class="page-mark">30.08</div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-icon">1</div>
+      <div class="flow-label">无条件保留</div>
+      <div class="flow-desc">最近 6 条消息<br>≈ 3 轮对话</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon">2</div>
+      <div class="flow-label">条件保留</div>
+      <div class="flow-desc">14 个关键词命中<br>的消息额外保留</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-icon">3</div>
+      <div class="flow-label">LLM 摘要</div>
+      <div class="flow-desc">丢弃 ≥ 10 条时<br>压缩为 ≤ 200 字</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-card">
+      <div class="d-icon">⚙</div>
+      <h4>触发条件</h4>
+      <p>消息数超过 <span class="highlight">30 条</span>时自动执行裁剪，否则跳过。两个可调参数：keep_last（默认 6）、max_messages（默认 30）。</p>
+    </div>
+    <div class="detail-card">
+      <div class="d-icon">🔑</div>
+      <h4>关键词集合</h4>
+      <p>学生 · 诊断 · 障碍 · 考试 · 题目 · 知识点 · 分数 · 薄弱 · 学习计划 · 错题 · 成绩 · 练习 · 班级 · 教师</p>
+    </div>
+    <div class="detail-card">
+      <div class="d-icon">⊕</div>
+      <h4>摘要降级</h4>
+      <p>LLM 摘要失败时<span class="highlight">直接丢弃</span>非关键消息，仅保留关键词命中部分。写入失败不阻塞主流程。</p>
+    </div>
+  </div>
+
+  <div class="source-line">实现：<em>agent/context_manager.py</em> · trim_context() · _llm_summarize()</div>
+</div>
+
+</body>
+</html>

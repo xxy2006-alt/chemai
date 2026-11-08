@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>对话迁移</title>
+<style>body{font-family:'PingFang SC',sans-serif;max-width:600px;margin:60px auto;padding:20px;background:#f7f4ed}
+button{padding:12px 24px;font-size:15px;border:none;border-radius:6px;cursor:pointer;margin:8px}
+.export{background:#b43c28;color:#fff}.import{background:#2c6e49;color:#fff}
+pre{background:#fff;padding:12px;border-radius:4px;border:1px solid #ddd;max-height:300px;overflow:auto;font-size:12px}
+.status{padding:10px;border-radius:4px;margin:10px 0}</style></head><body>
+<h2>对话记录迁移 (8001 → 8000)</h2>
+
+<h3>Step 1: 导出 (在当前页面操作)</h3>
+<p>打开此页面 <a href="http://127.0.0.1:8001/migrate-convs.html" target="_blank">http://127.0.0.1:8001/migrate-convs.html</a>，点导出。</p>
+<button class="export" onclick="doExport()">导出对话列表</button>
+<div id="export-status"></div>
+<pre id="export-data" style="display:none"></pre>
+
+<h3>Step 2: 导入到当前域</h3>
+<p>复制上面导出的 JSON，粘贴到下面文本框，点导入。</p>
+<textarea id="import-input" style="width:100%;height:120px;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:8px" placeholder="粘贴从 Step 1 导出的 JSON..."></textarea>
+<button class="import" onclick="doImport()">导入对话列表</button>
+<div id="import-status"></div>
+
+<script>
+function doExport() {
+  var data = localStorage.getItem('chemai_convs') || '[]'
+  document.getElementById('export-data').textContent = data
+  document.getElementById('export-data').style.display = 'block'
+  document.getElementById('export-status').innerHTML = '<div class="status" style="background:#e8f5e9;color:#2c6e49">已导出 ' + JSON.parse(data).length + ' 条对话。复制上面 JSON 到 Step 2 文本框中导入。</div>'
+}
+
+function doImport() {
+  var raw = document.getElementById('import-input').value.trim()
+  if (!raw) { document.getElementById('import-status').innerHTML = '<div class="status" style="background:#fbe9e7;color:#b43c28">请先粘贴 JSON 数据</div>'; return }
+  try {
+    var data = JSON.parse(raw)
+    localStorage.setItem('chemai_convs', JSON.stringify(data))
+    document.getElementById('import-status').innerHTML = '<div class="status" style="background:#e8f5e9;color:#2c6e49">成功导入 ' + data.length + ' 条对话！刷新主页即可看到。</div>'
+  } catch(e) {
+    document.getElementById('import-status').innerHTML = '<div class="status" style="background:#fbe9e7;color:#b43c28">JSON 格式错误: ' + e.message + '</div>'
+  }
+}
+</script></body></html>

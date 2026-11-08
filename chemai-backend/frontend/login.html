@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 · 智辅化学</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── B · 实验室手稿 — 登录页 ─── */
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:'IBM Plex Sans',sans-serif;background:#f7f4ed;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background-image:linear-gradient(rgba(0,0,0,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.018) 1px,transparent 1px);
+  background-size:28px 28px;background-position:-1px -1px;
+  color:#1a1a1a;
+}
+
+/* ─── 卡片 · 放置感 ─── */
+.card-wrap{width:100%;max-width:460px;margin:24px;}
+.card{
+  background:#faf7f0;border:1px solid rgba(0,0,0,.06);
+  padding:48px 40px 36px;position:relative;
+  box-shadow:0 1px 2px rgba(0,0,0,.03),0 8px 32px rgba(0,0,0,.04);
+  animation:card-settle .7s cubic-bezier(.22,.61,.36,1) both;
+}
+@keyframes card-settle{
+  0%{opacity:0;transform:rotate(.8deg) translateY(12px)}
+  60%{opacity:1;transform:rotate(-.1deg) translateY(-2px)}
+  100%{opacity:1;transform:rotate(0) translateY(0)}
+}
+/* 左边红线 */
+.card::before{content:'';position:absolute;top:0;left:56px;width:1px;height:100%;background:rgba(180,60,40,.1)}
+/* 顶部渐变色条 */
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#b43c28,#d4956b,transparent 80%);
+  transition:background .6s;}
+.card.done::after{background:linear-gradient(90deg,#2c6e49,#4a9,transparent 80%)}
+
+/* ─── 日期戳 · 盖章 ─── */
+.stamp{
+  position:absolute;top:-11px;right:20px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:#b43c28;
+  padding:3px 10px;border:1px solid rgba(180,60,40,.2);border-radius:2px;
+  background:#faf7f0;white-space:nowrap;
+  animation:stamp-press .5s .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes stamp-press{
+  0%{opacity:0;transform:scale(1.3) rotate(-3deg)}
+  100%{opacity:1;transform:scale(1) rotate(1deg)}
+}
+
+/* ─── 品牌 ─── */
+.brand h1{
+  font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:600;
+  color:#1a1a1a;line-height:1.1;letter-spacing:-.5px;
+}
+.brand .tagline{
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a8a8a;margin-top:6px;letter-spacing:1px;
+}
+
+/* ─── 分隔线 ─── */
+.divider{
+  margin:22px 0;height:1px;
+  background:linear-gradient(90deg,rgba(180,60,40,.25),rgba(180,60,40,.04) 60%,transparent);
+}
+
+/* ─── 表单 ─── */
+.form{display:flex;flex-direction:column;gap:22px}
+.field label{
+  display:block;font-family:'JetBrains Mono',monospace;font-size:9px;
+  text-transform:uppercase;letter-spacing:1.5px;color:#999;margin-bottom:4px;
+}
+.field input,.field select{
+  width:100%;border:none;border-bottom:1.5px solid rgba(0,0,0,.08);
+  background:transparent;padding:9px 0;font-size:15px;font-family:'IBM Plex Sans',sans-serif;
+  outline:none;transition:border-color .3s,box-shadow .3s;border-radius:0;-webkit-appearance:none;
+}
+/* ─── 墨迹洇开 ─── */
+.field input:focus,.field select:focus{
+  border-bottom-color:#b43c28;
+  box-shadow:0 4px 12px -4px rgba(180,60,40,.12);
+}
+.password-wrap{position:relative;display:flex;align-items:center}
+.password-wrap input{padding-right:36px}
+.toggle-pw{
+  position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;font-size:18px;padding:4px 8px;
+  opacity:.35;transition:opacity .2s;line-height:1;
+}
+.toggle-pw:hover{opacity:.8}
+
+/* ─── 记住我 ─── */
+.remember{display:flex;align-items:center;gap:8px;font-size:13px;color:#777;cursor:pointer;user-select:none}
+.remember input[type=checkbox]{display:none}
+.remember .check{width:16px;height:16px;border:1.5px solid rgba(0,0,0,.15);border-radius:2px;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.remember .check::after{content:'';width:8px;height:5px;border-left:2px solid #faf7f0;border-bottom:2px solid #faf7f0;transform:rotate(-45deg) translateY(-1px);opacity:0;transition:.1s}
+.remember input:checked+.check{background:#b43c28;border-color:#b43c28}
+.remember input:checked+.check::after{opacity:1}
+
+/* ─── 按钮 ─── */
+.btn{
+  width:100%;padding:13px 0;border:1.5px solid #1a1a1a;background:transparent;
+  color:#1a1a1a;font-size:14px;font-family:'IBM Plex Sans',sans-serif;
+  cursor:pointer;letter-spacing:1px;transition:all .25s;margin-top:4px;
+}
+.btn:hover{background:#1a1a1a;color:#faf7f0}
+.btn:disabled{opacity:.4;cursor:wait}
+.btn .spinner{display:none;width:14px;height:14px;border:1.5px solid #1a1a1a;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+.btn.loading .spinner{display:inline-block}
+.btn.loading{pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── 错误/成功 ─── */
+.msg{margin-top:18px;text-align:center;font-size:13px;min-height:20px;transition:.2s}
+.msg.error{color:#b43c28}
+.msg.success{color:#2c6e49}
+
+/* ─── 底部测试账号 ─── */
+.note{
+  margin-top:28px;padding-top:14px;border-top:1px solid rgba(0,0,0,.04);
+  text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(0,0,0,.18);
+}
+
+/* ─── 水印 · 呼吸浮现 ─── */
+.watermark{
+  position:absolute;bottom:16px;right:24px;
+  font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  font-size:22px;color:rgba(0,0,0,0);pointer-events:none;white-space:nowrap;
+  transform:rotate(-3deg);
+  animation:watermark-breathe 4s 1.5s ease forwards;
+}
+@keyframes watermark-breathe{
+  0%{color:rgba(0,0,0,0)}
+  100%{color:rgba(0,0,0,.025)}
+}
+
+/* ─── 移动端 ─── */
+@media(max-width:480px){
+  .card{padding:32px 24px 28px}
+  .card::before{left:40px}
+  .brand h1{font-size:30px}
+  .stamp{right:12px;font-size:9px}
+}
+</style>
+</head>
+<body>
+<div class="card-wrap">
+<div class="card" id="card">
+  <div class="stamp" id="stamp"></div>
+
+  <div class="brand">
+    <h1>智辅化学</h1>
+    <p class="tagline">ChemAI · 智慧化学教学辅助系统</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <form class="form" id="form">
+    <div class="field">
+      <label>用户名 / 工号</label>
+      <input type="text" id="username" placeholder="hai" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>密码</label>
+      <div class="password-wrap">
+        <input type="password" id="password" placeholder="········" autocomplete="current-password">
+        <button type="button" class="toggle-pw" id="togglePw" aria-label="显示密码">👁</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>身份</label>
+      <select id="role">
+        <option value="teacher">教师</option>
+        <option value="student">学生</option>
+        <option value="parent">家长</option>
+      </select>
+    </div>
+    <label class="remember"><input type="checkbox" id="remember"><span class="check"></span>记住密码</label>
+    <button type="submit" class="btn" id="btn"><span class="spinner"></span>进入实验室</button>
+  </form>
+
+  <div class="msg" id="msg"></div>
+  <div class="note">hai / hai123456 · admin / admin123</div>
+  <div class="watermark">C₈H₁₀N₄O₂</div>
+</div>
+</div>
+
+<script>
+(function(){
+  var d=new Date();var m=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
+  document.getElementById('stamp').textContent='📋 '+m+' · No.'+String(d.getDate()).padStart(2,'0')+String(d.getHours()).padStart(2,'0');
+
+  // 密码可见性切换
+  var togglePw=document.getElementById('togglePw');
+  var pwInput=document.getElementById('password');
+  togglePw.addEventListener('click',function(){
+    if(pwInput.type==='password'){pwInput.type='text';togglePw.textContent='👁‍🗨'}
+    else{pwInput.type='password';togglePw.textContent='👁'}
+  });
+
+  // 记住密码
+  try{var saved=JSON.parse(localStorage.getItem('chemai_remember')||'null');if(saved){document.getElementById('username').value=saved.u||'';document.getElementById('password').value=saved.p||'';document.getElementById('remember').checked=true}}catch(e){}
+
+  document.getElementById('form').addEventListener('submit',async function(e){
+    e.preventDefault();
+    var u=document.getElementById('username').value.trim();
+    var p=document.getElementById('password').value;
+    var msg=document.getElementById('msg');
+    var btn=document.getElementById('btn');
+    msg.className='msg';msg.textContent='';
+
+    if(!u||!p){msg.className='msg error';msg.textContent='请填写用户名和密码';return}
+
+    btn.classList.add('loading');btn.disabled=true;
+    msg.className='msg';msg.textContent='验证中...';
+
+    try{
+      var resp=await fetch('/api/auth/login',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username:u,password:p})
+      });
+      var data=await resp.json();
+      btn.classList.remove('loading');btn.disabled=false;
+
+      if(data.success){
+        msg.className='msg success';msg.textContent='登录成功，正在进入...';
+        // 滴定终点 — 色条从红变绿
+        document.getElementById('card').classList.add('done');
+        var ud={id:data.user.id,username:data.user.username,name:data.user.name,role:data.user.role,school:data.user.school,token:data.token,refreshToken:data.refresh_token};
+        // 记住密码
+        if(document.getElementById('remember').checked){localStorage.setItem('chemai_remember',JSON.stringify({u:u,p:p}))}else{localStorage.removeItem('chemai_remember')}
+        sessionStorage.setItem('chemai_user',JSON.stringify(ud));
+        localStorage.setItem('token',data.token);
+        var target='/';if(ud.role==='parent')target='/m/parent.html';else if(ud.role==='student')target='/m/index.html';
+        setTimeout(function(){window.location.href=target},500);
+      }else{
+        msg.className='msg error';msg.textContent=data.message||'用户名或密码错误';
+      }
+    }catch(e){
+      btn.classList.remove('loading');btn.disabled=false;
+      msg.className='msg error';msg.textContent='网络错误，请重试';
+    }
+  });
+})();
+</script>
+</body>
+</html>

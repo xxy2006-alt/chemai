@@ -1,0 +1,37 @@
+[rebuild 09:12:09] 影子空库重建完成（新schema）
+已创建学校: 长沙市某中学
+已创建年级: 高三（2024级）
+已创建教师: 系统管理员
+已创建教师: 周老师
+已创建教师: 钱老师
+已创建教师: 吴老师
+已创建教师: 郑老师
+已创建账号: admin (admin)
+已创建账号: zhou (subject_lead)
+已创建账号: qian (teacher)
+已创建账号: wu (teacher)
+已创建账号: zheng (teacher)
+[rebuild 09:12:09] 学校/年级/教师/账号初始化完成
+C:\Users\Administrator\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\__init__.py:109: RequestsDependencyWarning: urllib3 (2.4.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event ClientCreateCollectionEvent: capture() takes 1 positional argument but 3 were given
+[ExamBank] 从 1 个文件加载了 12 道真题
+[rebuild 09:12:11] 教学安排导入：{'created_teachers': 0, 'created_links': 12, 'skipped': 0}
+[rebuild 09:12:12] 学籍名册导入：班级=9 学生=340 跳过=0
+[rebuild 09:12:14] 考试 2025-09-04 高二上开学摸底考试·化学 导入完成（累计作答 9180）
+[rebuild 09:12:18] 考试 2025-11-13 高二上期中联考·化学 导入完成（累计作答 18360）
+[rebuild 09:12:24] 考试 2026-01-22 高二上期末考试·化学 导入完成（累计作答 27540）
+[rebuild 09:12:31] 考试 2026-03-20 高二下第一次月考·化学 导入完成（累计作答 36720）
+[rebuild 09:12:39] 考试 2026-04-23 高二下期中考试·化学 导入完成（累计作答 45900）
+[rebuild 09:12:47] 考试 2026-06-18 高二下期末考试·化学 导入完成（累计作答 55080）
+[rebuild 09:12:59] 考试 2026-09-10 长沙市2026年9月高三第一次联考·化学 导入完成（累计作答 64260）
+[rebuild 09:12:59] 真题库同步 12 条 → historical_exams
+[rebuild 09:13:00] 家长建档绑定 340 人；演示家长 parent001/123456 → 陈唯唯(242034)
+[rebuild 09:13:00] 每日练习：340 名学生 × 近7天
+[rebuild 09:18:40] 每日练习作答落库 11900 条，障碍分布重算完成
+[预警检查] 已检查完成，创建 208 条预警
+[rebuild 09:19:05] 预警作业执行完成
+[rebuild 09:19:05] chemai.db 被常驻服务占用，等待重试（请停止 uvicorn 后自动继续）...
+[rebuild 09:19:35] 换库失败：chemai.db 持续被占用。影子库已就绪，请手动：
+[rebuild 09:19:35]   1) 停止后端服务  2) 删除 chemai.db  3) 将 D:\化学\chemai-backend\chemai_new.db 改名为 chemai.db

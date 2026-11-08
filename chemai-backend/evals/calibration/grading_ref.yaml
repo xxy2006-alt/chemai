@@ -1,0 +1,122 @@
+family: grading
+samples:
+- id: gr-ref-01a
+  input: 题目：下列关于盐类水解的说法，正确的是
+  output: 学生答案：B；判官判分：满分
+  reference: 官方答案：B（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-01b
+  input: 题目：下列关于盐类水解的说法，正确的是
+  output: 学生答案：B；判官判分：0 分
+  reference: 官方答案：B（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖
+- id: gr-ref-02a
+  input: 题目：在FeCl₃溶液中，下列操作能使Fe³⁺水解程度增大的是
+  output: 学生答案：B；判官判分：满分
+  reference: 官方答案：B（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-02b
+  input: 题目：在FeCl₃溶液中，下列操作能使Fe³⁺水解程度增大的是
+  output: 学生答案：B；判官判分：0 分
+  reference: 官方答案：B（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖
+- id: gr-ref-03a
+  input: 题目：下列离子方程式书写正确的是
+  output: 学生答案：C；判官判分：满分
+  reference: 官方答案：C（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-03b
+  input: 题目：下列离子方程式书写正确的是
+  output: 学生答案：C；判官判分：0 分
+  reference: 官方答案：C（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖
+- id: gr-ref-04a
+  input: 题目：在反应2KMnO₄+16HCl=2KCl+2MnCl₂+5Cl₂↑+8H₂O中，被氧化的HCl与未被氧化的HCl的物质的量之比为
+  output: 学生答案：B；判官判分：满分
+  reference: 官方答案：B（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-04b
+  input: 题目：在反应2KMnO₄+16HCl=2KCl+2MnCl₂+5Cl₂↑+8H₂O中，被氧化的HCl与未被氧化的HCl的物质的量之比为
+  output: 学生答案：B；判官判分：0 分
+  reference: 官方答案：B（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖
+- id: gr-ref-05a
+  input: 题目：对于可逆反应2SO₂(g)+O₂(g)⇌2SO₃(g) ΔH<0，下列措施能使平衡正向移动的是
+  output: 学生答案：C；判官判分：满分
+  reference: 官方答案：C（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-05b
+  input: 题目：对于可逆反应2SO₂(g)+O₂(g)⇌2SO₃(g) ΔH<0，下列措施能使平衡正向移动的是
+  output: 学生答案：C；判官判分：0 分
+  reference: 官方答案：C（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖
+- id: gr-ref-06a
+  input: 题目：短周期元素X、Y、Z的原子序数依次增大，X原子的最外层电子数是次外层的2倍，Y的氧化物有两性，Z的原子半径在同周期中最小。下列说法正确的是
+  output: 学生答案：B；判官判分：满分
+  reference: 官方答案：B（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-06b
+  input: 题目：短周期元素X、Y、Z的原子序数依次增大，X原子的最外层电子数是次外层的2倍，Y的氧化物有两性，Z的原子半径在同周期中最小。下列说法正确的是
+  output: 学生答案：B；判官判分：0 分
+  reference: 官方答案：B（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖
+- id: gr-ref-07a
+  input: 题目：标准状况下，22.4L CO₂的物质的量是
+  output: 学生答案：B；判官判分：满分
+  reference: 官方答案：B（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-07b
+  input: 题目：标准状况下，22.4L CO₂的物质的量是
+  output: 学生答案：B；判官判分：0 分
+  reference: 官方答案：B（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖
+- id: gr-ref-08a
+  input: 题目：下列有机物中，能与NaHCO₃溶液反应放出CO₂的是
+  output: 学生答案：B；判官判分：满分
+  reference: 官方答案：B（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-08b
+  input: 题目：下列有机物中，能与NaHCO₃溶液反应放出CO₂的是
+  output: 学生答案：B；判官判分：0 分
+  reference: 官方答案：B（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖
+- id: gr-ref-09a
+  input: 题目：在电解饱和食盐水的实验中，阳极产生的气体是
+  output: 学生答案：C；判官判分：满分
+  reference: 官方答案：C（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-09b
+  input: 题目：在电解饱和食盐水的实验中，阳极产生的气体是
+  output: 学生答案：C；判官判分：0 分
+  reference: 官方答案：C（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖
+- id: gr-ref-10a
+  input: 题目：对于反应N₂(g)+3H₂(g)⇌2NH₃(g)，在某温度下达到平衡时，[N₂]=2mol/L，[H₂]=3mol/L，[NH₃]=4mol/L，则该温度下的平衡常数K为
+  output: 学生答案：B；判官判分：满分
+  reference: 官方答案：B（判分正确）
+  human_score: 100
+  note: 判分与官方答案一致
+- id: gr-ref-10b
+  input: 题目：对于反应N₂(g)+3H₂(g)⇌2NH₃(g)，在某温度下达到平衡时，[N₂]=2mol/L，[H₂]=3mol/L，[NH₃]=4mol/L，则该温度下的平衡常数K为
+  output: 学生答案：B；判官判分：0 分
+  reference: 官方答案：B（应满分，判分失误）
+  human_score: 0
+  note: 判分与官方答案相悖

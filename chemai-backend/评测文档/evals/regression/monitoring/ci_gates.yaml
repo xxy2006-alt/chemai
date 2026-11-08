@@ -1,0 +1,68 @@
+# CI 门禁阈值
+# 定义所有 14 维度的 CI 通过/告警/阻断标准
+# 用途: CI/CD 流水线自动质量门禁
+
+ci_gates:
+  routing:
+    warning: 0.90
+    critical: 0.80
+    description: "路由准确性"
+  tool_call:
+    warning: 0.85
+    critical: 0.75
+    description: "工具调用准确性"
+  workflow:
+    warning: 0.80
+    critical: 0.70
+    description: "工作流完整性"
+  constraint:
+    warning: 0.85
+    critical: 0.75
+    description: "行为约束"
+  edge_case:
+    warning: 0.80
+    critical: 0.65
+    description: "边界情况"
+  error_recovery:
+    warning: 0.75
+    critical: 0.60
+    description: "错误恢复"
+  cross_role:
+    warning: 0.85
+    critical: 0.70
+    description: "跨角色权限"
+  sse:
+    warning: 1.00
+    critical: 0.90
+    description: "SSE流式传输"
+  consistency:
+    warning: 0.80
+    critical: 0.65
+    description: "一致性 (Pass@k)"
+  result_utilization:
+    warning: 0.80
+    critical: 0.65
+    description: "工具结果利用"
+  plan_coherence:
+    warning: 0.80
+    critical: 0.65
+    description: "计划连贯性"
+  state_transition:
+    warning: 0.85
+    critical: 0.70
+    description: "状态转换/检查点回放"
+  performance:
+    warning: 0.85
+    critical: 0.70
+    description: "性能基线"
+  regression:
+    warning: 1.00
+    critical: 0.95
+    description: "已知缺陷回归"
+
+# CI 行为定义
+ci_behavior:
+  warning: "通过但发出告警，允许合入"
+  critical: "阻断合入，必须修复"
+  measurement: "每维度通过率 = 通过场景数 / 总场景数"
+  aggregation: "所有场景等权，无加权平均"

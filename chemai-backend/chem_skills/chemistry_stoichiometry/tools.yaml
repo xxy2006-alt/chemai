@@ -1,0 +1,23 @@
+tools:
+  - name: stoichiometry_tutor
+    description: 物质的量计算指导 — 引导学生分步完成化学计量计算
+    input_schema:
+      type: object
+      properties:
+        problem:
+          type: string
+          description: "学生遇到的计算题目"
+        student_input:
+          type: string
+          description: "学生对当前步骤的回答"
+    output_schema:
+      type: object
+      properties:
+        step: {type: integer}
+        total_steps: {type: integer}
+        title: {type: string}
+        problem: {type: string}
+        guidance: {type: string}
+        hint: {type: string}
+        feedback: {type: string}
+        key_formulas: {type: array}

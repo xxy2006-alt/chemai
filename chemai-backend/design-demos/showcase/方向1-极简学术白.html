@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChemAI Agent 系统设计 — 方向1 极简学术白</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #E5E7EB; display: flex; flex-direction: column; align-items: center; gap: 48px; padding: 48px 24px; }
+  .slide-label { font: 13px/1.4 system-ui; color: #6B7280; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: -32px; }
+  .slide {
+    width: 960px; height: 540px; background: #FAFAFA; border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 24px rgba(0,0,0,0.04);
+    position: relative; overflow: hidden; font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* ═══ Cover Slide ═══ */
+  .cover .hero-line { position: absolute; left: 80px; top: 140px; width: 72px; height: 3px; background: #0EA5E9; border-radius: 2px; }
+  .cover .doc-num { position: absolute; left: 80px; top: 96px; font: 500 13px/1 'JetBrains Mono', monospace; color: #9CA3AF; letter-spacing: 0.12em; text-transform: uppercase; }
+  .cover h1 { position: absolute; left: 80px; top: 160px; font: 400 48px/1.15 'DM Serif Display', serif; color: #111827; max-width: 640px; }
+  .cover h1 em { font-style: italic; color: #0EA5E9; }
+  .cover .subtitle { position: absolute; left: 80px; top: 292px; font: 400 16px/1.6 system-ui; color: #6B7280; max-width: 520px; }
+  .cover .meta { position: absolute; left: 80px; bottom: 60px; font: 400 13px/1.4 'JetBrains Mono', monospace; color: #D1D5DB; }
+  .cover .section-tag { position: absolute; right: 80px; bottom: 56px; font: 500 13px/1 'JetBrains Mono', monospace; color: #0EA5E9; letter-spacing: 0.08em; }
+  .cover .bg-num { position: absolute; right: -40px; top: -60px; font: 400 280px/1 'DM Serif Display', serif; color: #F3F4F6; user-select: none; pointer-events: none; }
+
+  /* ═══ Content Slide ═══ */
+  .content .section-header { position: absolute; left: 80px; top: 52px; display: flex; align-items: center; gap: 16px; }
+  .content .section-num { font: 500 13px/1 'JetBrains Mono', monospace; color: #0EA5E9; letter-spacing: 0.08em; }
+  .content .section-num span { color: #D1D5DB; }
+  .content .section-title { font: 400 28px/1.2 'DM Serif Display', serif; color: #111827; }
+  .content .page-indicator { position: absolute; right: 80px; top: 56px; font: 400 13px/1 'JetBrains Mono', monospace; color: #D1D5DB; }
+  .content .main-col { position: absolute; left: 80px; top: 128px; width: 500px; }
+  .content .lead { font: 400 15px/1.7 system-ui; color: #374151; margin-bottom: 28px; }
+  .content h3 { font: 500 13px/1 system-ui; color: #9CA3AF; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .content .strategy-list { list-style: none; }
+  .content .strategy-list li { font: 400 14px/1.6 system-ui; color: #4B5563; padding: 10px 0; border-bottom: 1px solid #F3F4F6; display: flex; align-items: flex-start; gap: 12px; }
+  .content .strategy-list li::before { content: attr(data-num); flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: #F0F9FF; color: #0EA5E9; font: 500 12px/24px 'JetBrains Mono', monospace; text-align: center; }
+  .content .side-col { position: absolute; right: 80px; top: 128px; width: 260px; }
+  .content .param-card { background: #F9FAFB; border-radius: 6px; padding: 18px 20px; margin-bottom: 12px; }
+  .content .param-label { font: 500 11px/1 system-ui; color: #9CA3AF; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+  .content .param-value { font: 500 15px/1.3 'JetBrains Mono', monospace; color: #111827; }
+  .content .param-value.accent { color: #0EA5E9; }
+  .content .note { position: absolute; left: 80px; bottom: 52px; font: 400 12px/1.5 system-ui; color: #9CA3AF; max-width: 480px; border-left: 2px solid #E5E7EB; padding-left: 14px; }
+</style>
+</head>
+<body>
+
+<div class="slide-label">封面 · 方向1 极简学术白</div>
+<div class="slide cover">
+  <div class="bg-num">30</div>
+  <div class="doc-num">CHEMAI · DOC 30</div>
+  <div class="hero-line"></div>
+  <h1>Agent 对话系统<em>底层架构</em></h1>
+  <p class="subtitle">上下文管理 · 记忆系统 · 审计日志 · 错误处理 · MCP · SSE 协议<br>Provider 多路回退 · 依赖注入 · 对话管理 · chem_skills 目录</p>
+  <div class="meta">L3 课程 · 第五节课 · 第八章至结尾</div>
+  <div class="section-tag">§8 – §22 + 附录</div>
+</div>
+
+<div class="slide-label">正文页 · §8 上下文管理</div>
+<div class="slide content">
+  <div class="section-header">
+    <div class="section-num"><span>30.</span>08</div>
+    <div class="section-title">上下文管理</div>
+  </div>
+  <div class="page-indicator">§8</div>
+
+  <div class="main-col">
+    <p class="lead">对话消息超过 30 条时触发三层裁剪，解决对话历史过长导致的 token 爆炸问题。</p>
+    <h3>三层裁剪策略</h3>
+    <ul class="strategy-list">
+      <li data-num="1"><span><strong style="font-weight:600;color:#111827;">Layer 1 · 无条件保留</strong><br>最近 6 条消息（约 3 轮对话），确保对话连续性</span></li>
+      <li data-num="2"><span><strong style="font-weight:600;color:#111827;">Layer 2 · 条件保留</strong><br>含 14 个教学关键词的消息额外保留<br>学生 / 诊断 / 障碍 / 考试 / 题目 / 知识点 / 分数 / 薄弱 / 学习计划 / 错题 / 成绩 / 练习 / 班级 / 教师</span></li>
+      <li data-num="3"><span><strong style="font-weight:600;color:#111827;">Layer 3 · LLM 摘要</strong><br>丢弃消息 ≥ 10 条时，压缩为 ≤ 200 字中文摘要<br>摘要失败则直接丢弃，仅保留关键词命中部分</span></li>
+    </ul>
+  </div>
+
+  <div class="side-col">
+    <div class="param-card">
+      <div class="param-label">触发阈值</div>
+      <div class="param-value accent">30 条消息</div>
+    </div>
+    <div class="param-card">
+      <div class="param-label">无条件保留</div>
+      <div class="param-value accent">最近 6 条</div>
+    </div>
+    <div class="param-card">
+      <div class="param-label">关键词数量</div>
+      <div class="param-value">14 个中文词</div>
+    </div>
+    <div class="param-card">
+      <div class="param-label">摘要触发</div>
+      <div class="param-value">丢弃 ≥ 10 条</div>
+    </div>
+    <div class="param-card">
+      <div class="param-label">摘要上限</div>
+      <div class="param-value">200 字</div>
+    </div>
+  </div>
+
+  <p class="note">裁剪后消息结构：[摘要] → [关键词命中历史] → [最近 6 条] → [当前用户输入]。代码实现：agent/context_manager.py</p>
+</div>
+
+</body>
+</html>

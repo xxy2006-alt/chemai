@@ -1,0 +1,36 @@
+# 校准集：出题族（question_gen）
+# 状态：种子样本，未经人工标注复核；启用门槛 ≥20 条人工标注样本（Spec 04）
+# 数据源约定：出题/判卷族用真题官方答案；本文件当前为管线种子。
+family: question_gen
+samples:
+  - id: qg-001
+    input: 出3道盐类水解的选择题，中等难度
+    output: |
+      1. 下列物质的水溶液显酸性的是（ ）
+         A. NaCl  B. Na2CO3  C. NH4Cl  D. CH3COONa
+         答案：A  解析：NaCl 水解显酸性。
+    human_score: 30
+    human_severe: chemical_error
+    note: 解析与答案均错（NaCl 不水解，正确应为 C），典型化学错误
+
+  - id: qg-002
+    input: 出2道氧化还原概念的选择题，简单难度
+    output: |
+      1. 下列反应属于氧化还原反应的是（ ）
+         A. CaO + H2O = Ca(OH)2  B. 2H2 + O2 = 2H2O
+         C. NaOH + HCl = NaCl + H2O  D. CaCO3 = CaO + CO2↑
+         答案：B  解析：B 中有元素化合价变化（H 升 O 降）。
+    human_score: 88
+    note: 化学正确、难度匹配、解析正确
+
+  - id: qg-003
+    input: 出1道电化学计算题，困难难度
+    output: 1. 电解水得到 2g 氢气，求转移电子数。答案：1mol。
+    human_score: 45
+    note: 缺分步解析、格式残缺（无选项/无小题标记）
+
+  - id: qg-004
+    input: 出3道选择题，中等难度
+    output: Na2CO3 中碳元素的化合价是（ ）A. +2 B. +4 C. +6 D. -4 答案：B 解析：碳酸根中碳为 +4。
+    human_score: 70
+    note: 数量不符（只出1道）、未标注知识点；化学本身正确

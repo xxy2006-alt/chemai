@@ -1,0 +1,210 @@
+tools:
+  # ===== 学生记忆读写 =====
+
+  - name: memory_student_get
+    description: 获取学生的完整学情记忆
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+          description: 学生ID
+        memory_type:
+          type: string
+          enum: [profile, barrier_history, weak_kps, practice_history, preferences, all]
+          default: all
+          description: 记忆类型
+      required: [student_id]
+
+  - name: memory_student_update
+    description: 更新学生的学情记忆
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+          description: 学生ID
+        memory_type:
+          type: string
+          enum: [profile, barrier_history, weak_kps, practice_history, preferences]
+          description: 记忆类型
+        content:
+          type: string
+          description: 记忆内容（Markdown格式）
+        append:
+          type: boolean
+          default: false
+          description: 是否追加模式（true=追加，false=覆盖）
+      required: [student_id, memory_type, content]
+
+  # ===== 班级记忆读写 =====
+
+  - name: memory_class_get
+    description: 获取班级的学情记忆
+    input_schema:
+      type: object
+      properties:
+        class_id:
+          type: string
+          description: 班级ID
+        memory_type:
+          type: string
+          enum: [summary, common_barriers, trends, all]
+          default: all
+          description: 记忆类型
+      required: [class_id]
+
+  - name: memory_class_update
+    description: 更新班级的学情记忆
+    input_schema:
+      type: object
+      properties:
+        class_id:
+          type: string
+          description: 班级ID
+        memory_type:
+          type: string
+          enum: [summary, common_barriers, trends]
+          description: 记忆类型
+        content:
+          type: string
+          description: 记忆内容（Markdown格式）
+        append:
+          type: boolean
+          default: false
+      required: [class_id, memory_type, content]
+
+  # ===== 教师记忆读写 =====
+
+  - name: memory_teacher_get
+    description: 获取教师的个性化配置
+    input_schema:
+      type: object
+      properties:
+        teacher_id:
+          type: string
+          description: 教师ID
+        memory_type:
+          type: string
+          enum: [config, teaching_style, all]
+          default: all
+      required: [teacher_id]
+
+  - name: memory_teacher_update
+    description: 更新教师的个性化配置
+    input_schema:
+      type: object
+      properties:
+        teacher_id:
+          type: string
+          description: 教师ID
+        memory_type:
+          type: string
+          enum: [config, teaching_style]
+          description: 记忆类型
+        content:
+          type: string
+          description: 配置内容
+      required: [teacher_id, memory_type, content]
+
+  # ===== FTS5 搜索 =====
+
+  - name: memory_search
+    description: 跨会话搜索学情历史（FTS5全文搜索）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词
+        search_type:
+          type: string
+          enum: [student, class, teacher, all]
+          default: all
+          description: 搜索范围
+        student_id:
+          type: string
+          description: 指定学生ID（可选）
+        limit:
+          type: integer
+          default: 10
+          description: 返回结果数量
+      required: [query]
+
+  # ===== LLM 摘要生成 =====
+
+  - name: memory_summarize
+    description: 对学生的历史数据进行 LLM 摘要，更新学生画像
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+          description: 学生ID
+        force_refresh:
+          type: boolean
+          default: false
+          description: 强制刷新（即使未过期）
+      required: [student_id]
+
+  # ===== 记忆统计分析 =====
+
+  - name: memory_stats
+    description: 获取记忆系统的统计信息
+    input_schema:
+      type: object
+      properties: {}
+
+  # ===== 记忆事件触发 =====
+
+  - name: memory_on_exam_completed
+    description: 考试完成事件 - 自动更新记忆
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+        exam_record_id:
+          type: string
+        score:
+          type: number
+        correct_count:
+          type: integer
+        total_count:
+          type: integer
+      required: [student_id, exam_record_id, score, correct_count, total_count]
+
+  - name: memory_on_diagnosis_completed
+    description: 诊断完成事件 - 自动更新记忆
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+        barrier_type:
+          type: object
+          description: 障碍类型占比 {concept, reading, expression}
+        dominant_barrier:
+          type: string
+        weak_kps:
+          type: array
+          items:
+            type: string
+      required: [student_id, barrier_type, dominant_barrier, weak_kps]
+
+  - name: memory_on_practice_completed
+    description: 练习完成事件 - 自动更新记忆
+    input_schema:
+      type: object
+      properties:
+        student_id:
+          type: string
+        practice_id:
+          type: string
+        score:
+          type: number
+        completed_count:
+          type: integer
+        total_count:
+          type: integer
+      required: [student_id, practice_id, score, completed_count, total_count]

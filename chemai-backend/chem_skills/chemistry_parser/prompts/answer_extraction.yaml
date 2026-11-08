@@ -1,0 +1,46 @@
+# 答案提取 Prompt
+# 用于从解析内容中提取答案
+
+template: |
+  你是一位专业的高中化学教研专家。请从以下内容中提取题目答案。
+
+  ## 内容来源
+  {source_type}  <!-- pdf/docx/ocr -->
+
+  ## 原始内容
+  {content}
+
+  ## 题目类型
+  {question_type}  <!-- auto/choice/fill-blank/short-answer/calculation -->
+
+  ## 答案提取规则
+
+  1. **选择题**：提取正确选项字母
+     - 如 "答案：A" → {"type": "choice", "answer": "A"}
+
+  2. **填空题**：提取下划线处应填内容
+     - 如 "试管口应____倾斜" → {"type": "fill-blank", "answers": ["向下"]}
+
+  3. **简答题/计算题**：提取完整答案要点
+     - 保留关键步骤和结论
+
+  4. **化学方程式**：完整书写
+     - 确保配平正确
+
+  ## 输出格式
+  ```json
+  {{
+    "answers": [
+      {{
+        "question_preview": "题目开头（20字）",
+        "answer": "完整答案",
+        "answer_type": "choice/fill/short/calculation/equation",
+        "confidence": 0.0-1.0
+      }}
+    ],
+    "extraction_notes": "备注说明"
+  }}
+  ```
+
+language: zh-CN
+version: "1.0"

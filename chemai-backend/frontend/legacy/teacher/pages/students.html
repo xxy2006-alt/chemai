@@ -1,0 +1,243 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>学生管理 · 智辅化学</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/common.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script src="https://unpkg.com/chart.js@4/dist/chart.umd.js"></script>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{ink:"#1a1a1a",paper:"#faf7f0",paperWarm:"#f5efe0",inkLight:"#555",congoRed:"#b43c28",methylGreen:"#2c6e49"},fontFamily:{sans:["IBM Plex Sans"],mono:["JetBrains Mono"],serif:["Cormorant Garamond","Georgia","serif"]}}}}</script>
+<style>
+body{font-family:'IBM Plex Sans',sans-serif;background:#f7f4ed;color:#1a1a1a;margin:0}
+
+/* ─── 侧边栏 ─── */
+.sidebar{width:240px;position:fixed;left:0;top:0;height:100vh;z-index:50;background:#f5efe0;border-right:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column}
+.sidebar .brand-area{padding:20px 16px 4px}
+.sidebar .brand-area h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:600;line-height:1.1;margin:0}
+.sidebar .brand-area .sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;margin-top:3px;letter-spacing:.5px}
+.sidebar .home-link{margin:14px 12px 10px;padding:9px 0;text-align:center;font-size:14px;font-family:'IBM Plex Sans',sans-serif;border:1px solid rgba(0,0,0,.1);background:transparent;color:#555;border-radius:4px;cursor:pointer;transition:.15s;text-decoration:none;display:block}
+.sidebar .home-link:hover{border-color:#b43c28;color:#b43c28}
+.elem-nav{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 8px;border-radius:4px;text-decoration:none;color:#555;font-size:15px;transition:.12s}
+.elem-nav .sym{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:17px;min-width:32px;text-align:center;padding:4px 6px;border-radius:3px;background:rgba(0,0,0,.03);color:#1a1a1a}
+.elem-nav:hover{background:rgba(0,0,0,.02)}.elem-nav:hover .sym{background:#1a1a1a;color:#faf7f0}
+.elem-nav.active{background:rgba(0,0,0,.03);font-weight:500}.elem-nav.active .sym{background:#b43c28;color:#fff}
+
+/* ─── 主区域 ─── */
+.main{margin-left:240px;min-height:100vh;padding:32px;
+  background-image:linear-gradient(rgba(0,0,0,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.012) 1px,transparent 1px);
+  background-size:28px 28px;background-position:-1px -1px}
+
+/* ─── 页面标题 ─── */
+.page-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:600;color:#1a1a1a;margin:0 0 4px}
+.page-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:#999;letter-spacing:.5px;margin-bottom:24px}
+
+/* ─── 统计条 ─── */
+.stat-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stat-item{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:4px;padding:16px 20px;position:relative;overflow:hidden}
+.stat-item::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.stat-item.total::after{background:rgba(0,0,0,.04)}
+.stat-item.active::after{background:#2c6e49}
+.stat-item.attention::after{background:#b43c28}
+.stat-item.avg::after{background:#d4956b}
+.stat-item .stat-num{font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:600;line-height:1;color:#1a1a1a}
+.stat-item .stat-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.stat-item.attention .stat-num{color:#b43c28}
+.stat-item.active .stat-num{color:#2c6e49}
+
+/* ─── 工具栏 ─── */
+.toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:flex-end}
+.toolbar .field{flex:1;min-width:140px;max-width:240px}
+.toolbar .field label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.input{width:100%;border:none;border-bottom:1.5px solid rgba(0,0,0,.08);background:transparent;padding:9px 4px;font-size:15px;font-family:'IBM Plex Sans',sans-serif;outline:none;transition:border-color .3s}
+.input:focus{border-bottom-color:#b43c28}
+select.input{-webkit-appearance:none;border-radius:0;background:transparent;cursor:pointer}
+.btn{padding:8px 18px;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;font-size:14px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;border-radius:4px;transition:.15s;text-decoration:none;display:inline-block;white-space:nowrap}
+.btn:hover{background:#1a1a1a;color:#faf7f0}
+
+/* ─── 卡片网格 ─── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:20px}
+.student-card{padding:16px;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:4px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:12px}
+.student-card:hover{border-color:#b43c28;background:#faf7f0}
+.s-avatar{width:40px;height:40px;border-radius:50%;background:#1a1a1a;color:#faf7f0;font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.s-info{flex:1;min-width:0}
+.s-name{font-size:15px;font-weight:500;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s-class{font-size:12px;color:#999;font-family:'JetBrains Mono',monospace;margin-top:2px}
+.s-meta{display:flex;align-items:center;gap:10px;margin-top:4px}
+.s-exercises{font-family:'JetBrains Mono',monospace;font-size:11px;color:#999}
+.s-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:#bbb}
+
+.tag{display:inline-block;padding:2px 10px;border-radius:9999px;font-size:11px;font-weight:500;font-family:'JetBrains Mono',monospace}
+.tag-concept{background:#eaddff;color:#5429a6}
+.tag-reading{background:#d6e3ff;color:#2d476f}
+.tag-expression{background:#a5eff0;color:#004f50}
+
+/* ─── 分页 ─── */
+.pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:20px}
+.pagination .page-btn{padding:6px 14px;border:1.5px solid rgba(0,0,0,.1);background:transparent;color:#555;font-size:13px;cursor:pointer;border-radius:4px;transition:.15s;font-family:'IBM Plex Sans',sans-serif}
+.pagination .page-btn:hover{border-color:#1a1a1a;color:#1a1a1a}
+.pagination .page-btn:disabled{opacity:.3;cursor:not-allowed}
+.pagination .page-info{font-family:'JetBrains Mono',monospace;font-size:12px;color:#999}
+
+/* ─── Drawer ─── */
+.drawer-backdrop{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.2);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer-backdrop.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;z-index:201;width:480px;max-width:100vw;height:100vh;background:#faf7f0;border-left:1px solid rgba(0,0,0,.06);transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,.06)}
+.drawer.open{transform:translateX(0)}
+.drawer-inner{padding:28px 32px}
+.drawer-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#999;padding:4px 8px;line-height:1;border-radius:4px;transition:.15s}
+.drawer-close:hover{color:#b43c28;background:rgba(0,0,0,.02)}
+.drawer h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:600;margin:0 0 4px}
+.drawer .d-class{font-family:'JetBrains Mono',monospace;font-size:11px;color:#999;margin-bottom:20px}
+.drawer .d-actions{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.drawer .btn-sm{padding:5px 12px;font-size:12px}
+.drawer .section{margin-bottom:20px}
+.drawer .section-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.drawer .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.drawer .kpi{background:#fff;border:1px solid rgba(0,0,0,.04);border-radius:4px;padding:12px;text-align:center}
+.drawer .kpi-val{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:600;color:#1a1a1a;line-height:1}
+.drawer .kpi-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:#999;text-transform:uppercase;margin-top:3px}
+.drawer .barrier-bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.drawer .barrier-bar .b-label{width:70px;font-size:13px;flex-shrink:0}
+.drawer .barrier-bar .b-track{flex:1;height:8px;background:rgba(0,0,0,.04);border-radius:9999px;overflow:hidden}
+.drawer .barrier-bar .b-fill{height:100%;border-radius:9999px;transition:width .4s ease}
+.drawer .barrier-bar .b-pct{font-family:'JetBrains Mono',monospace;font-size:12px;color:#555;min-width:36px;text-align:right}
+.drawer .tag-row{display:flex;flex-wrap:wrap;gap:6px}
+.drawer .timeline{list-style:none;padding:0;margin:0}
+.drawer .timeline li{padding:6px 0;border-bottom:1px solid rgba(0,0,0,.03);font-size:13px;display:flex;gap:12px}
+.drawer .timeline .tl-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;min-width:72px}
+
+/* ─── Modal ─── */
+.modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.25);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:4px;padding:28px 32px;max-width:440px;width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.1)}
+.modal-box h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:600;margin:0 0 16px}
+.empty-state{text-align:center;padding:40px;color:#999;font-family:'JetBrains Mono',monospace;font-size:12px}
+.form-group{margin-bottom:14px}
+.form-group label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.form-error{color:#b43c28;font-size:12px;margin-top:4px;display:none;font-family:'IBM Plex Sans',sans-serif}
+
+/* ─── 添加学生 Tab ─── */
+.add-tab{padding:8px 20px;border:none;background:transparent;font-size:14px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;color:#999;transition:.15s;position:relative}
+.add-tab:hover{color:#1a1a1a}
+.add-tab.active{color:#b43c28;font-weight:500}
+.add-tab.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:#b43c28}
+
+@media(max-width:600px){.drawer{width:100vw}.card-grid{grid-template-columns:1fr}.stat-bar{grid-template-columns:repeat(2,1fr)}.toolbar .field{max-width:100%}}
+</style></head><body>
+
+<aside class="sidebar">
+<div class="brand-area"><h1>智辅化学</h1><p class="sub">CHEMAI · 教师工作台</p></div>
+<a href="/" class="home-link">AI 教研助手</a>
+<nav class="flex-1 overflow-y-auto flex flex-col" id="sidebar-nav" style="padding:4px 0"></nav>
+<div style="padding:8px 12px;border-top:1px solid rgba(0,0,0,.04)"><a class="elem-nav" href="#" onclick="ChemAI.logout()" style="font-size:12px;color:#999">退出登录</a></div>
+</aside>
+
+<main class="main">
+<h1 class="page-title">学生管理</h1>
+<p class="page-sub" id="page-badge">STUDENT DIRECTORY</p>
+
+<!-- 统计条 -->
+<div class="stat-bar" id="stat-bar"></div>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+  <div class="field"><label>搜索姓名</label><input id="s-search" class="input" placeholder="输入姓名搜索..." oninput="filterAndRender()"></div>
+  <div class="field"><label>班级筛选</label><select id="s-class" class="input" onchange="filterAndRender()"><option value="">全部班级</option></select></div>
+  <div class="field"><label>障碍类型</label><select id="s-barrier" class="input" onchange="filterAndRender()"><option value="">全部类型</option><option value="concept">概念理解型</option><option value="reading">审题障碍型</option><option value="expression">表述障碍型</option></select></div>
+  <button class="btn" onclick="openAddStudent()">+ 添加学生</button>
+</div>
+
+<!-- 卡片网格 -->
+<div class="card-grid" id="card-grid"></div>
+
+<!-- 分页 -->
+<div class="pagination" id="pagination"></div>
+</main>
+
+<!-- Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer-close" onclick="closeDrawer()">&times;</button>
+  <div class="drawer-inner" id="drawer-content"></div>
+</div>
+
+<!-- 添加学生 Modal -->
+<div class="modal-overlay" id="add-modal" onclick="if(event.target===this)closeAddStudent()">
+  <div class="modal-box"><h3>添加学生</h3>
+    <!-- Tab 切换 -->
+    <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid rgba(0,0,0,.06)">
+      <button id="add-tab-manual" class="add-tab active" onclick="switchAddTab('manual')">手动输入</button>
+      <button id="add-tab-invite" class="add-tab" onclick="switchAddTab('invite')">邀请码</button>
+    </div>
+    <!-- 手动输入面板 -->
+    <div id="add-panel-manual">
+      <div class="form-group"><label>姓名</label><input id="add-name" class="input" placeholder="学生姓名"><div class="form-error" id="add-name-err">请输入姓名</div></div>
+      <div class="form-group"><label>班级</label><select id="add-class" class="input"><option value="">选择班级...</option></select><div class="form-error" id="add-class-err">请选择班级</div></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+        <button class="btn" onclick="closeAddStudent()">取消</button>
+        <button class="btn" onclick="submitAddStudent()" style="background:#b43c28;border-color:#b43c28;color:#fff">确认添加</button>
+      </div>
+    </div>
+    <!-- 邀请码面板 -->
+    <div id="add-panel-invite" style="display:none">
+      <div class="form-group"><label>班级</label><select id="invite-class" class="input"><option value="">选择班级...</option></select><div class="form-error" id="invite-class-err">请选择班级</div></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+        <button class="btn" onclick="closeAddStudent()">取消</button>
+        <button class="btn" id="invite-gen-btn" onclick="generateInviteCode()" style="background:#b43c28;border-color:#b43c28;color:#fff">生成邀请码</button>
+      </div>
+      <div id="invite-result" style="display:none;margin-top:16px;padding:16px;background:rgba(44,110,73,.06);border:1px solid rgba(44,110,73,.15);border-radius:4px;text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">邀请码</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:500;color:#2c6e49;letter-spacing:3px;user-select:all;margin-bottom:8px" id="invite-code-display"></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#999;margin-bottom:8px">有效期 7 天 · 将邀请码分享给学生即可加入班级</div>
+        <button class="btn" onclick="copyInviteCode()" id="invite-copy-btn" style="font-size:12px;padding:4px 12px">📋 复制邀请码</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 转班 Modal -->
+<div class="modal-overlay" id="transfer-modal" onclick="if(event.target===this)closeTransfer()">
+  <div class="modal-box" style="max-width:400px"><h3>转班</h3>
+    <p style="color:#555;margin:0 0 12px;font-size:14px" id="tf-student-name"></p>
+    <div class="form-group"><label>目标班级</label><select id="tf-class" class="input"><option value="">选择目标班级...</option></select></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="closeTransfer()">取消</button>
+      <button class="btn" onclick="confirmTransfer()">确认转班</button>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+<script src="/js/students.js?v=5"></script>
+<script>
+(function(){
+  var n = sessionStorage.getItem('chemai_navigate')
+  if(!n) return
+  try { n = JSON.parse(n) } catch(e) { return }
+  window.__chemai_bridge = n
+  sessionStorage.removeItem('chemai_navigate')
+
+  // Defer consumer until students.js is loaded
+  document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () {
+      var bridge = window.__chemai_bridge
+      if (!bridge) return
+
+      if (bridge.actions) {
+        bridge.actions.forEach(function (act) {
+          if (act.action === 'searchStudent') {
+            var s = document.getElementById('s-search')
+            if (s) { s.value = act.payload || ''; s.dispatchEvent(new Event('input')) }
+          }
+          if (act.action === 'openWeeklyReport' && bridge.populates) {
+            var wr = bridge.populates.find(function(p) { return p.target === 'weeklyReport' })
+            if (wr && wr.data && wr.data.report) {
+              alert('📋 ' + (wr.data.student_name || '学生') + ' 的本周学习报告:\n\n' + wr.data.report)
+            }
+          }
+        })
+      }
+      window.__chemai_bridge = null
+    }, 300)
+  })
+})()
+</script></body></html>

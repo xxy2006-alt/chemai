@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>智辅化学 · 学生端原型</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+<style>.material-icons{font-size:24px;line-height:1;vertical-align:middle}</style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  background:#e8e4dc;display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:20px;
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef} = React
+
+// ═══════════════════════════════════════════
+// Design tokens — ChemAI student app
+// ═══════════════════════════════════════════
+const C = {
+  bg:'#f7f4ed', bgWarm:'#f5efe0', bgDark:'#ede4d3',
+  card:'#ffffff', cardHover:'#faf8f3',
+  text:'#1a1a1a', text2:'#555555', text3:'#888888', text4:'#bbbbbb',
+  accent:'#b43c28', accentDark:'#8b2918', accentLight:'rgba(180,60,40,0.06)',
+  green:'#2c6e49', greenLight:'rgba(44,110,73,0.06)',
+  border:'rgba(0,0,0,0.06)', border2:'rgba(0,0,0,0.1)',
+  serif:'Cormorant Garamond,Noto Serif SC,SimSun,Georgia,serif',
+  shadow:'0 1px 3px rgba(0,0,0,0.04)',
+}
+
+// ═══════════════════════════════════════════
+// iOS Device Frame (iPhone 15 Pro proportions)
+// ═══════════════════════════════════════════
+function DeviceFrame({children,time="9:41"}){
+  return (
+    <div style={{display:'inline-block',padding:10,background:'#1a1a1a',borderRadius:44,
+      boxShadow:'0 0 0 2px #333,0 20px 60px rgba(0,0,0,.35)'}}>
+      <div style={{width:390,height:844,borderRadius:36,overflow:'hidden',
+        background:C.bg,display:'flex',flexDirection:'column',position:'relative'}}>
+        <div style={{position:'absolute',top:10,left:'50%',transform:'translateX(-50%)',
+          width:120,height:34,background:'#000',borderRadius:99,zIndex:100}}/>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:54,display:'flex',
+          alignItems:'center',justifyContent:'space-between',padding:'0 30px',
+          fontSize:15,fontWeight:600,zIndex:99,pointerEvents:'none'}}>
+          <span>{time}</span>
+          <span style={{fontSize:12,opacity:.6,letterSpacing:1}}>5G</span>
+        </div>
+        <div style={{flex:1,paddingTop:54,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+          {children}
+        </div>
+        <div style={{height:34,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+          <div style={{width:134,height:5,background:'#000',borderRadius:99,opacity:.2}}/>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════
+// Shared: Tab Bar (Material Symbols)
+// ═══════════════════════════════════════════
+const TABS=[
+  {id:'chat',icon:'forum',label:'AI助教'},
+  {id:'practice',icon:'edit',label:'练习'},
+  {id:'wrong',icon:'error',label:'错题'},
+  {id:'me',icon:'person',label:'我的'},
+]
+
+function TabBar({active,onChange}){
+  return (
+    <div style={{display:'flex',background:C.card,borderTop:'1px solid '+C.border,flexShrink:0}}>
+      {TABS.map(t=>{
+        const isActive=active===t.id
+        return (
+          <div key={t.id} onClick={()=>onChange(t.id)}
+            style={{flex:1,textAlign:'center',padding:'6px 0 4px',
+              color:isActive?C.accent:C.text3,cursor:'pointer',
+              display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+              position:'relative',transition:'color .15s'}}>
+            <span className="material-icons" style={{fontSize:24}}>{t.icon}</span>
+            <span style={{fontSize:10,fontWeight:isActive?500:400}}>{t.label}</span>
+            {isActive&&<div style={{position:'absolute',top:0,left:'50%',
+              transform:'translateX(-50%)',width:20,height:2.5,background:C.accent,borderRadius:'0 0 3px 3px'}}/>}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════
+// Route stack (for sub-page navigation)
+// ═══════════════════════════════════════════
+function useRouter(){return useState({screen:'chat',params:{}})}
+
+// ═══════════════════════════════════════════
+// Screen: AI Chat
+// ═══════════════════════════════════════════
+function ChatScreen({onNav}){
+  const [msgs]=useState([
+    {role:'ai',text:'你好，我是你的 AI 化学助教。有任何化学问题都可以问我，我会一步一步引导你找到答案。'},
+    {role:'user',text:'老师，盐类水解我一直搞不懂'},
+    {role:'ai',text:'没关系，我们从最基础的地方开始。\n\n首先，你知道什么是「盐」吗？盐是酸碱中和的产物，比如 NaCl 就是 HCl 和 NaOH 中和生成的。\n\n那接下来想一个问题：**NaCl 溶于水后，水的 pH 会变吗？**'},
+  ])
+  const chatEnd=useRef(null)
+  useEffect(()=>{chatEnd.current?.scrollIntoView({behavior:'smooth'})},[msgs])
+
+  return (
+    <>
+      <Header title="AI 化学助教" subtitle="ChemAI"/>
+      <div style={{flex:1,overflowY:'auto',padding:'12px 14px 4px',display:'flex',flexDirection:'column',gap:8}}>
+        {msgs.map((m,i)=>(
+          <div key={i} style={{
+            alignSelf:m.role==='user'?'flex-end':'flex-start',
+            maxWidth:'84%',padding:m.role==='ai'?'12px 14px':'10px 14px',borderRadius:18,
+            borderBottomRightRadius:m.role==='user'?6:18,
+            borderBottomLeftRadius:m.role==='ai'?6:18,
+            background:m.role==='user'?C.accent:C.card,
+            color:m.role==='user'?'#fff':C.text,
+            fontSize:m.role==='ai'?14:15,lineHeight:1.65,
+            boxShadow:m.role==='ai'?C.shadow:'none',
+          }}>
+            <div dangerouslySetInnerHTML={{__html:m.text.replace(/\*\*(.+?)\*\*/g,'<strong style="color:'+C.accent+'">$1</strong>').replace(/\n/g,'<br>')}}/>
+          </div>
+        ))}
+        <div ref={chatEnd}/>
+      </div>
+      {/* Quick actions */}
+      <div style={{display:'flex',gap:8,padding:'0 14px 8px',overflowX:'auto',flexShrink:0,
+        scrollbarWidth:'none',msOverflowStyle:'none'}}>
+        {[
+          {icon:'tune',label:'配平方程式'},
+          {icon:'create',label:'出题练习'},
+          {icon:'biotech',label:'模拟实验'},
+          {icon:'import_contacts',label:'讲解概念'},
+        ].map((a,i)=>(
+          <div key={i} style={{whiteSpace:'nowrap',padding:'7px 14px',borderRadius:20,
+            border:'1px solid '+C.border2,fontSize:12.5,cursor:'pointer',
+            background:C.card,color:C.text2,display:'flex',alignItems:'center',gap:5,flexShrink:0}}>
+            <span className="material-icons" style={{fontSize:16}}>{a.icon}</span>
+            {a.label}
+          </div>
+        ))}
+      </div>
+      {/* Input */}
+      <div style={{display:'flex',gap:8,padding:'8px 14px',background:C.card,borderTop:'1px solid '+C.border,flexShrink:0}}>
+        <input placeholder="输入化学问题..." style={{flex:1,padding:'10px 14px',border:'1.5px solid #e8e4db',
+          borderRadius:22,fontSize:14,outline:'none',background:C.bg}}/>
+        <div style={{width:40,height:40,borderRadius:'50%',background:C.accent,color:'#fff',
+          display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}}>
+          <span className="material-icons" style={{fontSize:20}}>send</span>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ═══════════════════════════════════════════
+// Header
+// ═══════════════════════════════════════════
+function Header({title,subtitle,back,onBack}){
+  return (
+    <div style={{padding:'12px 16px',background:`linear-gradient(180deg,${C.bgWarm} 0%,${C.bg} 100%)`,
+      borderBottom:'1px solid '+C.accentLight,flexShrink:0,display:'flex',alignItems:'center',gap:10}}>
+      {back&&(
+        <span className="material-icons" onClick={onBack}
+          style={{fontSize:22,cursor:'pointer',color:C.text2}}>arrow_back</span>
+      )}
+      <div>
+        <div style={{fontFamily:C.serif,fontSize:18,fontWeight:600,color:C.text,lineHeight:1.2}}>{title}</div>
+        {subtitle&&<div style={{fontSize:10,color:C.text4,letterSpacing:1,textTransform:'uppercase'}}>{subtitle}</div>}
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════
+// Screen: Practice (练习)
+// ═══════════════════════════════════════════
+function PracticeScreen({onNav}){
+  const [view,setView]=useState('list')
+  const [qIdx,setQIdx]=useState(0)
+  const [selected,setSelected]=useState({})
+
+  const tasks=[
+    {id:'p1',title:'盐类水解专项练习',qty:8,diff:'中等',dl:'6月15日',kps:['盐类水解','电离平衡'],done:false},
+    {id:'p2',title:'氧化还原综合练习',qty:5,diff:'简单',dl:'6月20日',kps:['氧化还原反应'],done:false},
+    {id:'p3',title:'期中复习·化学平衡',qty:12,diff:'中等',dl:'6月30日',kps:['化学平衡','勒夏特列原理'],done:false},
+  ]
+
+  if(view==='quiz') return <QuizView setView={setView} setQIdx={setQIdx} setSelected={setSelected}
+    qIdx={qIdx} selected={selected} onBack={()=>setView('list')}/>
+
+  return (
+    <>
+      <Header title="我的练习" subtitle="Practice"/>
+      <div style={{flex:1,overflowY:'auto',padding:'12px 14px'}}>
+        <div style={{fontSize:11,color:C.text3,textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>待完成 — {tasks.length} 项</div>
+        {tasks.map(t=>(
+          <div key={t.id} onClick={()=>setView('quiz')} style={{padding:'14px 16px',borderRadius:10,
+            border:'1px solid '+C.border,marginBottom:8,cursor:'pointer',background:C.card,transition:'.15s'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:15,fontWeight:600,marginBottom:6}}>{t.title}</div>
+                <div style={{fontSize:12.5,color:C.text2,display:'flex',gap:12}}>
+                  <span>{t.qty} 道题</span><span>{t.diff}难度</span><span>截止 {t.dl}</span>
+                </div>
+                <div style={{display:'flex',gap:4,marginTop:8}}>
+                  {t.kps.map(k=><span key={k} style={{fontSize:10.5,padding:'2px 8px',borderRadius:8,background:C.accentLight,color:C.accent}}>{k}</span>)}
+                </div>
+              </div>
+              <span className="material-icons" style={{color:C.text4,fontSize:20}}>chevron_right</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
+function QuizView({qIdx,setQIdx,selected,setSelected,setView,onBack}){
+  const quiz=[
+    {q:'下列关于盐类水解的说法，正确的是',o:['NH₄Cl 溶液呈酸性是因为 NH₄⁺ 水解','所有盐都能发生水解反应','水解反应一定是吸热反应','强酸弱碱盐水解呈碱性'],a:0},
+    {q:'下列物质的水溶液呈碱性的是',o:['NaCl','NH₄Cl','Na₂CO₃','KNO₃'],a:2},
+    {q:'向 CH₃COONa 溶液中加入少量 HCl，水解平衡如何移动',o:['正向移动','逆向移动','不移动','无法判断'],a:0},
+  ]
+  const q=quiz[qIdx]
+  return (
+    <>
+      <div style={{padding:'8px 14px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid '+C.border,flexShrink:0}}>
+        <span className="material-icons" onClick={onBack} style={{fontSize:20,cursor:'pointer',color:C.text2}}>close</span>
+        <span style={{fontSize:13,fontWeight:500}}>{qIdx+1} / {quiz.length}</span>
+        <div style={{width:20}}/>
+      </div>
+      <div style={{flex:1,overflowY:'auto',padding:20}}>
+        <div style={{fontSize:15,lineHeight:1.8,color:C.text,marginBottom:24}}>{q.q}</div>
+        {q.o.map((o,i)=>(
+          <div key={i} onClick={()=>setSelected({...selected,[qIdx]:i})}
+            style={{padding:'14px 16px',borderRadius:10,border:'1.5px solid',
+              borderColor:selected[qIdx]===i?C.accent:C.border,
+              background:selected[qIdx]===i?C.accentLight:C.card,
+              marginBottom:10,fontSize:14,cursor:'pointer',transition:'.15s',color:selected[qIdx]===i?C.accent:C.text}}>{o}</div>
+        ))}
+      </div>
+      <div style={{padding:'10px 14px',borderTop:'1px solid '+C.border,display:'flex',justifyContent:'space-between'}}>
+        <div onClick={()=>qIdx>0&&setQIdx(qIdx-1)}
+          style={{padding:'10px 20px',borderRadius:20,border:'1px solid '+C.border2,fontSize:14,cursor:'pointer',opacity:qIdx===0?.3:1}}>上一题</div>
+        {qIdx<quiz.length-1?(
+          <div onClick={()=>setQIdx(qIdx+1)}
+            style={{padding:'10px 28px',borderRadius:20,background:C.accent,color:'#fff',fontSize:14,cursor:'pointer'}}>下一题</div>
+        ):(
+          <div onClick={()=>{setView('result');setQIdx(0);setSelected({})}}
+            style={{padding:'10px 28px',borderRadius:20,background:C.green,color:'#fff',fontSize:14,cursor:'pointer'}}>提交</div>
+        )}
+      </div>
+    </>
+  )
+}
+
+// ═══════════════════════════════════════════
+// Screen: Wrong Questions (错题本)
+// ═══════════════════════════════════════════
+function WrongScreen(){
+  const [exp,setExp]=useState(null)
+  const items=[
+    {id:1,q:'下列关于盐类水解的说法，正确的是',ans:'A',mine:'B',kp:'盐类水解',date:'6月5日',reason:'概念混淆，未区分酸式盐和正盐的水解'},
+    {id:2,q:'下列物质的水溶液呈碱性的是',ans:'C',mine:'D',kp:'盐类水解',date:'6月2日',reason:'知识遗忘，忘记 KNO₃ 是强酸强碱盐不水解'},
+  ]
+  return (
+    <>
+      <Header title="错题本" subtitle={`${items.length} 道待复习`}/>
+      <div style={{flex:1,overflowY:'auto',padding:'10px 14px'}}>
+        {items.map(w=>(
+          <div key={w.id} onClick={()=>setExp(exp===w.id?null:w.id)} style={{padding:'14px 16px',borderRadius:10,
+            border:'1px solid '+(exp===w.id?C.accent:C.border),marginBottom:8,cursor:'pointer',background:C.card,transition:'.15s'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+              <div style={{flex:1}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                  <span style={{fontSize:10.5,padding:'2px 8px',borderRadius:8,background:C.accentLight,color:C.accent}}>{w.kp}</span>
+                  <span style={{fontSize:11,color:C.text3}}>{w.date}</span>
+                </div>
+                <div style={{fontSize:14,lineHeight:1.6}}>{w.q}</div>
+                {exp===w.id&&(
+                  <div style={{marginTop:12,padding:'12px',borderRadius:8,background:C.accentLight,border:'1px solid rgba(180,60,40,.1)'}}>
+                    <div style={{fontSize:13,color:C.text2}}>你的答案: <span style={{color:C.accent}}>{w.mine}</span></div>
+                    <div style={{fontSize:13,color:C.text2,marginTop:2}}>正确答案: <span style={{color:C.green}}>{w.ans}</span></div>
+                    <div style={{fontSize:12.5,color:C.text2,marginTop:4}}>{w.reason}</div>
+                    <div style={{display:'flex',gap:6,marginTop:10}}>
+                      <div style={{fontSize:11.5,padding:'5px 12px',borderRadius:14,border:'1px solid '+C.accent,color:C.accent,cursor:'pointer'}}>做变式题</div>
+                      <div style={{fontSize:11.5,padding:'5px 12px',borderRadius:14,border:'1px solid '+C.border2,color:C.text3,cursor:'pointer'}}>标记已掌握</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <span className="material-icons" style={{color:C.text4,fontSize:20,transition:'.2s',
+                transform:exp===w.id?'rotate(180deg)':'rotate(0)'}}>expand_more</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
+// ═══════════════════════════════════════════
+// Screen: Me (我的)
+// ═══════════════════════════════════════════
+function MeScreen({onNav}){
+  const menu=[
+    {icon:'trending_up',label:'学习报告',desc:'成绩趋势与知识点分析'},
+    {icon:'book',label:'复习中心',desc:'艾宾浩斯间隔复习'},
+    {icon:'assignment',label:'学习计划',desc:'教师布置的学习任务'},
+    {icon:'settings',label:'个人设置',desc:'账号与通知管理'},
+  ]
+  return (
+    <>
+      <div style={{padding:'20px 16px 16px',background:`linear-gradient(180deg,${C.bgWarm} 0%,${C.bg} 100%)`,
+        borderBottom:'1px solid '+C.accentLight,flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:14}}>
+          <div style={{width:60,height:60,borderRadius:'50%',background:`linear-gradient(135deg,${C.accent},${C.accentDark})`,
+            color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,fontFamily:C.serif,fontWeight:600}}>李</div>
+          <div>
+            <div style={{fontSize:18,fontWeight:600}}>李雨萱</div>
+            <div style={{fontSize:12.5,color:C.text3,marginTop:2}}>高二(1)班 · 202610101</div>
+          </div>
+        </div>
+        <div style={{display:'flex',marginTop:18,gap:10}}>
+          {[{v:67,u:'次',l:'练习'},{v:12,u:'道',l:'待复习'},{v:82,u:'%',l:'正确率'}].map(s=>(
+            <div key={s.l} style={{flex:1,textAlign:'center',padding:'10px 6px',borderRadius:8,background:'rgba(255,255,255,.7)'}}>
+              <div style={{fontSize:24,fontWeight:700,color:C.accent,fontFamily:C.serif}}>{s.v}<span style={{fontSize:11,fontWeight:400}}>{s.u}</span></div>
+              <div style={{fontSize:11,color:C.text3,marginTop:2}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{flex:1,padding:'8px 14px'}}>
+        {menu.map((m,i)=>(
+          <div key={i} style={{padding:'14px 16px',borderRadius:10,border:'1px solid '+C.border,
+            marginBottom:8,background:C.card,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              <span className="material-icons" style={{fontSize:22,color:C.accent}}>{m.icon}</span>
+              <div>
+                <div style={{fontSize:15,fontWeight:500}}>{m.label}</div>
+                <div style={{fontSize:11.5,color:C.text3,marginTop:1}}>{m.desc}</div>
+              </div>
+            </div>
+            <span className="material-icons" style={{color:C.text4,fontSize:20}}>chevron_right</span>
+          </div>
+        ))}
+      </div>
+      <div onClick={()=>alert('已退出')} style={{padding:'14px',textAlign:'center',fontSize:13,color:C.accent,
+        cursor:'pointer',borderTop:'1px solid '+C.border}}>退出登录</div>
+    </>
+  )
+}
+
+// ═══════════════════════════════════════════
+// Root
+// ═══════════════════════════════════════════
+function App(){
+  const [tab,setTab]=useState('chat')
+  return (
+    <DeviceFrame>
+      {tab==='chat'&&<ChatScreen/>}
+      {tab==='practice'&&<PracticeScreen/>}
+      {tab==='wrong'&&<WrongScreen/>}
+      {tab==='me'&&<MeScreen/>}
+      <TabBar active={tab} onChange={setTab}/>
+    </DeviceFrame>
+  )
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>)
+</script>
+</body>
+</html>

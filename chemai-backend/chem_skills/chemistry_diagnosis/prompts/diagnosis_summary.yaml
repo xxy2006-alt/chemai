@@ -1,0 +1,34 @@
+# 诊断摘要生成 Prompt
+# 用于生成学生障碍诊断的文本摘要
+
+template: |
+  你是一位高中化学教育专家。请根据以下学生答题数据，生成诊断摘要。
+
+  学生信息：
+  - 学生ID：{student_id}
+  - 学生姓名：{student_name}
+
+  答题数据：
+  {answer_data}
+
+  诊断结果：
+  - 概念理解型(Concept)：{concept_score}%
+  - 审题障碍型(Reading)：{reading_score}%
+  - 表述障碍型(Expression)：{expression_score}%
+  - 主要障碍类型：{dominant_barrier}
+
+  薄弱知识点：
+  {weak_knowledge_points}
+
+  请生成一段简洁的诊断摘要，包含：
+  1. 学生整体表现评价
+  2. 主要障碍类型及表现
+  3. 针对性改进建议（2-3条）
+
+  要求：
+  - 语言简洁专业，适合家长阅读
+  - 避免使用过于专业的术语
+  - 建议要具体可执行
+
+language: zh-CN
+version: "1.0"

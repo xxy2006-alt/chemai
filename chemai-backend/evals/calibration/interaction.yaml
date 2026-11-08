@@ -1,0 +1,41 @@
+# 校准集：交互智能族（interaction）— 澄清追问/主动推荐/选项引导/拆解进度
+# 状态：种子样本，未经人工标注复核；启用门槛 ≥20 条人工标注样本（Spec 04）
+# 数据源约定：交互智能族用真实「蠢场景」翻译的 golden 场景（Spec 05 供给）。
+family: interaction
+samples:
+  - id: ix-001
+    input: 我要出题
+    output: （agent）好的，请在下方面板中配置参数。
+    human_score: 25
+    note: 蠢场景：机械开面板，不追问题型/难度/知识点
+
+  - id: ix-002
+    input: 我要出题
+    output: 好的！请告诉我：1) 题型（选择/填空/计算）2) 难度（简单/中等/困难）3) 知识点范围；或直接说「按班级薄弱点推荐」。
+    human_score: 90
+    note: 选项式追问、一轮可答完
+
+  - id: ix-003
+    input: 我们班电离平衡最近错得多，出点题
+    output: 已根据最近 5 次作业（电离平衡正确率 40%）推荐：先出 5 道弱电解质电离的选择题，中等难度，是否开始？
+    human_score: 95
+    note: 结合薄弱点主动推荐且依据可见
+
+  # Spec 05 供给：从 golden 场景翻译（panel-show-on-exam-intent / panel-weakpoint-recommend）
+  - id: ix-004
+    input: 我要出题
+    output: 好的，请告诉我：1) 题型（选择/填空/计算）2) 难度（简单/中等/困难）3) 知识点范围；或直接说「按班级薄弱点推荐」。
+    human_score: 90
+    note: 信息不全时选项式追问（Spec 05 契约）
+
+  - id: ix-005
+    input: 我想出高考变种题
+    output: 好的，高考变种题通常在真题基础上改编。请选择：1) 知识点（如电化学/有机推断）2) 难度（简单/中等/困难）3) 题型（选择/填空/计算）。
+    human_score: 88
+    note: 信息不全时追问 + 给选项
+
+  - id: ix-006
+    input: 我们班电离平衡最近错得多，出点题
+    output: （agent 未诊断直接出题，未引用任何班级数据）
+    human_score: 25
+    note: 蠢场景：不查薄弱点数据就推荐（应与 ix-003 形成对照）

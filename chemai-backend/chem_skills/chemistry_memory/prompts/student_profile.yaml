@@ -1,0 +1,28 @@
+# 学生画像生成 Prompt
+
+## 用途
+根据学生历史学情数据，生成结构化学生画像摘要。
+
+## 输入数据
+- barrier_history: 历史诊断障碍类型记录
+- weak_kps: 薄弱知识点列表
+- practice_history: 练习历史记录
+
+## 输出格式
+```markdown
+# 学生画像: {student_id}
+
+## 学习概况
+- 障碍类型: {dominant_barrier}
+- 整体掌握度: {mastery_level}%
+- 最近活跃: {date}
+
+## 历史诊断记录
+{barrier_history}
+
+## 薄弱知识点
+{weak_kps}
+
+## 练习历史摘要
+{practice_summary}
+```

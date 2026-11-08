@@ -1,0 +1,215 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>答题卡批改 · 智辅化学</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f4ed;color:#1a1a1a;max-width:800px;margin:0 auto;padding:20px}
+h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;margin-bottom:4px}
+.upload-zone{border:2px dashed rgba(180,60,40,.3);border-radius:16px;padding:40px;text-align:center;margin:20px 0;background:rgba(180,60,40,.02);cursor:pointer;transition:.2s}
+.upload-zone:hover,.upload-zone.drag{border-color:#b43c28;background:rgba(180,60,40,.05)}
+.upload-zone .icon{font-size:48px;color:rgba(180,60,40,.3);margin-bottom:8px}
+.upload-zone p{font-size:14px;color:#888}
+.preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin:16px 0}
+.preview-item{border:1px solid rgba(0,0,0,.08);border-radius:10px;overflow:hidden;background:#fff;position:relative}
+.preview-item img{width:100%;height:100px;object-fit:cover}
+.preview-item .p-title{font-size:12px;padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.preview-item .p-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border-radius:50%;width:20px;height:20px;font-size:14px;line-height:20px;text-align:center;cursor:pointer}
+.btn{padding:10px 24px;border-radius:20px;border:none;font-size:14px;cursor:pointer;transition:.15s}
+.btn-primary{background:#b43c28;color:#fff}
+.btn-primary:disabled{opacity:.4;cursor:default}
+.task-list{margin:16px 0}
+.task-row{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid rgba(0,0,0,.06);border-radius:8px;margin-bottom:6px;background:#fff}
+.task-row .thumb{width:50px;height:40px;object-fit:cover;border-radius:4px}
+.task-row .info{flex:1;min-width:0}
+.task-row .name{font-size:13px;font-weight:500}
+.task-row .meta{font-size:11px;color:#888}
+.bar-bg{height:4px;background:#eee;border-radius:2px;margin-top:4px}
+.bar-fill{height:100%;border-radius:2px;transition:width .3s}
+.bar-fill.done{background:#2c6e49}
+.bar-fill.proc{background:#f59e0b}
+.bar-fill.fail{background:#b43c28}
+.badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:500}
+.badge-done{background:rgba(44,110,73,.1);color:#2c6e49}
+.badge-proc{background:rgba(245,158,11,.1);color:#d97706}
+.badge-fail{background:rgba(180,60,40,.1);color:#b43c28}
+.badge-pend{background:rgba(0,0,0,.05);color:#888}
+.empty{text-align:center;padding:40px;color:#888}
+.hidden{display:none}
+.grade-panel{margin-top:8px;border-top:1px dashed rgba(0,0,0,.1);padding:10px 0}
+.ans-input{width:100%;min-height:64px;border:1px solid rgba(0,0,0,.12);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:vertical}
+.grade-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.grade-row select{flex:1;min-width:150px;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px;font-size:13px;background:#fff}
+.btn-save{background:#2c6e49;color:#fff}
+.grade-result .meta{margin-top:6px;font-size:12px;color:#555}
+.grade-result .err{margin-top:6px;font-size:12px;color:#b43c28}
+</style>
+</head><body>
+
+<h1>答题卡批改</h1>
+<p style="color:#888;font-size:13px">拖入或选择答题卡图片，批量上传后自动 OCR 识别</p>
+
+<div class="upload-zone" id="zone" onclick="document.getElementById('fileInput').click()">
+  <div class="icon"><span class="material-symbols-outlined">upload</span></div>
+  <p>点击或拖入答题卡图片 (JPG/PNG)</p>
+  <p style="font-size:12px;color:#bbb;margin-top:4px">每批最多 10 张</p>
+</div>
+<input type="file" id="fileInput" accept="image/*" multiple hidden onchange="addFiles(this.files)">
+
+<div class="preview-grid" id="preview"></div>
+<button class="btn btn-primary" id="submitBtn" disabled onclick="submitBatch()">开始识别</button>
+
+<div id="batches" style="margin-top:30px"></div>
+
+<script>
+var files=[],uid=localStorage.getItem('teacher_id')||''
+
+// Load auth from session
+try{var u=JSON.parse(sessionStorage.getItem('chemai_user')||'{}');uid=u.id||u.teacher_id||''}catch(_){}
+
+// fetch 拦截：自动注入 token（与 legacy/teacher/app.js 同款；本页不加载 app.js）
+var _tf='';try{_tf=JSON.parse(sessionStorage.getItem('chemai_user')||'{}').token||''}catch(_){}
+var _of=window.fetch
+window.fetch=function(url,opts){
+  opts=opts||{}
+  var s=typeof url==='string'?url:(url.url||'')
+  if(s.indexOf('/api/')>=0&&_tf){
+    opts.headers=opts.headers||{}
+    if(opts.headers instanceof Headers){
+      if(!opts.headers.has('Authorization'))
+        opts.headers=Object.assign({Authorization:'Bearer '+_tf},Object.fromEntries(opts.headers.entries()))
+    }else if(!opts.headers.Authorization&&!opts.headers['Authorization']){
+      opts.headers['Authorization']='Bearer '+_tf
+    }
+  }
+  return _of.call(this,url,opts)
+}
+
+document.querySelector('#zone').addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag')})
+document.querySelector('#zone').addEventListener('dragleave',function(e){this.classList.remove('drag')})
+document.querySelector('#zone').addEventListener('drop',function(e){e.preventDefault();this.classList.remove('drag');addFiles(e.dataTransfer.files)})
+
+function addFiles(fl){for(var i=0;i<fl.length&&files.length<10;i++)files.push(fl[i]);renderPreview()}
+function removeFile(i){files.splice(i,1);renderPreview()}
+function renderPreview(){
+  var h='';document.getElementById('submitBtn').disabled=files.length===0
+  files.forEach(function(f,i){
+    h+='<div class="preview-item"><img src="'+URL.createObjectURL(f)+'"><div class="p-title" contenteditable onblur="updateTitle('+i+',this.textContent)">答题卡_'+(i+1<10?'0'+(i+1):i+1)+'</div><div class="p-del" onclick="removeFile('+i+')">×</div></div>'
+  })
+  document.getElementById('preview').innerHTML=h
+}
+function updateTitle(i,t){if(files[i])files[i]._title=t||''}
+
+function submitBatch(){
+  if(!files.length)return
+  var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='提交中...'
+  var fd=new FormData();fd.append('teacher_id',uid)
+  files.forEach(function(f){fd.append('files',f)})
+  fetch('/api/ocr/tasks/batch',{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(d){
+    if(d.success){files=[];renderPreview();loadBatches();btn.textContent='已提交，可继续上传下一批'}
+    else alert('失败: '+(d.detail||''))
+  }).catch(function(e){alert('网络错误');btn.disabled=false;btn.textContent='开始识别'})
+}
+
+function loadBatches(){
+  fetch('/api/ocr/tasks?teacher_id='+uid).then(function(r){return r.json()}).then(function(d){
+    var batches=d.batches||{};var el=document.getElementById('batches')
+    var keys=Object.keys(batches).sort().reverse()
+    if(!keys.length){el.innerHTML='<div class="empty">暂无批改记录</div>';return}
+    var h='<h3 style="margin-bottom:12px">历史批次</h3>'
+    keys.forEach(function(bid){
+      var b=batches[bid];h+='<div style="margin-bottom:10px"><div style="font-size:12px;color:#888;margin-bottom:6px">'+esc(b.created_at||'')+'</div>'
+      b.tasks.forEach(function(t){
+        var sc='pend',sl='排队中';var bc='bar-fill proc'
+        if(t.status==='done'){sc='done';sl='已完成';bc='bar-fill done'}
+        else if(t.status==='failed'){sc='fail';sl='失败';bc='bar-fill fail'}
+        h+='<div class="task-row"><div class="thumb" style="background:#f5efe0;display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:20px;color:#aaa">description</span></div>'
+        h+='<div class="info"><div class="name">'+esc(t.title)+' <span class="badge badge-'+sc+'">'+sl+'</span></div>'
+        if(t.student_name) h+='<div class="meta">'+esc(t.student_name)+' · '+esc(t.student_id)+'</div>'
+        h+='<div class="bar-bg"><div class="'+bc+'" style="width:'+(t.progress||0)+'%"></div></div></div>'
+        if(t.status==='failed') h+='<button class="btn" style="font-size:11px;padding:4px 12px" onclick="retry(\''+t.task_id+'\')">重试</button>'
+        h+='</div>'
+      })
+      h+='<div class="grade-panel" id="gwrap-'+esc(bid)+'">'
+      h+='<textarea class="ans-input" placeholder="标准答案，每行一题，如：&#10;1.A 2.B 3.C&#10;13. Cu + 2H2SO4(浓)..."></textarea>'
+      h+='<div class="grade-row"><select class="exam-select"><option value="">关联考试（可选）</option></select>'
+      h+='<button class="btn btn-primary grade-btn" onclick="gradeBatch(\''+esc(bid)+'\')">开始批改</button>'
+      h+='<button class="btn btn-save" onclick="saveBatch(\''+esc(bid)+'\')">确认保存</button></div>'
+      h+='<div class="grade-result" id="gr-'+esc(bid)+'"></div></div>'
+      h+='</div>'
+    })
+    el.innerHTML=h
+    el.querySelectorAll('.exam-select').forEach(fillExams)
+  }).catch(function(){})
+}
+
+function retry(tid){
+  fetch('/api/ocr/tasks/'+tid+'/retry',{method:'POST'}).then(function(r){return r.json()}).then(function(){
+    loadBatches()
+  })
+}
+
+var exams=[]
+function fillExams(sel){
+  var v=sel.value
+  sel.innerHTML='<option value="">关联考试（可选）</option>'+exams.map(function(e){return '<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>'}).join('')
+  sel.value=v
+}
+function loadExams(){
+  // 老师班级 → 各班考试 → 汇总成下拉选项
+  fetch('/api/classes?teacher_id='+uid).then(function(r){return r.json()}).then(function(d){
+    var classes=d.classes||[]
+    if(!classes.length)return
+    Promise.all(classes.slice(0,5).map(function(c){
+      return fetch('/api/exam/list/'+c.class_id).then(function(r){return r.json()})
+    })).then(function(rs){
+      exams=[]
+      rs.forEach(function(r){(r.exams||[]).forEach(function(e){exams.push({id:e.record_id,name:e.name})})})
+      document.querySelectorAll('.exam-select').forEach(fillExams)
+    })
+  }).catch(function(){})
+}
+
+function gradeBatch(bid){
+  var wrap=document.getElementById('gwrap-'+bid)
+  if(!wrap)return
+  var text=wrap.querySelector('.ans-input').value, exam=wrap.querySelector('.exam-select').value
+  var panel=document.getElementById('gr-'+bid)
+  if(!text.trim()&&!exam){panel.innerHTML='<div class="err">请先粘贴标准答案或选择关联考试</div>';return}
+  panel.innerHTML='<div class="meta">批改中...</div>'
+  var body={batch_id:bid,teacher_id:uid}
+  if(text.trim())body.correct_answers=text
+  else body.exam_id=exam
+  fetch('/api/ocr/grading/grade',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.detail){panel.innerHTML='<div class="err">'+esc(d.detail)+'</div>';return}
+      var h=''
+      ;(d.results||[]).forEach(function(r){
+        if(r.error)h+='<div class="err">'+esc(r.student_name||r.task_id)+'：'+esc(r.error)+'</div>'
+        else h+='<div class="meta">'+esc(r.student_name||r.task_id)+'：'+r.score+'/'+r.total+' 分</div>'
+      })
+      panel.innerHTML=h
+    }).catch(function(){panel.innerHTML='<div class="err">网络错误</div>'})
+}
+
+function saveBatch(bid){
+  var wrap=document.getElementById('gwrap-'+bid)
+  if(!wrap)return
+  var exam=wrap.querySelector('.exam-select').value
+  var panel=document.getElementById('gr-'+bid)
+  if(!exam){panel.innerHTML='<div class="err">保存必须关联一场考试（下拉选择）</div>';return}
+  fetch('/api/ocr/grading/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({batch_id:bid,teacher_id:uid,exam_id:exam})})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.detail){panel.innerHTML='<div class="err">'+esc(d.detail)+'</div>';return}
+      panel.innerHTML='<div class="meta">'+esc(d.message||'已保存')+' · 诊断：'+esc(d.diagnosis||'-')+'</div>'
+      loadBatches()
+    }).catch(function(){panel.innerHTML='<div class="err">网络错误</div>'})
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+loadBatches()
+loadExams()
+setInterval(loadBatches,5000)
+</script>
+</body></html>

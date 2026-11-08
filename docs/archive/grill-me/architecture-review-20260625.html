@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChemAI Architecture Deep-Dive — Routing System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:'default', securityLevel:'loose'});</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+  body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f8fafc; color: #1e293b; }
+  .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04); }
+  .badge-strong { background: #dc2626; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-explore { background: #d97706; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-spec { background: #6b7280; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .shallow-box { background: #fef2f2; border: 2px dashed #fca5a5; border-radius: 12px; padding: 16px; }
+  .deep-box { background: #f0fdf4; border: 2px solid #86efac; border-radius: 12px; padding: 16px; }
+  .prompt-frag { background: #fff7ed; border: 1px solid #fdba74; border-radius: 6px; padding: 2px 6px; font-family: monospace; font-size: 12px; }
+  .code-block { background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 13px; overflow-x: auto; }
+  .file-tag { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+</style>
+</head>
+<body class="max-w-5xl mx-auto py-8 px-4">
+
+<div class="mb-10">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">ChemAI Agent Routing — Architecture Deep-Dive</h1>
+  <p class="text-slate-500">Triggered by the "我有几个班" routing bug. Scope: multi-agent coordinator → sub-agent tool selection pipeline.</p>
+  <p class="text-slate-400 text-sm mt-1">No CONTEXT.md or ADRs found — greenfield architecture review.</p>
+</div>
+
+<!-- Summary diagram -->
+<div class="card p-6 mb-8">
+  <h2 class="text-lg font-bold mb-4">The Bug In One Diagram: Triple Prompt Stack Failure</h2>
+  <p class="text-slate-600 mb-4 text-sm">Every user message passes through <strong>three</strong> LLM decisions before a tool gets called. Each is prompt-engineered. Each can fail independently.</p>
+  <pre class="mermaid">
+graph LR
+  U["User: 我有几个班"] --> G["Gateway LLM: chat + tool hints"]
+  G --> C["Coordinator LLM: route_to_diagnosis_expert"]
+  C --> R["Router: target_agent = diagnosis_expert"]
+  R --> D["Diagnosis Expert LLM"]
+  D -->|"NO prompt rule for '有几个班'"| E["LLM generates text"]
+  D -.->|"show_students docstring says '问有几个班'"| T["show_students() - NEVER CALLED"]
+  style E fill:#fef2f2,stroke:#fca5a5,stroke-width:3px
+  style T fill:#fef2f2,stroke:#fca5a5,stroke-width:3px,stroke-dasharray: 5 5
+  style D fill:#fff7ed,stroke:#fdba74
+  style G fill:#fff7ed,stroke:#fdba74
+  style C fill:#fff7ed,stroke:#fdba74
+  </pre>
+  <p class="text-slate-500 text-xs mt-2">Gateway: correct. Coordinator: correct. Sub-agent: broken — prompt rules are incomplete.</p>
+</div>
+
+<!-- Candidate 1 -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">Candidate 1: Triple Prompt-Routing Stack</h2>
+    <span class="badge-strong">Strong</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">agent/gateway.py</span>
+    <span class="file-tag">agent/langgraph_agent.py</span>
+    <span class="file-tag">agent/channel/langgraph_channel.py</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <h3 class="font-semibold text-red-700 mb-2">Problem</h3>
+      <p class="text-sm text-slate-600">User intent traverses three independent LLM calls — Gateway classifier → Coordinator routing → Sub-agent tool selection. Each layer reformulates the same question through a different prompt. Each layer <em>doesn't share state</em> about what the prior decided. One layer misses → whole chain fails silently.</p>
+      <p class="text-sm text-slate-600 mt-2">The Gateway's <code>_keyword_fallback</code> already classifies tools well, but this classification is <strong>discarded</strong> after tool narrowing. Coordinator re-decides from scratch. Sub-agent re-decides again.</p>
+    </div>
+    <div>
+      <h3 class="font-semibold text-green-700 mb-2">Solution</h3>
+      <p class="text-sm text-slate-600"><strong>Collapse Gateway + Coordinator into one step.</strong> One LLM call produces <code>(intent, target_agent, suggested_tools)</code>. Pass as structured state through the graph. Coordinator becomes deterministic. Make Gateway's keyword fallback the <strong>primary</strong> router — LLM only for ambiguous inputs.</p>
+    </div>
+  </div>
+
+  <h3 class="font-semibold mb-2">Before / After</h3>
+  <div class="grid grid-cols-2 gap-4">
+    <div class="shallow-box">
+      <p class="font-bold text-red-800 mb-1 text-sm">Before: 3 LLM calls, 3 failure points</p>
+      <pre class="mermaid">
+graph TD
+  A[user msg] --> B[Gateway LLM]
+  B --> C[Coordinator LLM]
+  C --> D[Sub-agent LLM]
+  D --> E[tool call?]
+  B -.->|keyword fallback| X["discarded"]
+  </pre>
+    </div>
+    <div class="deep-box">
+      <p class="font-bold text-green-800 mb-1 text-sm">After: 1 LLM call + deterministic dispatch</p>
+      <pre class="mermaid">
+graph TD
+  A[user msg] --> K["Keyword Router (deterministic)"]
+  K -->|ambiguous| L["Single LLM: intent+agent+tools"]
+  K -->|matched| D2[Deterministic Dispatch]
+  L --> D2
+  D2 --> E2[Sub-agent: receives hints]
+  E2 --> F2[tool call]
+  </pre>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <h3 class="font-semibold mb-1">Benefits</h3>
+    <ul class="text-sm text-slate-600 space-y-1">
+      <li><strong>Locality:</strong> One module owns intent → agent → tool mapping.</li>
+      <li><strong>Testability:</strong> Keyword router is 100% deterministic. LLM has clear interface.</li>
+      <li><strong>Leverage:</strong> Keyword fallback already exists, just needs to be promoted.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Candidate 2 -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">Candidate 2: Prompt Rules Duplicate Tool Docstrings</h2>
+    <span class="badge-strong">Strong</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">agent/langgraph_agent.py:246-255</span>
+    <span class="file-tag">agent/tools.py (all docstrings)</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <h3 class="font-semibold text-red-700 mb-2">Problem</h3>
+      <p class="text-sm text-slate-600">Each sub-agent has 2-4 tools with excellent docstrings ("何时用", "会发生什么", "下一步"). But prompts <strong>duplicate</strong> this as hand-written numbered rules. These are <strong>always incomplete</strong>. "我有几个班" doesn't match any rule — yet the tool's docstring covers it. Each new user expression = new prompt rule. Unsustainable.</p>
+      <div class="code-block text-xs mt-2">
+"1. 具体学号 → diagnose_barrier(student_id=学号)
+2. 问有哪些学生 → show_students
+3. 班级名+学生 → show_students"
+      </div>
+    </div>
+    <div>
+      <h3 class="font-semibold text-green-700 mb-2">Solution</h3>
+      <p class="text-sm text-slate-600"><strong>Delete hand-written rules. Trust the tools.</strong> Replace with:</p>
+      <div class="code-block text-xs mt-2">
+你必须调用一个工具。阅读每个工具的描述来决定用哪个。
+不确定时，选择最可能相关的工具并调用它。
+禁止在不调用工具的情况下直接生成回复。
+show_students 无参数时列出所有班级。</div>
+      <p class="text-sm text-slate-600 mt-2">LangGraph passes tool descriptions to the LLM via function-calling API. The LLM <em>can</em> read them — the current prompt prevents it.</p>
+    </div>
+  </div>
+
+  <h3 class="font-semibold mb-2">Before / After</h3>
+  <div class="grid grid-cols-2 gap-4">
+    <div class="shallow-box">
+      <p class="font-bold text-red-800 mb-1 text-sm">Before: prompt rules override tool descriptions</p>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="background:#fff7ed; border:1px solid #fdba74; border-radius:8px; padding:8px; flex:1;">
+          <p class="text-xs font-bold text-amber-700">Prompt rules</p>
+          <p class="text-xs text-amber-600">1. diagnose + students → show</p>
+          <p class="text-xs text-red-600">MISSING: 问有几个班</p>
+        </div>
+        <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:8px; flex:1;">
+          <p class="text-xs font-bold text-green-700">Tool docstring</p>
+          <p class="text-xs text-green-600">show_students: 何时用：<br/>"有几个班""有哪些学生"</p>
+          <p class="text-xs text-green-600 mt-1">COVERS it — LLM can't see it</p>
+        </div>
+      </div>
+    </div>
+    <div class="deep-box">
+      <p class="font-bold text-green-800 mb-1 text-sm">After: tools are source of truth</p>
+      <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:10px;">
+        <p class="text-xs text-green-600">Prompt: "必须调工具" → LLM reads tool descriptions → calls show_students()</p>
+        <p class="text-xs font-bold text-green-700 mt-1">FIXED</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <h3 class="font-semibold mb-1">Benefits</h3>
+    <ul class="text-sm text-slate-600 space-y-1">
+      <li><strong>Deletion test:</strong> Removing prompt rules concentrates complexity into tool docstrings — where it already lives.</li>
+      <li><strong>Locality:</strong> Tool behavior and selection guidance live together.</li>
+      <li><strong>Single source of truth:</strong> No syncing two files.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Candidate 3 -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">Candidate 3: No Fallback at the Sub-Agent Layer</h2>
+    <span class="badge-explore">Worth exploring</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">agent/langgraph_agent.py:159-228</span>
+    <span class="file-tag">agent/gateway.py:191-238</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <h3 class="font-semibold text-red-700 mb-2">Problem</h3>
+      <p class="text-sm text-slate-600">The Gateway has a solid <code>_keyword_fallback</code>. Sub-agents have <strong>no fallback</strong>. When the LLM doesn't call a tool, whatever text it generates becomes the response — no safety net.</p>
+    </div>
+    <div>
+      <h3 class="font-semibold text-green-700 mb-2">Solution</h3>
+      <p class="text-sm text-slate-600">Add a deterministic post-check in <code>create_sub_agent_node</code>: if no tool was called, run keyword matching and force-call the best-matching tool. Reuses Gateway's keyword patterns.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Candidate 4 -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">Candidate 4: Shallow Output Contract Enables Tool Skipping</h2>
+    <span class="badge-explore">Worth exploring</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">agent/langgraph_agent.py:153-156</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <h3 class="font-semibold text-red-700 mb-2">Problem</h3>
+      <p class="text-sm text-slate-600"><code>_SUB_AGENT_OUTPUT_CONTRACT</code> says "严禁闲聊" but doesn't say "MUST call a tool." LLM satisfies contract by generating terse JSON without calling any tool. The contract prohibits bad output but doesn't mandate good behavior.</p>
+    </div>
+    <div>
+      <h3 class="font-semibold text-green-700 mb-2">Solution</h3>
+      <p class="text-sm text-slate-600">Rewrite as positive constraint:</p>
+      <div class="code-block text-xs mt-2">
+你必须先调用至少一个工具。工具返回后，基于 result 输出。
+如果 tool 返回 error，原样输出 error 文本。
+如果 tool 返回 _component，不要输出额外文字。
+严禁跳过工具调用直接生成回复。</div>
+    </div>
+  </div>
+</div>
+
+<!-- Candidate 5 -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">Candidate 5: Zero Routing Tests — Every Change Is Blind</h2>
+    <span class="badge-strong">Strong</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">evals/ (directory missing from repo)</span>
+    <span class="file-tag">agent/langgraph_agent.py</span>
+    <span class="file-tag">agent/tools.py</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <h3 class="font-semibold text-red-700 mb-2">Problem</h3>
+      <p class="text-sm text-slate-600">The entire routing pipeline has <strong>zero automated tests</strong>. CLAUDE.md references evals/test_langgraph_agent.py, but the evals/ directory doesn't exist. Every prompt tweak is a blind deploy. This bug was found by a human user, not a test.</p>
+    </div>
+    <div>
+      <h3 class="font-semibold text-green-700 mb-2">Solution</h3>
+      <p class="text-sm text-slate-600"><strong>Golden-dataset routing test suite.</strong> Two layers:</p>
+      <p class="text-sm text-slate-600 mt-2"><strong>Layer 1 — Deterministic:</strong> Keyword routing without LLM. Input → expected agent+tools. CI-fast.</p>
+      <p class="text-sm text-slate-600 mt-2"><strong>Layer 2 — Integration:</strong> Full sub-agent with mock tool responses. Assert correct tool called.</p>
+      <div class="code-block text-xs mt-2">
+# Golden dataset:
+- input: "我有几个班"
+  agent: diagnosis_expert
+  tool: show_students
+  args: {}
+- input: "高一一班的学生"
+  agent: diagnosis_expert
+  tool: show_students
+  args: {class_name: "高一一班"}
+- input: "诊断学生 2024001"
+  agent: diagnosis_expert
+  tool: diagnose_barrier
+  args: {student_id: "2024001"}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Candidate 6 -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">Candidate 6: Gateway Hints Are Discarded in LangGraph Path</h2>
+    <span class="badge-spec">Speculative</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">agent/channel/langgraph_channel.py:88-96</span>
+    <span class="file-tag">agent/langgraph_agent.py:337-364</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <h3 class="font-semibold text-red-700 mb-2">Problem</h3>
+      <p class="text-sm text-slate-600">The Gateway classifier produces <code>tool_names</code> and <code>intent</code>, but these are only used for navigate shortcut. In the LangGraph path, hints are built as a string but the coordinator never injects them. Gateway's classification is silently discarded — the Coordinator re-classifies from scratch.</p>
+    </div>
+    <div>
+      <h3 class="font-semibold text-green-700 mb-2">Solution</h3>
+      <p class="text-sm text-slate-600">Pass Gateway results as structured <code>shared_context</code> in initial graph state. Coordinator skips LLM routing when Gateway has high-confidence results. Sub-agents receive tool hints directly.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Top Recommendation -->
+<div class="card p-6 mb-8 bg-gradient-to-br from-blue-50 to-white border-2 border-blue-200">
+  <h2 class="text-xl font-bold mb-3">Recommended Attack Order</h2>
+
+  <div class="space-y-4">
+    <div class="flex gap-3">
+      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+      <div>
+        <p class="font-bold">Candidates 2 + 4: Fix sub-agent prompts</p>
+        <p class="text-sm text-slate-600">Delete hand-written rules from all 6 sub-agents. Add positive "must call a tool" contract. ~40 lines changed. Fixes the immediate bug class. <em>Do this today.</em></p>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+      <div>
+        <p class="font-bold">Candidate 5: Golden test suite</p>
+        <p class="text-sm text-slate-600">Build evals/ with 15-20 golden routing entries. Makes all subsequent work safe.</p>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <div class="w-8 h-8 rounded-full bg-slate-400 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+      <div>
+        <p class="font-bold">Candidate 1 + 6: Collapse routing stack</p>
+        <p class="text-sm text-slate-600">Higher risk, higher reward. Do after tests exist.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="text-slate-400 text-sm text-center">Generated by /improve-codebase-architecture | D:\化学\architecture-review-20260625.html</p>
+</body>
+</html>

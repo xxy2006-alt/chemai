@@ -1,0 +1,54 @@
+# PDF 文档解析 Prompt
+# 用于从 PDF 中提取化学题目
+
+template: |
+  你是一位专业的高中化学教研专家，擅长从各类试卷和教材中提取化学题目。
+
+  ## 任务
+  从以下 PDF 解析内容中提取化学题目，并进行标准化处理。
+
+  ## 解析内容
+  {parsed_content}
+
+  ## 要求
+
+  1. **题目识别**
+     - 识别各类题型：选择题、填空题、简答题、计算题
+     - 提取题目正文、选项（如有）、答案（如有）
+
+  2. **化学式标准化**
+     - 将所有化学式转换为标准格式
+     - 上下标使用下划线+数字：H_2O, Ca(OH)_2
+     - 离子格式：Fe^{3+}, SO_4^{2-}
+     - 方程式箭头：->, <=>, ->
+
+  3. **题目分类**
+     - choice: 选择题
+     - fill-blank: 填空题
+     - short-answer: 简答题
+     - calculation: 计算题
+
+  4. **输出格式**
+     ```json
+     {{
+       "questions": [
+         {{
+           "type": "choice/fill-blank/short-answer/calculation",
+           "content": "题目内容（标准化后）",
+           "options": ["A. xxx", "B. xxx", ...],  // 仅选择题
+           "answer": "答案",  // 如有
+           "knowledge_points": ["知识点1", "知识点2"],
+           "difficulty": "easy/medium/hard",
+           "source_location": "页码/位置"
+         }}
+       ],
+       "metadata": {{
+         "total_questions": 数量,
+         "type_distribution": {{"choice": n, "fill-blank": n, ...}},
+         "formulas_found": ["化学式列表"]
+       }}
+     }}
+     ```
+
+language: zh-CN
+version: "1.0"

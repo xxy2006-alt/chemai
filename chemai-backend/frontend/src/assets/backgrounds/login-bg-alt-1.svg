@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1428"/>
+      <stop offset="0.55" stop-color="#0e1f3f"/>
+      <stop offset="1" stop-color="#123061"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.22" cy="0.3" r="0.5">
+      <stop offset="0" stop-color="#2dd4bf" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#2dd4bf" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.8" cy="0.75" r="0.55">
+      <stop offset="0" stop-color="#5e69d2" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#5e69d2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <rect width="1920" height="1080" fill="url(#glow1)"/>
+  <rect width="1920" height="1080" fill="url(#glow2)"/>
+
+  <g stroke="#3d4f86" stroke-width="1.4" opacity="0.65" fill="none">
+    <path d="M150 820 L330 700 L540 780 L560 960 L330 700"/>
+    <path d="M540 780 L760 880 L560 960"/>
+    <path d="M1660 180 L1470 260 L1500 440 L1700 470 L1800 300 L1660 180"/>
+    <path d="M1500 440 L1330 560"/>
+    <path d="M980 170 L1140 90 L1300 170 L1300 350 L1140 430 L980 350 Z"/>
+    <path d="M1140 430 L1140 600"/>
+    <path d="M420 260 L600 180 L760 260 L760 430 L600 510 L420 430 Z"/>
+    <path d="M600 510 L600 640 L760 700"/>
+  </g>
+  <g fill="#7fa8ff" opacity="0.8">
+    <circle cx="150" cy="820" r="7"/><circle cx="540" cy="780" r="9"/>
+    <circle cx="560" cy="960" r="6"/><circle cx="760" cy="880" r="7"/>
+    <circle cx="1660" cy="180" r="8"/><circle cx="1500" cy="440" r="9"/>
+    <circle cx="1700" cy="470" r="6"/><circle cx="1800" cy="300" r="7"/>
+    <circle cx="1330" cy="560" r="6"/><circle cx="1140" cy="90" r="6"/>
+    <circle cx="1300" cy="350" r="7"/><circle cx="980" cy="350" r="8"/>
+    <circle cx="600" cy="180" r="7"/><circle cx="760" cy="430" r="8"/>
+    <circle cx="420" cy="430" r="6"/><circle cx="760" cy="700" r="7"/>
+  </g>
+  <g fill="#4fd1c5" opacity="0.85">
+    <circle cx="330" cy="700" r="10"/><circle cx="1470" cy="260" r="11"/>
+    <circle cx="1140" cy="430" r="10"/><circle cx="600" cy="510" r="10"/>
+  </g>
+  <g fill="#f7f8f8" opacity="0.5" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="600">
+    <text x="322" y="668">C</text>
+    <text x="1462" y="228">O</text>
+    <text x="1132" y="398">N</text>
+    <text x="592" y="478">H</text>
+  </g>
+  <g stroke="#23252a" stroke-width="1" opacity="0.5" fill="none">
+    <path d="M60 60 L108 60 L132 100 L108 140 L60 140 L36 100 Z"/>
+    <path d="M1780 940 L1828 940 L1852 980 L1828 1020 L1780 1020 L1756 980 Z"/>
+    <path d="M900 900 L948 900 L972 940 L948 980 L900 980 L876 940 Z"/>
+  </g>
+</svg>

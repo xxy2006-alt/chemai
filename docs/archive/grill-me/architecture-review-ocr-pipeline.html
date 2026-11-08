@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChemAI OCR Pipeline — Architecture Review</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:'default', securityLevel:'loose'});</script>
+<style>
+  body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f8fafc; color: #1e293b; }
+  .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04); }
+  .badge-strong { background: #dc2626; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-explore { background: #d97706; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .shallow-box { background: #fef2f2; border: 2px dashed #fca5a5; border-radius: 12px; padding: 16px; }
+  .deep-box { background: #f0fdf4; border: 2px solid #86efac; border-radius: 12px; padding: 16px; }
+  .api-card { border-left: 4px solid; padding: 12px; margin-bottom: 12px; border-radius: 0 8px 8px 0; }
+  .api-vlm { border-color: #8b5cf6; background: #f5f3ff; }
+  .api-correct { border-color: #f59e0b; background: #fffbeb; }
+  .api-doc { border-color: #3b82f6; background: #eff6ff; }
+  .flow-step { background: #f1f5f9; border-radius: 8px; padding: 8px 12px; margin: 4px 0; font-size: 13px; }
+  .file-tag { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+</style>
+</head>
+<body class="max-w-5xl mx-auto py-8 px-4">
+
+<div class="mb-10">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">ChemAI OCR Pipeline — API Composition Review</h1>
+  <p class="text-slate-500">Scope: Baidu OCR API call flows, state machine, and composition logic. Not UI or DB schema.</p>
+</div>
+
+<!-- The Three APIs -->
+<div class="card p-6 mb-8">
+  <h2 class="text-lg font-bold mb-4">The Three APIs — Capabilities Matrix</h2>
+  <div class="grid grid-cols-3 gap-4 text-sm">
+    <div class="api-doc">
+      <p class="font-bold mb-1">doc_analysis</p>
+      <p class="text-slate-500 text-xs mb-2">试卷分析与识别</p>
+      <p><strong>Mode:</strong> Sync</p>
+      <p><strong>Input:</strong> Image (base64)</p>
+      <p><strong>Returns:</strong> text + formula_result (LaTeX) + layouts</p>
+      <p><strong>Latency:</strong> ~1-2s</p>
+      <p class="mt-2 text-xs text-slate-400">Fast, synchronous. No question segmentation. No grading.</p>
+    </div>
+    <div class="api-vlm">
+      <p class="font-bold mb-1">paper_cut_edu_vlm</p>
+      <p class="text-slate-500 text-xs mb-2">试卷切题识别(多模态)</p>
+      <p><strong>Mode:</strong> Async (task → poll)</p>
+      <p><strong>Input:</strong> Image (base64)</p>
+      <p><strong>Returns:</strong> qus_words + qus_type + qus_location + pic_location</p>
+      <p><strong>Latency:</strong> ~5-15s</p>
+      <p class="mt-2 text-xs text-slate-400">Multimodal. Cuts + reads questions. scene_type=paper/answer_sheet.</p>
+    </div>
+    <div class="api-correct">
+      <p class="font-bold mb-1">correct_edu</p>
+      <p class="text-slate-500 text-xs mb-2">智能作业批改</p>
+      <p><strong>Mode:</strong> Async (task → poll)</p>
+      <p><strong>Input:</strong> Image (base64)</p>
+      <p><strong>Returns:</strong> correctResult + reason + cropUrl per question</p>
+      <p><strong>Latency:</strong> ~5-15s</p>
+      <p class="mt-2 text-xs text-slate-400">Grading. paperSubject=chemistry. only_split=true → sync cut only.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Candidate 1: State Machine -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">1. The Missing State Machine</h2>
+    <span class="badge-strong">Strong</span>
+  </div>
+  <div class="flex gap-2 flex-wrap mb-4">
+    <span class="file-tag">app/services/ocr_service.py</span>
+    <span class="file-tag">app/services/document_parse_service.py</span>
+    <span class="file-tag">agent/channel/langgraph_channel.py</span>
+  </div>
+
+  <p class="text-sm text-slate-600 mb-4">The current code has no concept of <em>state</em> — it's a fire-and-forget function call. But the user flow (upload → preview → confirm → process) spans multiple API calls and requires state persistence across steps.</p>
+
+  <p class="text-sm text-slate-600 mb-4"><strong>What needs defining:</strong></p>
+
+  <div class="overflow-x-auto">
+  <table class="w-full text-sm border-collapse mb-4">
+    <thead>
+      <tr class="bg-slate-100">
+        <th class="text-left p-2 border">State</th>
+        <th class="text-left p-2 border">What happened</th>
+        <th class="text-left p-2 border">What's stored</th>
+        <th class="text-left p-2 border">Next action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="p-2 border font-mono text-xs">UPLOADED</td>
+        <td class="p-2 border text-xs">File received, validated</td>
+        <td class="p-2 border text-xs">Raw file bytes, filename, mime type</td>
+        <td class="p-2 border text-xs">→ PREVIEWING</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-mono text-xs">PREVIEWING</td>
+        <td class="p-2 border text-xs">doc_analysis OCR running</td>
+        <td class="p-2 border text-xs">+ preview_text (streaming?)</td>
+        <td class="p-2 border text-xs">→ READY (success) or ERROR</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-mono text-xs">READY</td>
+        <td class="p-2 border text-xs">Preview shown to user</td>
+        <td class="p-2 border text-xs">+ preview_text, detected_type</td>
+        <td class="p-2 border text-xs">user picks: import / grade / search</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-mono text-xs">IMPORTING</td>
+        <td class="p-2 border text-xs">paper_cut_edu_vlm running</td>
+        <td class="p-2 border text-xs">+ task_id (for polling)</td>
+        <td class="p-2 border text-xs">→ IMPORTED or ERROR</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-mono text-xs">IMPORTED</td>
+        <td class="p-2 border text-xs">Questions extracted</td>
+        <td class="p-2 border text-xs">+ questions[], + enhanced image URL</td>
+        <td class="p-2 border text-xs">teacher edits → save → DONE</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-mono text-xs">GRADING</td>
+        <td class="p-2 border text-xs">correct_edu running</td>
+        <td class="p-2 border text-xs">+ task_id, + exam_id</td>
+        <td class="p-2 border text-xs">→ GRADED or ERROR</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-mono text-xs">GRADED</td>
+        <td class="p-2 border text-xs">Results ready</td>
+        <td class="p-2 border text-xs">+ per-question results, + graded images</td>
+        <td class="p-2 border text-xs">teacher reviews → save → DONE</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-mono text-xs">DONE</td>
+        <td class="p-2 border text-xs">Persisted to DB</td>
+        <td class="p-2 border text-xs">DB record IDs</td>
+        <td class="p-2 border text-xs">—</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-mono text-xs">ERROR</td>
+        <td class="p-2 border text-xs">API failed</td>
+        <td class="p-2 border text-xs">+ error message, + retry count</td>
+        <td class="p-2 border text-xs">retry / fallback / manual</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p class="text-sm text-slate-600">This state machine must live somewhere. Options:</p>
+  <p class="text-sm"><strong>A)</strong> In-memory dict keyed by upload_id (simple, lost on restart)</p>
+  <p class="text-sm"><strong>B)</strong> SQLite upload_sessions table (survives restart, queryable)</p>
+</div>
+
+<!-- Candidate 2: Async Polling Strategy -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">2. Async Polling — Client-Side vs Server-Side</h2>
+    <span class="badge-strong">Strong</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <h3 class="font-semibold mb-2">Problem</h3>
+      <p class="text-sm text-slate-600">Both <code>paper_cut_edu_vlm</code> and <code>correct_edu</code> are async (<code>create_task</code> → <code>poll get_result</code>). Who does the polling?</p>
+      <p class="text-sm text-slate-600 mt-2"><strong>Current state:</strong> Not defined. The test script polls synchronously in a loop — unusable for HTTP requests (would block the FastAPI worker for 15s).</p>
+    </div>
+    <div>
+      <h3 class="font-semibold mb-2">Two Approaches</h3>
+      <div class="flow-step mb-2">
+        <strong>A) Server polls, client waits</strong><br>
+        <span class="text-xs text-slate-500">POST /import → server creates task → server polls in background → returns result when done. Client shows spinner.</span>
+      </div>
+      <div class="flow-step">
+        <strong>B) Client polls the server</strong><br>
+        <span class="text-xs text-slate-500">POST /import → returns task_id immediately → client polls GET /import/{task_id}/status every 2s → server proxies Baidu each time.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <h3 class="font-semibold mb-1">Recommendation: B</h3>
+    <p class="text-sm text-slate-600">The server stores <code>{upload_id: {baidu_task_id, status, result}}</code>. The client polls <code>GET /import/{upload_id}/status</code>. The server proxies to Baidu's <code>get_result</code> on each poll. This gives the frontend a progress indicator and avoids long-lived HTTP connections.</p>
+  </div>
+</div>
+
+<!-- Candidate 3: Composition — When APIs Call Each Other -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">3. API Composition — The Gray Zone</h2>
+    <span class="badge-strong">Strong</span>
+  </div>
+
+  <p class="text-sm text-slate-600 mb-4">The three APIs are not independent. Common compositions:</p>
+
+  <div class="space-y-4">
+    <div class="shallow-box">
+      <p class="font-bold text-sm mb-1">Composition A: Preview → Import</p>
+      <pre class="mermaid">
+sequenceDiagram
+    User->>Server: upload PDF
+    Server->>doc_analysis: preview page 1 (2s)
+    doc_analysis-->>Server: text preview
+    Server-->>User: "这是2020全国卷化学，要导入吗？"
+    User->>Server: confirm import
+    Server->>paper_cut_edu_vlm: create_task(page 1 image)
+    paper_cut_edu_vlm-->>Server: task_id
+    loop poll every 3s
+        Server->>paper_cut_edu_vlm: get_result(task_id)
+    end
+    paper_cut_edu_vlm-->>Server: qus_words[] + pic_location[]
+    Server->>LLM: structure questions
+    Server-->>User: 14 questions ready for review
+      </pre>
+      <p class="text-xs text-red-600 mt-1">⚠ Gray zone: doc_analysis output is discarded after preview. Should we reuse its formula_result when structuring the vlm output?</p>
+    </div>
+
+    <div class="shallow-box">
+      <p class="font-bold text-sm mb-1">Composition B: VLM Fails → Fallback to doc_analysis</p>
+      <pre class="mermaid">
+sequenceDiagram
+    Server->>paper_cut_edu_vlm: create_task
+    paper_cut_edu_vlm-->>Server: task_id
+    Server->>paper_cut_edu_vlm: poll get_result
+    paper_cut_edu_vlm-->>Server: ERROR / timeout
+    Note over Server: Fallback path
+    Server->>doc_analysis: OCR each page
+    doc_analysis-->>Server: raw text + formulas
+    Server->>LLM: structure from raw OCR
+    Server-->>User: questions (lower quality, but not empty)
+      </pre>
+      <p class="text-xs text-red-600 mt-1">⚠ Gray zone: When VLM fails, does the user know they got "degraded" results? What's the error UX?</p>
+    </div>
+  </div>
+</div>
+
+<!-- Candidate 4: PDF Multi-Page Strategy -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">4. PDF Multi-Page Strategy</h2>
+    <span class="badge-explore">Worth exploring</span>
+  </div>
+
+  <p class="text-sm text-slate-600 mb-4">A 22-page exam PDF creates 22 API calls. For <code>paper_cut_edu_vlm</code> (async, ~10s each), that's ~220 seconds serial. Two strategies:</p>
+
+  <table class="w-full text-sm border-collapse">
+    <thead>
+      <tr class="bg-slate-100">
+        <th class="text-left p-2 border">Strategy</th>
+        <th class="text-left p-2 border">How</th>
+        <th class="text-left p-2 border">22-page time</th>
+        <th class="text-left p-2 border">Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="p-2 border font-bold">Serial</td>
+        <td class="p-2 border text-xs">One page at a time: create → poll → next page</td>
+        <td class="p-2 border">~220s</td>
+        <td class="p-2 border text-xs">Safe, slow</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-bold">Parallel</td>
+        <td class="p-2 border text-xs">Fire all 22 create_task at once, poll all in parallel</td>
+        <td class="p-2 border">~15s</td>
+        <td class="p-2 border text-xs">QPS limit (Baidu QPS=2 for create_task). Needs rate limiting.</td>
+      </tr>
+      <tr>
+        <td class="p-2 border font-bold">Batch of 3</td>
+        <td class="p-2 border text-xs">3 concurrent, after each batch completes start next 3</td>
+        <td class="p-2 border">~75s</td>
+        <td class="p-2 border text-xs">Respects QPS=2, 4x faster than serial</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Candidate 5: doc_analysis formula_result — Use or Discard -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">5. doc_analysis formula_result — Discarded Treasure</h2>
+    <span class="badge-explore">Worth exploring</span>
+  </div>
+
+  <p class="text-sm text-slate-600 mb-4">The <code>doc_analysis</code> API returns <code>formula_result</code> (75 LaTeX formulas per page). The VLM returns <code>qus_words</code> (plain text). But the formula LaTeX is <em>more precise</em> than what VLM extracts.</p>
+
+  <p class="text-sm text-slate-600"><strong>Decision needed:</strong> When importing, should we:</p>
+  <p class="text-sm"><strong>A)</strong> Use only VLM output (simpler, one source of truth)</p>
+  <p class="text-sm"><strong>B)</strong> Merge: VLM for structure + doc_analysis formula_result for precise chemical formulas (better quality, more complex)</p>
+</div>
+
+<!-- Candidate 6: File Storage Strategy -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-bold">6. File Lifecycle — Upload → Store → Reference</h2>
+    <span class="badge-explore">Worth exploring</span>
+  </div>
+
+  <p class="text-sm text-slate-600 mb-4">Files flow through the system and end up in different places depending on the path taken:</p>
+
+  <pre class="mermaid">
+graph TD
+    UPLOAD["Upload (temp dir)"] --> PREVIEW["Preview shown"]
+    PREVIEW -->|"import"| IMPORT_PENDING["VLM processing"]
+    PREVIEW -->|"grade"| GRADE_PENDING["correct_edu processing"]
+    PREVIEW -->|"discard"| DEL["🗑️ Delete from temp"]
+    IMPORT_PENDING -->|"success"| EXAM_STORE["data/exam_questions/{region}/{year}/"]
+    GRADE_PENDING -->|"success"| SUBMISSION_STORE["student_submissions table + files/"]
+    IMPORT_PENDING -->|"fail"| RETRY["Retry or fallback"]
+    GRADE_PENDING -->|"fail"| RETRY
+  </pre>
+
+  <p class="text-sm text-slate-600 mt-4">The enhanced/cropped images from Baidu (cropUrl, enhance_url) should be downloaded and stored locally — those URLs expire.</p>
+</div>
+
+<!-- Top Recommendation -->
+<div class="card p-6 mb-8 bg-gradient-to-br from-blue-50 to-white border-2 border-blue-200">
+  <h2 class="text-xl font-bold mb-3">Top Recommendation — Resolve In Order</h2>
+
+  <div class="space-y-3">
+    <div class="flex gap-3">
+      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+      <div>
+        <p class="font-bold">Define the state machine (Candidate 1)</p>
+        <p class="text-sm text-slate-600">Everything else depends on this. Without states, we can't build the API layer, the polling strategy, or the frontend. Pick in-memory or SQLite.</p>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+      <div>
+        <p class="font-bold">Decide client-polling vs server-polling (Candidate 2)</p>
+        <p class="text-sm text-slate-600">Defines the API contract between frontend and backend. Choose B (client polls /status endpoint).</p>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <div class="w-8 h-8 rounded-full bg-slate-400 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+      <div>
+        <p class="font-bold">Decide composition + fallback rules (Candidate 3)</p>
+        <p class="text-sm text-slate-600">When does doc_analysis preview get reused? When does VLM fail → fallback to doc_analysis? Define explicit rules.</p>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <div class="w-8 h-8 rounded-full bg-slate-300 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">4</div>
+      <div>
+        <p class="font-bold">Multi-page strategy + file storage + formula merge</p>
+        <p class="text-sm text-slate-600">Lower priority. Resolve after 1-3 are locked.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="text-slate-400 text-sm text-center">Generated by /improve-codebase-architecture | D:\化学\architecture-review-ocr-pipeline.html</p>
+
+</body>
+</html>

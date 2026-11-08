@@ -1,0 +1,55 @@
+# Web Framework
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+python-multipart==0.0.9
+
+# Database
+sqlalchemy==2.0.25
+pymysql==1.1.0
+alembic==1.13.1
+
+# AI/ML
+dashscope==1.20.0  # 通义千问API
+chromadb==0.4.22
+tencentcloud-sdk-python-ocr>=3.0.1400  # 腾讯OCR（原钉 1.0.2752 版本号不存在，OCR 为惰性导入）
+
+# Agent framework (LangGraph)
+langgraph==1.2.11
+langgraph-checkpoint-sqlite==3.1.0
+langchain-core==1.5.3
+langchain-openai==1.4.2
+aiosqlite==0.22.1
+
+# Document & image processing
+PyMuPDF==1.27.2.3
+python-docx==1.1.0
+Pillow==12.2.0
+
+# Auth & config
+PyJWT==2.12.1
+PyYAML==6.0.2
+
+# OCR 本地引擎（PP-OCRv6，依赖 paddlepaddle，体积大；默认经惰性导入，未安装时自动降级 Provider OCR）
+# paddleocr
+
+# Utils
+pydantic>=2.6.1
+pydantic-settings>=2.1.0
+python-dotenv==1.0.1
+httpx==0.26.0
+requests==2.31.0
+apscheduler==3.10.4
+
+# Background jobs
+celery==5.6.3
+redis==7.4.0
+
+# Chemistry
+rdkit==2024.3.1  # 化学结构处理
+
+# Browser automation
+playwright>=1.40
+
+# Testing
+pytest==8.0.0
+pytest-asyncio>=0.23.4

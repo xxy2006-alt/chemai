@@ -1,0 +1,972 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>考试工作台 · 智辅化学</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/common.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{ink:"#1a1a1a",paper:"#faf7f0",paperWarm:"#f5efe0",inkLight:"#555",congoRed:"#b43c28",methylGreen:"#2c6e49"},fontFamily:{sans:["'Noto Sans SC'","'PingFang SC'","'Microsoft YaHei'","'Segoe UI'","system-ui","sans-serif"],mono:["'Cascadia Code'","'Consolas'","'Cascadia Code','Consolas','JetBrains Mono'","monospace"],serif:["'Noto Serif SC'","'SimSun'","'Georgia'","serif"]}}}}</script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<style>
+body{font-family:'PingFang SC','Microsoft YaHei','Segoe UI',system-ui,sans-serif;background:#f7f4ed;color:#1a1a1a;margin:0}
+/* 按钮系统 — 学术风格 */
+.btn-save{background:transparent;color:#b43c28;border:1.5px solid #b43c28;padding:5px 14px;font-size:12px;cursor:pointer;border-radius:4px;transition:all .15s}.btn-save:hover{background:#b43c28;color:#faf7f0}
+.btn-remove{background:transparent;color:rgba(0,0,0,.5);border:1.5px solid rgba(0,0,0,.12);padding:5px 14px;font-size:12px;cursor:pointer;border-radius:4px;transition:all .15s}.btn-remove:hover{background:rgba(0,0,0,.04);color:#b43c28;border-color:#b43c28}
+.btn-save-all{background:transparent;color:#b43c28;border:1.5px solid #b43c28;padding:6px 16px;font-size:13px;cursor:pointer;border-radius:4px;transition:all .15s}.btn-save-all:hover{background:#b43c28;color:#faf7f0}
+.btn-save-all:disabled{opacity:.4;pointer-events:none}
+.btn-del-all{background:transparent;color:rgba(0,0,0,.5);border:1.5px solid rgba(0,0,0,.12);padding:6px 16px;font-size:13px;cursor:pointer;border-radius:4px;transition:all .15s}.btn-del-all:hover{background:rgba(0,0,0,.04);color:#b43c28;border-color:#b43c28}
+.btn-del-confirm{background:transparent;color:#b43c28;border:1.5px solid #b43c28;padding:6px 16px;font-size:13px;cursor:pointer;border-radius:4px;transition:all .15s}.btn-del-confirm:hover{background:#b43c28;color:#faf7f0}
+.btn-regen{background:transparent;padding:6px 16px;border:1.5px solid rgba(0,0,0,.25);font-size:13px;cursor:pointer;border-radius:4px;transition:all .15s}.btn-regen:hover{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.4)}
+.sidebar{width:240px;position:fixed;left:0;top:0;height:100vh;z-index:50;background:#f5efe0;border-right:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column}
+.sidebar .brand-area{padding:20px 16px 4px}
+.sidebar .brand-area h1{font-family:'Noto Serif SC','SimSun','Georgia',serif;font-size:28px;font-weight:600;line-height:1.1;margin:0}
+.sidebar .brand-area .sub{font-family:'Cascadia Code','Consolas','JetBrains Mono',monospace;font-size:10px;color:#999;margin-top:3px;letter-spacing:.5px}
+.sidebar .home-link{margin:14px 12px 10px;padding:9px 0;text-align:center;font-size:14px;font-family:'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;border:1px solid rgba(0,0,0,.1);background:transparent;color:#555;border-radius:4px;cursor:pointer;transition:.15s;text-decoration:none;display:block}
+.sidebar .home-link:hover{border-color:#b43c28;color:#b43c28}
+.elem-nav{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 8px;border-radius:4px;text-decoration:none;color:#555;font-size:15px;transition:.12s}
+.elem-nav .sym{font-family:'Noto Serif SC','SimSun','Georgia',serif;font-weight:600;font-size:17px;min-width:32px;text-align:center;padding:4px 6px;border-radius:3px;background:rgba(0,0,0,.03);color:#1a1a1a}
+.elem-nav:hover{background:rgba(0,0,0,.02)}.elem-nav:hover .sym{background:#1a1a1a;color:#faf7f0}
+.elem-nav.active{background:rgba(0,0,0,.03);font-weight:500}.elem-nav.active .sym{background:#b43c28;color:#fff}
+.main{margin-left:240px;padding:24px 32px;min-height:100vh;background-image:linear-gradient(rgba(0,0,0,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.012) 1px,transparent 1px);background-size:28px 28px;background-position:-1px -1px}
+.card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:4px;padding:20px;margin-bottom:12px}
+.input{border:none;border-bottom:1.5px solid rgba(0,0,0,.08);background:transparent;padding:9px 4px;font-size:15px;font-family:'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;outline:none;transition:border-color .3s;width:100%}
+.input:focus{border-bottom-color:#b43c28}
+select.input{-webkit-appearance:none;border-radius:0}
+.tag{display:inline-block;padding:2px 10px;border-radius:9999px;font-size:12px;font-weight:500;font-family:'Cascadia Code','Consolas','JetBrains Mono',monospace;margin:1px}
+.tag-medium{background:rgba(0,0,0,.05);color:#555}.tag-easy{background:#e0f2f1;color:#2c6e49}.tag-hard{background:#ffdad6;color:#b43c28}
+.audit-badge{display:inline-block;padding:3px 10px;border-radius:9999px;font-size:11px;font-family:'Cascadia Code','Consolas','JetBrains Mono',monospace;font-weight:500}
+.audit-badge.passed{background:#e0f2f1;color:#2c6e49}.audit-badge.warning{background:#fff3cd;color:#856404}.audit-badge.blocked{background:#ffdad6;color:#93000a}
+.page-title{font-family:'Noto Serif SC','SimSun','Georgia',serif;font-size:28px;font-weight:600;margin:0}
+.nav-tabs{display:flex;gap:2px;border-bottom:1px solid rgba(0,0,0,.06);margin-bottom:20px}
+.nav-tab{padding:8px 18px;background:none;border:none;border-bottom:2px solid transparent;font-size:14px;cursor:pointer;color:#999;font-family:'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;transition:.15s}
+.nav-tab.active{border-bottom-color:#b43c28;color:#1a1a1a;font-weight:500}
+@keyframes spin{to{transform:rotate(360deg)}}.spinner{width:24px;height:24px;border:3px solid #ddd;border-top-color:#b43c28;border-radius:50%;animation:spin 1s linear infinite}
+.qcard{border-left:4px solid #1a73e8;margin-bottom:8px;transition:opacity .3s,border-color .3s}.qcard.saved{border-left-color:#27ae60}
+.qcard-body{font-size:14px;line-height:1.6}.qcard-meta{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}
+.qcard-actions{margin-top:10px;display:flex;gap:8px}
+.edit-form{margin:10px 0;padding:12px;background:#f8f8f8;border-radius:6px}
+.edit-form textarea,.edit-form input{width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:13px;font-family:inherit;margin-bottom:6px}
+.bank-browser{border:1px solid rgba(0,0,0,.08);border-radius:4px;max-height:360px;overflow-y:auto}
+.bank-browser .bq-row{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-bottom:1px solid #eee;cursor:pointer;font-size:13px;transition:.1s}
+.bank-browser .bq-row:hover{background:rgba(0,0,0,.01)}.bank-browser .bq-row.selected{background:rgba(180,60,40,.03)}
+.bottom-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid rgba(0,0,0,.06);margin-top:16px;flex-wrap:wrap;gap:8px}
+.section-label{font-size:13px;font-weight:600;color:#1a1a1a;display:block;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(0,0,0,.06)}
+.empty-state{text-align:center;padding:60px;color:#999}
+.section{margin-bottom:14px}
+/* Source mode switch */
+.src-tabs{display:flex;gap:0;margin-bottom:12px;border:1px solid rgba(0,0,0,.12);border-radius:6px;overflow:hidden;width:fit-content}
+.src-tab{padding:8px 18px;border:none;background:#fff;font-size:13px;cursor:pointer;color:#555;transition:all .15s;border-right:1px solid rgba(0,0,0,.08);font-family:'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif}
+.src-tab:last-child{border-right:none}
+.src-tab:hover{background:#f5f5f5}
+.src-tab.active{background:#1a1a1a;color:#fff;font-weight:500}
+/* Chip border */
+.chip{border:1.5px solid rgba(0,0,0,.15)}
+.chip.active{border-color:#b43c28}
+/* Type chip grid */
+.type-row{display:flex;flex-wrap:wrap;gap:8px}
+.type-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1.5px solid rgba(0,0,0,.15);border-radius:8px;font-size:13px;cursor:pointer;transition:all .15s;user-select:none;background:#fff}
+.type-chip:hover{border-color:#b43c28}
+.type-chip.active{background:rgba(180,60,40,.06);border-color:#b43c28;color:#b43c28}
+.type-chip input{width:40px;text-align:center;border:1px solid #ddd;border-radius:4px;padding:2px 4px;font-size:12px;margin-left:4px}
+.type-chip input:focus{outline:none;border-color:#b43c28}
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.3);z-index:1000;display:flex;align-items:center;justify-content:center;animation:fadeIn .15s}
+.modal-overlay.fadeout{animation:fadeOut .15s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+.modal-box{background:#faf7f0;border:1px solid rgba(0,0,0,.08);border-radius:8px;padding:28px 32px;min-width:380px;max-width:740px;max-height:80vh;overflow-y:auto;box-shadow:0 4px 32px rgba(0,0,0,.12);animation:slideUp .2s}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.modal-box h3{font-family:'Noto Serif SC','SimSun','Georgia',serif;font-size:22px;font-weight:600;margin:0 0 8px}
+.modal-box p{font-size:14px;color:#555;margin:0 0 16px;line-height:1.5}
+.modal-box .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.modal-box .modal-actions button{padding:5px 14px;border-radius:4px;font-size:12px;cursor:pointer;border:1.5px solid rgba(0,0,0,.15);background:transparent;font-family:'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;transition:.15s}
+.modal-box .modal-actions button:hover{background:rgba(0,0,0,.03)}
+.modal-box .modal-actions button.btn-primary{background:#b43c28;color:#fff;border-color:#b43c28}
+.modal-box .modal-actions button.btn-primary:hover{background:#a33020}
+.modal-box .modal-actions button.btn-danger{color:#b43c28;border-color:#b43c28}
+.modal-box .modal-actions button.btn-danger:hover{background:rgba(180,60,40,.06)}
+/* Compact select-type modal */
+.modal-box.select-modal{padding:18px 24px;min-width:320px;max-width:400px}
+.modal-box.select-modal h3{font-size:16px;margin-bottom:12px}
+.modal-box.select-modal p{font-size:12px;margin-bottom:12px}
+.modal-box.select-modal .modal-input{font-size:13px;padding:6px 4px}
+.modal-box .modal-input{width:100%;border:none;border-bottom:1.5px solid rgba(0,0,0,.1);background:transparent;padding:9px 4px;font-size:15px;font-family:'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;outline:none;margin-bottom:12px}.modal-box .modal-input:focus{border-bottom-color:#b43c28}
+.modal-box .modal-select{width:100%;margin-bottom:12px}
+/* Toast */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:2000;display:flex;flex-direction:column-reverse;gap:8px}
+.toast-item{padding:10px 18px;border-radius:6px;font-size:13px;color:#1a1a1a;background:#fff;border:1px solid rgba(0,0,0,.08);box-shadow:0 2px 12px rgba(0,0,0,.08);animation:toastIn .25s;max-width:360px;pointer-events:auto}
+.toast-item.error{color:#b43c28;border-left:3px solid #b43c28}
+.toast-item.success{color:#2c6e49;border-left:3px solid #2c6e49}
+@keyframes toastIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+/* Exam preview */
+.preview-question{padding:12px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+.preview-question:last-child{border-bottom:none}
+</style></head><body>
+<aside class="sidebar">
+<div class="brand-area"><h1>智辅化学</h1><p class="sub">CHEMAI · 教师工作台</p></div>
+<a href="/" class="home-link">AI 教研助手</a>
+<nav class="flex-1 overflow-y-auto flex flex-col" id="sidebar-nav" style="padding:4px 0"></nav>
+<div style="padding:8px 12px;border-top:1px solid rgba(0,0,0,.04)"><a class="elem-nav" href="#" onclick="ChemAI.logout()" style="font-size:12px;color:#999">退出登录</a></div>
+</aside>
+<main class="main" id="app-root">
+  <!-- ═══ SINGLE VUE APP: controls everything ═══ -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h1 class="page-title">考试工作台</h1>
+  </div>
+  <div class="nav-tabs">
+    <button v-for="t in tabs" class="nav-tab" :class="{active:tab===t.id}" @click="tab=t.id">{{t.label}}</button>
+  </div>
+
+  <!-- ═══ 出题工作台 ═══ -->
+  <div v-show="tab==='workbench'">
+    <!-- sub-tabs -->
+    <div class="src-tabs" style="margin-bottom:16px">
+      <button class="src-tab" :class="{active:sourceMode==='ai'}" @click="sourceMode='ai'">AI 生成</button>
+      <button class="src-tab" :class="{active:sourceMode==='manual'}" @click="sourceMode='manual'">手动录入</button>
+      <button class="src-tab" :class="{active:sourceMode==='upload'}" @click="sourceMode='upload'">OCR 上传</button>
+    </div>
+
+    <!-- ═══ AI 生成 ═══ -->
+    <div v-show="sourceMode==='ai'">
+      <!-- config card: full width -->
+      <div class="card" style="margin-bottom:16px">
+        <!-- row 1: type chips + difficulty -->
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1;min-width:300px">
+            <div class="section-label">题型与数量（点击选中，可调数量）</div>
+            <div class="type-row">
+              <span v-for="t in types" class="type-chip" :class="{active:t.active}" @click="t.active=!t.active">
+                <span style="font-size:20px;margin-right:4px">{{t.active?'●':'○'}}</span>
+                {{t.label}}
+                <input v-if="t.active" v-model.number="t.qty" type="number" min="1" max="10" @click.stop>
+              </span>
+            </div>
+          </div>
+          <div style="width:120px">
+            <div class="section-label">难度</div>
+            <select v-model="difficulty" class="input">
+              <option value="easy">容易</option>
+              <option value="medium" selected>中等</option>
+              <option value="hard">偏难</option>
+            </select>
+          </div>
+        </div>
+        <!-- row 2: knowledge points -->
+        <div style="margin-top:14px;border-top:1px solid rgba(0,0,0,.06);padding-top:14px">
+          <div class="section-label">知识点 <span style="font-weight:400;text-transform:none">（输入关键词筛选，点击选中）</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;min-height:24px">
+            <span v-for="kp in kps.filter(function(k){return k.active})" style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:rgba(180,60,40,.08);border:1px solid #b43c28;border-radius:12px;font-size:12px;color:#b43c28;cursor:pointer" @click="kp.active=false">{{kp.name}}<span style="font-size:14px;line-height:1">&times;</span></span>
+            <span v-if="kps.filter(function(k){return k.active}).length===0" style="font-size:12px;color:#bbb">尚未选择知识点</span>
+          </div>
+          <input v-model="kpSearch" class="input" placeholder="输入关键词筛选知识点..." style="margin-bottom:8px">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;max-height:130px;overflow-y:auto;padding:4px 0">
+            <span v-for="kp in filteredKps" style="display:inline-block;padding:3px 10px;border:1.5px solid rgba(0,0,0,.12);border-radius:12px;font-size:12px;cursor:pointer;transition:all .15s;user-select:none;background:#fff;color:#555;white-space:nowrap" :style="kp.active?{background:'rgba(180,60,40,.08)',borderColor:'#b43c28',color:'#b43c28'}:{}" @click="kp.active=!kp.active">{{kp.name}}</span>
+          </div>
+        </div>
+        <!-- row 3: variant mode -->
+        <div style="margin-top:14px;border-top:1px solid rgba(0,0,0,.06);padding-top:14px">
+          <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+            <input type="checkbox" v-model="useVariant" style="width:16px;height:16px"> 基于真题生成变种题
+          </label>
+          <div v-if="useVariant" style="margin-top:8px;display:flex;align-items:center;gap:8px">
+            <button class="btn btn-sm" @click="openVariantBrowser" style="white-space:nowrap">📂 选择真题蓝本</button>
+            <span v-if="variantQid" style="font-size:13px;color:#2c6e49;display:inline-flex;align-items:center;gap:4px">
+              ✓ 已选: <strong>{{variantLabel}}</strong>
+              <span style="cursor:pointer;color:#999;font-size:16px;line-height:1" @click="variantQid='';variantLabel=''">&times;</span>
+            </span>
+            <span v-if="!variantQid" style="font-size:12px;color:#999">未选择蓝本（将基于知识点自由出题）</span>
+          </div>
+        </div>
+        <!-- row 4: folder + generate button -->
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            <div class="section-label">保存目标题库</div>
+            <select v-model="selectedFolder" class="input"><option value="">选择或新建...</option><option v-for="f in folders" :value="f.set_id">{{f.name}} ({{f.question_count}})</option></select>
+          </div>
+          <button class="btn btn-sm" @click="newFolder">+ 新建题库</button>
+          <button class="btn" @click="aiGenerate" :disabled="generating" style="padding:10px 32px;font-size:15px;background:#b43c28;color:#fff;border:none;border-radius:6px">
+            {{generating ? '⏳ AI 正在生成...' : '🎯 AI 出题'}}
+          </button>
+        </div>
+        <div v-if="generating" style="margin-top:12px;background:#f8f8f8;border-radius:8px;padding:16px;text-align:center;color:#999;font-size:14px">
+          <div class="spinner" style="display:inline-block;margin-bottom:8px"></div>
+          <div>正在调用 AI 生成题目，请稍候...</div>
+        </div>
+      </div>
+
+    </div>
+    <!-- ═══ 题目出题区（所有来源共享） ═══ -->
+    <div v-if="questions.length===0&&!generating&&sourceMode==='ai'" class="empty-state" style="padding:60px"><p>配置题型和知识点，点击 AI 出题</p></div>
+    <div v-for="(q,i) in questions" class="card qcard" :class="{saved:q._saved}" :style="{opacity:q._removed?'0':'1'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div><span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600">#{{i+1}}</span><span style="font-size:11px;color:#999;margin-left:8px">{{q._typeLabel}}</span><span style="font-size:11px;color:#999;margin-left:4px">{{q._source}}</span><span v-if="q._saved" style="margin-left:8px;color:#27ae60;font-size:11px">✓ 已保存</span></div>
+        <div style="display:flex;gap:4px"><span v-for="d in auditDims" class="audit-badge" :class="(q[d.key]||{}).status||'passed'">{{d.label}}:{{(q[d.key]||{}).status==='warning'?'⚠':(q[d.key]||{}).status==='blocked'?'✗':'✓'}}</span></div>
+      </div>
+      <template v-if="q._editing"><div class="edit-form"><textarea v-model="q.content" rows="3"></textarea><div style="display:flex;gap:6px"><input v-model="q.answer" placeholder="答案" style="flex:1"><input v-model="q._kpsStr" placeholder="知识点" style="flex:1"></div><div style="margin-top:6px"><button class="btn-save" style="margin-right:6px" @click="q._editing=false">完成</button><button class="btn btn-sm" @click="q._editing=false">取消</button></div></div></template>
+      <template v-else>
+        <img v-if="q.page_image" :src="'/static/figures/' + encodeURIComponent(q.region||'') + '/' + q.year + '/' + q.page_image" style="max-width:100%;border-radius:6px;margin-bottom:8px;border:1px solid #eee">
+        <div class="qcard-body" v-html="renderChem(q.content)"></div>
+        <div v-if="q.options&&q.options.length" style="font-size:12px;color:#555;margin-top:4px"><span v-for="o in q.options" style="margin-right:10px">{{o}}</span></div>
+        <div class="qcard-meta"><span class="tag" style="background:#e0f2f1;color:#2c6e49">答案: {{q.answer}}</span><span v-if="q.difficulty" class="tag" :class="'tag-'+q.difficulty">{{q.difficulty}}</span><span v-for="kp in (q.knowledge_points||[])" class="tag tag-medium">{{kp}}</span></div>
+      </template>
+      <div class="qcard-actions"><button class="btn btn-sm" @click="q._editing=!q._editing">编辑</button><button v-if="!q._saved" class="btn-save" @click="saveOne(i)">保存</button><button class="btn-remove" @click="removeOne(i)">移除</button></div>
+    </div>
+    <!-- ═══ 底部操作栏（所有来源共享） ═══ -->
+    <div v-if="questions.filter(function(q){return !q._removed}).length" class="bottom-bar">
+      <span style="font-size:13px;color:#999">{{questions.filter(function(q){return !q._removed}).length}} 题 · {{questions.filter(function(q){return q._saved}).length}} 已保存</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-save-all" @click="saveAll" :disabled="savingAll">{{savingAll?'保存中...':'全部保存'}}</button>
+        <button v-if="!showDelConfirm" class="btn-del-all" @click="showDelConfirm=true">全部删除</button>
+        <template v-if="showDelConfirm"><button class="btn-del-confirm" @click="deleteAll">确认删除</button><button class="btn btn-sm" @click="showDelConfirm=false">取消</button></template>
+        <button class="btn-regen" @click="aiGenerate">全部重出</button>
+        <button class="btn-save-all" @click="printPreview" title="渲染完整试卷预览并导出 PDF">预览/打印</button>
+      </div>
+    </div>
+
+    <!-- ═══ 手动录入 ═══ -->
+    <div v-show="sourceMode==='manual'" class="card">
+      <div class="section-label">手动录入题目</div>
+      <input v-model="mqContent" class="input" placeholder="题目内容" style="margin-bottom:8px">
+      <input v-model="mqOptions" class="input" placeholder="选项，逗号分隔（非选择题留空）" style="margin-bottom:8px">
+      <div style="display:flex;gap:6px;margin-bottom:10px"><input v-model="mqAnswer" class="input" placeholder="答案" style="flex:1"><input v-model="mqKps" class="input" placeholder="知识点，逗号分隔" style="flex:1"><select v-model="mqDiff" class="input" style="width:90px"><option>easy</option><option selected>medium</option><option>hard</option></select></div>
+      <div style="text-align:right"><button @click="manualAdd" style="padding:10px 28px;font-size:15px;background:#b43c28;color:#fff;border:none;border-radius:6px;cursor:pointer">录入题目</button></div>
+    </div>
+
+    <!-- ═══ OCR 上传 ═══ -->
+    <div v-show="sourceMode==='upload'">
+      <div class="card" style="border:2px dashed rgba(0,0,0,.1);border-radius:8px;padding:48px;text-align:center;cursor:pointer;transition:.2s"
+           @click="$refs.ocrFile.click()"
+           @dragover.prevent="$event.currentTarget.style.borderColor='#b43c28';$event.currentTarget.style.background='rgba(180,60,40,.02)'"
+           @dragleave.prevent="$event.currentTarget.style.borderColor='rgba(0,0,0,.1)';$event.currentTarget.style.background=''"
+           @drop.prevent="handleOcrDrop($event);$event.currentTarget.style.borderColor='rgba(0,0,0,.1)';$event.currentTarget.style.background=''">
+        <div style="font-size:48px;color:#b43c28;margin-bottom:8px">+</div>
+        <p style="font-size:16px;font-weight:500">点击或拖拽上传试卷</p>
+        <p style="font-size:13px;color:#999;margin-top:4px">支持 JPG / PNG / PDF，自动识别题目和答案</p>
+        <input type="file" ref="ocrFile" accept="image/*,.pdf" style="display:none" @change="handleOcrFile">
+      </div>
+      <div v-if="ocrLoading" style="text-align:center;padding:24px;color:#999">
+        <div class="spinner" style="display:inline-block;margin-bottom:8px"></div>
+        <div>OCR 识别中，请稍候...</div>
+      </div>
+      <div v-if="ocrResult" class="card" style="margin-top:12px">
+        <div style="font-size:13px;white-space:pre-wrap">{{ocrResult}}</div>
+      </div>
+    </div>
+
+    <!-- ═══ 题库保存区（所有来源共用） ═══ -->
+    <div v-if="sourceMode!=='ai'" style="margin-top:12px;display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">
+        <div class="section-label">保存目标题库</div>
+        <select v-model="selectedFolder" class="input"><option value="">选择或新建...</option><option v-for="f in folders" :value="f.set_id">{{f.name}} ({{f.question_count}})</option></select>
+      </div>
+      <button class="btn btn-sm" @click="newFolder">+ 新建题库</button>
+    </div>
+  </div>
+
+  <!-- ═══ 题库管理 ═══ -->
+  <div v-show="tab==='bank'">
+    <div style="display:flex;gap:10px;margin-bottom:16px;align-items:end;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">
+        <div class="section-label">题库文件夹</div>
+        <select v-model="bankFolder" class="input" @change="loadBank"><option value="">请选择...</option><option v-for="f in folders" :value="f.set_id">{{f.name}} ({{f.question_count}}题)</option></select>
+      </div>
+      <button class="btn btn-sm" @click="newFolder">+ 新建</button>
+      <button class="btn btn-sm btn-save-all" v-if="bankQuestions.length" @click="addBankToExamBatch">全部加入考试</button>
+      <button class="btn btn-sm btn-delete" @click="deleteFolder" v-if="bankFolder">删除题库</button>
+    </div>
+    <div v-if="!bankFolder" class="empty-state"><p>请选择或新建题库</p></div>
+    <div v-if="bankFolder&&bankQuestions.length===0" class="empty-state"><p>题库为空</p></div>
+    <div v-for="(bq,i) in bankQuestions" class="card" style="margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <span style="font-weight:600;font-size:15px">#{{i+1}}</span>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-sm btn-save" style="font-size:11px;padding:2px 8px" @click="addBankToExam(bq)">加入考试</button>
+          <button class="btn btn-sm btn-delete" style="font-size:11px;padding:2px 8px" @click="removeFromBank(bq.question_id,i)">移除</button>
+        </div>
+      </div>
+      <div class="qcard-body" v-html="renderChem(bq.content)"></div>
+      <div v-if="bq.options&&bq.options.length" style="font-size:12px;color:#555;margin-top:4px"><span v-for="o in bq.options" style="margin-right:8px">{{o}}</span></div>
+      <div class="qcard-meta"><span class="tag" style="background:#e0f2f1;color:#2c6e49">答案: {{bq.answer}}</span><span v-for="kp in (bq.knowledge_points||[])" class="tag tag-medium">{{kp}}</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ 历史真题库 ═══ -->
+  <div v-show="tab==='history'">
+    <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px"><div class="section-label">搜索题目</div><input v-model="histSearch" class="input" placeholder="知识点/关键词" @keyup.enter="searchHistory"></div>
+      <button class="btn btn-sm" @click="searchHistory">搜索</button>
+      <button class="btn btn-sm" v-if="histResults.length" @click="historyMode='dir';histResults=[]" style="color:#999">返回目录</button>
+      <button class="btn-save-all" v-if="historyMode==='paper'&&histResults.filter(function(x){return x._sel}).length" @click="addHistToCanvas">加入出题区</button>
+      <button class="btn" v-if="historyMode==='paper'&&histResults.filter(function(x){return x._sel}).length" @click="addHistToExam" style="padding:6px 14px;font-size:13px;background:transparent;color:#b43c28;border:1.5px solid #b43c28;border-radius:4px;cursor:pointer">加入考试</button>
+    </div>
+
+    <!-- Paper directory mode -->
+    <div v-if="historyMode==='dir'">
+      <div v-if="!histPapers.length" class="empty-state"><p>加载中...</p></div>
+      <div v-for="g in histPapers" style="margin-bottom:20px">
+        <h3 style="font-family:'Noto Serif SC','SimSun','Georgia',serif;font-size:18px;font-weight:600;margin:0 0 10px;color:#1a1a1a">{{g.region}}</h3>
+        <div v-for="y in g.years" style="margin-bottom:12px;padding-left:12px;border-left:2px solid rgba(0,0,0,.06)">
+          <div style="font-weight:600;font-size:14px;margin-bottom:6px;color:#555">{{y.year}}年</div>
+          <div v-for="p in y.papers" class="card" style="padding:10px 14px;margin-bottom:4px;cursor:pointer;transition:.15s;display:flex;justify-content:space-between;align-items:center" :style="p.empty?{cursor:'default',opacity:.55}:{}" @click="!p.empty&&openPaper(p)" @mouseover="$event.currentTarget.style.background='rgba(180,60,40,.02)'" @mouseout="$event.currentTarget.style.background='#fff'">
+            <span style="font-size:14px">{{p.name}}</span>
+            <span v-if="!p.empty" style="font-size:12px;color:#999;font-family:'Cascadia Code','Consolas','JetBrains Mono',monospace">{{p.question_count}} 题</span>
+          </div>
+        </div>
+      </div>
+      <div style="color:#999;font-size:12px;text-align:center;padding:20px">共 {{histTotalPapers||0}} 套试卷，{{histTotal||0}} 道真题</div>
+    </div>
+
+    <!-- Paper detail / search results mode -->
+    <div v-if="historyMode==='paper'||historyMode==='search'">
+      <div v-if="histResults.length===0&&historyMode==='search'" class="empty-state"><p>输入关键词搜索历年真题（共 {{histTotal||0}} 题）</p></div>
+      <div v-for="(hq,i) in histResults" class="card" style="margin-bottom:6px;border-left:3px solid transparent" :style="{borderLeftColor:hq._sel?'#b43c28':'transparent'}" @click="hq._sel=!hq._sel">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <input type="checkbox" :checked="hq._sel" style="margin-top:4px" @click.stop="hq._sel=!hq._sel">
+          <div style="flex:1">
+            <span style="font-weight:600;font-size:14px">#{{i+1}}</span><span style="color:#999;font-size:12px;margin-left:8px">{{hq.source}} · {{hq.year}}</span>
+            <div class="qcard-body" v-html="renderChem(hq.content)"></div>
+            <div class="qcard-meta"><span class="tag" style="background:#e0f2f1;color:#2c6e49">答案: {{hq.answer}}</span><span v-for="kp in (hq.knowledge_points||[])" class="tag tag-medium">{{kp}}</span></div>
+          </div>
+        </div>
+        <div style="margin-top:4px;text-align:right"><button class="btn btn-sm btn-save" style="font-size:10px;padding:2px 8px" @click.stop="useAsVariant(hq)">变种</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 考试列表 ═══ -->
+  <div v-show="tab==='exams'">
+    <div class="card"><div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap"><div style="flex:1;min-width:160px"><div class="section-label">考试名称</div><input v-model="examName" class="input" placeholder="例如：高二第一次月考"></div><div style="width:160px"><div class="section-label">班级</div><select v-model="examClass" class="input"><option value="">选择...</option><option v-for="c in classes" :value="c.class_id">{{c.name}}</option></select></div><button class="btn" @click="createExam">创建考试</button></div></div>
+    <div v-if="examList.length===0" class="empty-state"><p>暂无考试，请创建后到"题库管理"或"历史真题库"中选题加入</p></div>
+    <div v-for="e in examList" class="card" style="display:flex;justify-content:space-between;align-items:center"><div><span style="font-weight:600">{{e.name}}</span><span style="color:#999;font-size:12px;margin-left:8px">{{(e.exam_date||'').slice(0,10)}} · {{e.total_students||0}}人</span><span v-if="e.question_stats&&e.question_stats.question_count" style="color:#2c6e49;font-size:12px;margin-left:8px">· {{e.question_stats.question_count}}题</span><span v-if="e.question_stats&&e.question_stats.published" class="tag" style="background:#e0f2f1;color:#2c6e49;margin-left:8px">已发布</span></div><div style="display:flex;gap:6px"><button class="btn btn-sm" @click="manageExam(e)">管理</button><button class="btn btn-sm" @click="publishExam(e)">发布</button><button class="btn btn-sm btn-delete" @click="deleteExam(e)">删除</button></div></div>
+  </div>
+  <!-- Modal -->
+  <div v-if="modal.show" class="modal-overlay" :class="{fadeout:modal.fading}" @click.self="modalCancel">
+    <div class="modal-box" :class="{'select-modal':modal.type==='select'}">
+      <h3>{{modal.title}}</h3>
+      <p v-if="modal.message" v-html="modal.message"></p>
+      <div v-if="modal.type==='input'"><input v-model="modal.inputValue" class="modal-input" :placeholder="modal.placeholder" @keyup.enter="modalConfirm"></div>
+      <div v-if="modal.type==='select'" style="display:flex;gap:8px;align-items:end">
+        <select v-model="modal.selectValue" class="input" style="flex:1"><option value="">{{modal.selectPlaceholder||'请选择...'}}</option><option v-for="o in modal.selectOptions" :value="o.value||o.class_id||o.record_id">{{o.label||o.name}}</option></select>
+        <button style="padding:5px 14px;font-size:12px;background:transparent;border:1.5px solid rgba(0,0,0,.15);border-radius:4px;cursor:pointer;color:#555;white-space:nowrap" @click="modalCancel">{{modal.cancelText||'取消'}}</button>
+        <button style="padding:5px 14px;font-size:12px;background:#b43c28;color:#fff;border:1.5px solid #b43c28;border-radius:4px;cursor:pointer;white-space:nowrap" @click="modalConfirm">{{modal.confirmText||'确定'}}</button>
+      </div>
+      <div v-if="modal.type==='preview'" style="max-height:50vh;overflow-y:auto">
+        <div v-if="modal.previewLoading" style="text-align:center;padding:24px;color:#999">加载中...</div>
+        <div v-else-if="modal.previewQuestions&&modal.previewQuestions.length===0" style="text-align:center;padding:24px;color:#999">该考试还没有题目</div>
+        <div v-for="(pq,pi) in modal.previewQuestions" class="preview-question">
+          <div style="font-weight:600;font-size:14px;margin-bottom:4px">{{pi+1}}. <span v-html="renderChem(pq.content)"></span></div>
+          <div v-if="pq.options&&pq.options.length" style="font-size:12px;color:#555;margin:4px 0"><span v-for="o in pq.options" style="margin-right:12px">{{o}}</span></div>
+          <div style="margin-top:4px"><span class="tag" style="background:#e0f2f1;color:#2c6e49">答案: {{pq.answer}}</span><span v-for="kp in (pq.knowledge_points||[])" class="tag tag-medium">{{kp}}</span></div>
+        </div>
+        <div style="margin-top:12px;color:#999;font-size:12px">共 {{modal.previewQuestions?modal.previewQuestions.length:0}} 题</div>
+      </div>
+      <!-- Variant browser mode -->
+      <div v-if="modal.type==='variant'" style="min-width:600px">
+        <div v-if="modal._vbStep==='dir'" style="max-height:55vh;overflow-y:auto">
+          <div v-for="g in modal._vbPapers" style="margin-bottom:16px">
+            <h4 style="font-family:'Noto Serif SC','SimSun','Georgia',serif;font-size:15px;font-weight:600;margin:0 0 8px;color:#1a1a1a">{{g.region}}</h4>
+            <div v-for="y in g.years" style="margin-bottom:8px;padding-left:12px;border-left:2px solid rgba(0,0,0,.04)">
+              <div style="font-weight:600;font-size:13px;margin-bottom:4px;color:#555">{{y.year}}年</div>
+              <div v-for="p in y.papers" class="card" style="padding:8px 12px;margin-bottom:3px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between" @click="openVariantPaper(p)" @mouseover="$event.currentTarget.style.background='rgba(180,60,40,.02)'" @mouseout="$event.currentTarget.style.background='#fff'">
+                <span>{{p.name}}</span><span style="color:#999;font-size:11px">{{p.question_count}} 题</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-if="modal._vbStep==='paper'" style="max-height:55vh;overflow-y:auto">
+          <div style="margin-bottom:8px;display:flex;gap:6px">
+            <button class="btn btn-sm" @click="modal._vbStep='dir';modal._vbQuestions=[]" style="color:#999">← 返回目录</button>
+            <span style="font-size:12px;color:#999;padding:3px 0">{{modal._vbPaperName}} · {{modal._vbQuestions.length}} 题</span>
+          </div>
+          <div v-for="(vq,vi) in modal._vbQuestions" class="card" style="padding:10px 14px;margin-bottom:4px;cursor:pointer;border-left:3px solid transparent;transition:.1s" :style="{borderLeftColor:vq._sel?'#b43c28':'transparent'}" @click="vq._sel=!vq._sel">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between">
+              <div style="flex:1">
+                <img v-if="vq.page_image" :src="'/static/figures/'+encodeURIComponent(vq.region||'')+'/'+vq.year+'/'+vq.page_image" style="width:80px;height:55px;object-fit:cover;border-radius:4px;margin-bottom:6px;border:1px solid #eee;float:left;margin-right:10px">
+                <div style="font-weight:600;font-size:13px;margin-bottom:2px;overflow:hidden">{{vi+1}}. <span v-html="renderChem(vq.content)"></span></div>
+                <div v-if="vq.options&&vq.options.length&&(vq.options||[]).filter(Boolean).length" style="font-size:11px;color:#555;margin:2px 0"><span v-for="o in vq.options" style="margin-right:8px" v-html="renderChem(o)"></span></div>
+                <div style="margin-top:3px"><span v-for="kp in (vq.knowledge_points||[])" class="tag tag-medium">{{kp}}</span><span class="tag" style="background:#e0f2f1;color:#2c6e49;margin-left:4px">{{vq.difficulty||'medium'}}</span></div>
+              </div>
+              <button class="btn btn-sm" v-if="vq._sel" style="background:#b43c28;color:#fff;border:none;white-space:nowrap;margin-left:8px;flex-shrink:0" @click.stop="selectVariant(vq)">选为蓝本</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Exam manage mode -->
+      <div v-if="modal.type==='manage'" style="min-width:560px">
+        <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid rgba(0,0,0,.08)">
+          <button style="padding:6px 16px;border:none;background:none;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:#999" :style="modal._manageTab==='paper'?{borderBottomColor:'#b43c28',color:'#1a1a1a',fontWeight:500}:{}" @click="modal._manageTab='paper'">试卷</button>
+          <button style="padding:6px 16px;border:none;background:none;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:#999" :style="modal._manageTab==='answer'?{borderBottomColor:'#b43c28',color:'#1a1a1a',fontWeight:500}:{}" @click="modal._manageTab='answer'">答案</button>
+          <span style="flex:1"></span>
+          <span style="font-size:12px;color:#999;padding:6px 0">{{modal.previewQuestions?modal.previewQuestions.length:0}} 题</span>
+        </div>
+        <div v-if="modal.previewLoading" style="text-align:center;padding:24px;color:#999">加载中...</div>
+        <div v-else-if="!modal.previewQuestions||modal.previewQuestions.length===0" style="text-align:center;padding:24px;color:#999">该考试还没有题目，去"题库管理"或"历史真题库"选题加入</div>
+        <div v-else style="max-height:50vh;overflow-y:auto">
+          <div v-for="(pq,pi) in modal.previewQuestions" class="preview-question" style="display:flex;gap:8px;align-items:flex-start">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:14px;margin-bottom:4px">{{pi+1}}. <span v-html="renderChem(pq.content)"></span></div>
+              <div v-if="pq.options&&pq.options.length&&modal._manageTab==='paper'" style="font-size:12px;color:#555;margin:4px 0"><span v-for="o in pq.options" style="margin-right:12px">{{o}}</span></div>
+              <div v-if="modal._manageTab==='answer'" style="margin-top:4px">
+                <div v-if="pq.options&&pq.options.length" style="font-size:12px;color:#555;margin:4px 0"><span v-for="o in pq.options" style="margin-right:12px">{{o}}</span></div>
+                <span class="tag" style="background:#e0f2f1;color:#2c6e49">答案: {{pq.answer}}</span>
+                <span v-for="kp in (pq.knowledge_points||[])" class="tag tag-medium">{{kp}}</span>
+                <div v-if="pq.analysis" style="font-size:12px;color:#999;margin-top:4px">{{pq.analysis}}</div>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-delete" style="flex-shrink:0;margin-top:2px" @click="removeExamQuestion(pq.question_id,pi)">移除</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions" v-if="modal.type!=='select'">
+        <button v-if="modal.showCancel!==false" @click="modalCancel">{{modal.cancelText||'取消'}}</button>
+        <button v-if="modal.showConfirm!==false" class="btn-primary" @click="modalConfirm">{{modal.confirmText||'确定'}}</button>
+      </div>
+    </div>
+  </div>
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+</main>
+
+<script src="/app.js"></script>
+<script>
+(function(){
+function getToken(){var u=sessionStorage.getItem('chemai_user');if(u){try{return JSON.parse(u).token||''}catch(e){}}return localStorage.getItem('token')||''}
+function api(url,opts){
+  opts=opts||{};opts.headers=Object.assign({'Authorization':'Bearer '+getToken(),'Content-Type':'application/json'},opts.headers||{})
+  return fetch(url,opts).then(function(r){
+    if(r.status===401){sessionStorage.removeItem('chemai_user');localStorage.removeItem('token');window.location.href='/login.html';throw new Error('登录已过期')}
+    if(!r.ok) throw new Error('HTTP '+r.status)
+    return r.json()
+  }).catch(function(e){
+    if(e.message!=='登录已过期')toast2('请求失败: '+(e.message||'网络错误'), true)
+    throw e
+  })
+}
+var typeMap={single_choice:'选择题',fill_blank:'填空题',calculation:'计算题',experiment:'实验题',inference:'推断题'}
+
+// ── Toast system ──
+var _tc=document.getElementById('toast-container')
+function toast2(msg,isErr,isSuccess){
+  if(!_tc){_tc=document.createElement('div');_tc.id='toast-container';document.body.appendChild(_tc)}
+  var t=document.createElement('div')
+  t.className='toast-item'+(isErr?' error':'')+(isSuccess?' success':'')
+  t.textContent=msg
+  _tc.appendChild(t)
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(24px)';t.style.transition='.25s';setTimeout(function(){t.remove()},300)},2800)
+}
+
+Vue.createApp({
+data:function(){return{
+  tab:'workbench',
+  tabs:[{id:'workbench',label:'出题工作台'},{id:'bank',label:'题库管理'},{id:'history',label:'历史真题库'},{id:'exams',label:'考试列表'}],
+  // Config
+  kps:[],kpSearch:'',difficulty:'medium',
+  types:[{val:'single_choice',label:'选择题',active:true,qty:3},{val:'fill_blank',label:'填空题',active:false,qty:2},{val:'calculation',label:'计算题',active:false,qty:1},{val:'experiment',label:'实验题',active:false,qty:1},{val:'inference',label:'推断题',active:false,qty:1}],
+  folders:[],selectedFolder:'',
+  // AI results
+  questions:[],generating:false,savingAll:false,showDelConfirm:false,sourceMode:'ai',
+  // Audit
+  auditDims:[{key:'coefficient_audit',label:'配平'},{key:'condition_audit',label:'条件'},{key:'product_audit',label:'产物'},{key:'structure_audit',label:'结构'}],
+  // Manual
+  mqContent:'',mqOptions:'',mqAnswer:'',mqKps:'',mqDiff:'medium',
+  // OCR
+  ocrLoading:false,ocrResult:'',
+  // Bank
+  bankFolder:'',bankQuestions:[],
+  // Variant
+  useVariant:false,variantQid:'',variantLabel:'',
+  // History
+  histSearch:'',histYear:'',histResults:[],histTotal:0,historyMode:'dir',histPapers:[],histTotalPapers:0,
+  // Exams
+  examName:'',examClass:'',examList:[],classes:[],
+  // Modal
+  modal:{show:false,fading:false,title:'',message:'',type:'confirm',inputValue:'',placeholder:'',selectValue:'',selectOptions:[],selectPlaceholder:'',confirmText:'确定',cancelText:'取消',showConfirm:true,showCancel:true,previewLoading:false,previewQuestions:null,_resolve:null,_reject:null,_manageTab:'paper',_manageExamId:'',_manageExam:null,_vbStep:'dir',_vbPapers:[],_vbQuestions:[],_vbPaperName:''}
+}},
+computed:{
+  filteredKps:function(){
+    var s=this.kpSearch.toLowerCase()
+    return this.kps.filter(function(k){return !s||k.name.toLowerCase().includes(s)})
+  }
+},
+mounted:function(){
+  var self=this
+  api('/api/knowledge/list').then(function(d){var items=d.knowledge_points||d.data||[];self.kps=items.map(function(k){return{name:k.name||k,active:false}})})
+  fetch('/api/exam-bank/exam-sets',{headers:{'Authorization':'Bearer '+getToken(),'Content-Type':'application/json'}}).then(function(r){return r.json()}).then(function(d){self.folders=(d.data&&d.data.exam_sets)||[]}).catch(function(){})
+  api('/api/classes').then(function(d){
+    self.classes=d.classes||(d.data&&d.data.classes)||[]
+    self.classes.forEach(function(c){api('/api/exam/list/'+c.class_id).then(function(r){if(r.success){(r.exams||r.data||[]).forEach(function(e){self.examList.push(e)})}}).catch(function(){})})
+  })
+  // Load exam paper directory
+  fetch('/api/exam-bank/papers',{headers:{'Authorization':'Bearer '+getToken(),'Content-Type':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+    if(d.success){
+      self.histPapers=(d.data&&d.data.groups)||[]
+      self.histTotalPapers=(d.data&&d.data.total_papers)||0
+      self.histTotal=(d.data&&d.data.total_questions)||0
+    }
+  }).catch(function(){})
+  // Agent page driver bridge
+  var bridge = window.__chemai_bridge
+  if (bridge) {
+    // Actions
+    if (bridge.actions) {
+      bridge.actions.forEach(function(act) {
+        if (act.action === 'openTab') {
+          if (act.payload === 'generate') { self.tab = 'workbench'; self.sourceMode = 'ai' }
+          else if (act.payload === 'browse') { self.tab = 'history' }
+          else if (act.payload === 'upload') { self.tab = 'workbench'; self.sourceMode = 'upload' }
+        }
+        if (act.action === 'filterKp') {
+          self.kpSearch = act.payload || ''
+          // Activate matching kp
+          if (self.kps) { self.kps.forEach(function(k) { k.active = k.name.includes(act.payload) }) }
+        }
+        if (act.action === 'setTypes') {
+          // payload format: "single_choice:5,fill_blank:2"
+          var typeMap = {}
+          var parts = (act.payload || '').split(',')
+          parts.forEach(function(p) {
+            var kv = p.split(':')
+            if (kv.length === 2) typeMap[kv[0].trim()] = parseInt(kv[1].trim()) || 1
+          })
+          self.types.forEach(function(t) {
+            if (typeMap[t.val] !== undefined) { t.active = true; t.qty = typeMap[t.val] }
+            else { t.active = false }
+          })
+        }
+      })
+    }
+    // Populate data — sessionStorage stores as {data: {target: data}} dict,
+    // but existing code expects a [{target, data}] array. Normalize both formats.
+    var autoGenerate = false
+    if (!bridge.populates && bridge.data) {
+      bridge.populates = Object.keys(bridge.data).map(function(k) {
+        return {target: k, data: bridge.data[k]}
+      })
+    }
+    if (bridge.populates) {
+      bridge.populates.forEach(function(pop) {
+        if (pop.target === 'questions' && pop.data && pop.data.questions) {
+          self.questions = pop.data.questions
+          self.tab = 'workbench'; self.sourceMode = 'ai'
+        }
+        if (pop.target === 'searchResults' && pop.data && pop.data.questions) {
+          self.histResults = pop.data.questions
+          self.histTotal = pop.data.total || pop.data.questions.length
+          self.tab = 'history'
+        }
+        if (pop.target === 'exam-config' && pop.data) {
+          var cfg = pop.data
+          // Pre-fill knowledge points
+          if (cfg.knowledge_points && self.kps) {
+            cfg.knowledge_points.forEach(function(kp) {
+              var match = self.kps.find(function(k) { return k.name === kp })
+              if (match) match.active = true
+            })
+          }
+          // Pre-fill difficulty
+          if (cfg.difficulty) self.difficulty = cfg.difficulty
+          // Pre-fill question types with quantities
+          if (cfg.types) {
+            cfg.types.forEach(function(t) {
+              var type = self.types.find(function(tt) { return tt.val === t.val })
+              if (type) { type.active = t.active; if (t.qty) type.qty = t.qty }
+            })
+          }
+          // Pre-fill variant source
+          if (cfg.variant_source) { self.variantQid = cfg.variant_source; self.useVariant = true }
+          // Pre-fill folder (look up by name, fall back to raw value)
+          if (cfg.set_name) {
+            var folder = self.folders.find(function(f) { return f.name === cfg.set_name })
+            self.selectedFolder = folder ? folder.set_id : cfg.set_name
+          }
+          // Switch to AI generate tab
+          self.tab = 'workbench'; self.sourceMode = 'ai'
+          // Auto-trigger generation after pre-fill
+          autoGenerate = true
+        }
+      })
+    }
+    // Navigate params
+    if (bridge.navigate && bridge.navigate.params) {
+      var p = bridge.navigate.params
+      if (p.knowledge_points) self.kpSearch = p.knowledge_points
+      if (p.difficulty) self.difficulty = p.difficulty
+    }
+    window.__chemai_bridge = null
+    // Auto-trigger generation if exam-config was populated
+    if (autoGenerate) {
+      var selfBridge = this
+      this.$nextTick(function() { selfBridge.aiGenerate() })
+    }
+  }
+},
+methods:{
+  // ── Modal system ──
+  modalShow:function(opts){
+    var self=this
+    Object.assign(this.modal,{show:true,fading:false,title:'',message:'',type:'confirm',inputValue:'',placeholder:'',selectValue:'',selectOptions:[],selectPlaceholder:'',confirmText:'确定',cancelText:'取消',showConfirm:true,showCancel:true,previewLoading:false,previewQuestions:null},opts)
+    return new Promise(function(resolve,reject){self.modal._resolve=resolve;self.modal._reject=reject})
+  },
+  modalConfirm:function(){this.modal.fading=true;var self=this;var r=this.modal._resolve;setTimeout(function(){self.modal.show=false;self.modal.fading=false;if(r)r(self.modal.type==='input'?self.modal.inputValue:self.modal.type==='select'?self.modal.selectValue:true)},150)},
+  modalCancel:function(){this.modal.fading=true;var self=this;var r=this.modal._reject;setTimeout(function(){self.modal.show=false;self.modal.fading=false;if(r)r()},150)},
+  // Replace confirm
+  $confirm:function(msg,title){
+    title=title||'确认操作'
+    var self=this
+    return this.modalShow({title:title,message:msg,type:'confirm',confirmText:'确认',cancelText:'取消'})
+  },
+  // Replace prompt
+  $prompt:function(msg,title,placeholder,defaultVal){
+    title=title||'请输入';placeholder=placeholder||''
+    var self=this
+    if(defaultVal)this.modal.inputValue=defaultVal
+    return this.modalShow({title:title,message:msg,type:'input',placeholder:placeholder,confirmText:'确定',cancelText:'取消'})
+  },
+  // Replace alert
+  $alert:function(msg,title){
+    title=title||'提示'
+    return this.modalShow({title:title,message:msg,type:'confirm',showCancel:false,confirmText:'知道啦'})
+  },
+  renderChem:function(t){if(!t)return'';try{var idx=0,blocks=[],h=t;h=h.replace(/\$\$([\s\S]*?)\$\$/g,function(m,e){var k='\uE000LATEX'+idx+'\uE001';blocks.push({key:k,tex:e,display:true});idx++;return k});h=h.replace(/\$(?!\$)([\s\S]*?)\$/g,function(m,e){var k='\uE000LATEX'+idx+'\uE001';blocks.push({key:k,tex:e,display:false});idx++;return k});h=h.replace(/\$/g,'<span>$</span>');h=marked.parse(h,{breaks:true,gfm:true});blocks.forEach(function(b){try{var ren=katex.renderToString(b.tex,{displayMode:b.display,throwOnError:false});h=h.replace(b.key,ren)}catch(_){h=h.replace(b.key,b.tex)}});return h}catch(e){return'<p>'+t+'</p>'}},
+  // ── 打印预览（ADR-0005 D2，复用报告 HTML 打印先例）──
+  printPreview:function(){
+    var items=this.questions.filter(function(q){return !q._removed})
+    if(!items.length){toast2('出题区为空，先出几道题再打印',true);return}
+    var w=window.open('','_blank')
+    if(!w){toast2('请允许浏览器弹出窗口以打印预览',true);return}
+    var title=this.examName||'组卷预览'
+    var d=new Date(),dateStr=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日'
+    var data=items.map(function(q){return{content:q.content,options:q.options||[],page_image:q.page_image?encodeURIComponent(q.region||'')+'/'+q.year+'/'+q.page_image:''}})
+    var html='<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>'+title+'</title>'
+    html+='<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">'
+    html+='<style>'
+    html+='body{font-family:"Noto Serif SC","SimSun","PingFang SC","Microsoft YaHei",serif;color:#000;margin:0;padding:32px;line-height:1.7}'
+    html+='.paper-title{text-align:center;font-size:22px;font-weight:700;margin-bottom:4px}'
+    html+='.paper-sub{text-align:center;color:#555;font-size:13px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #000}'
+    html+='.q{margin-bottom:18px;page-break-inside:avoid}'
+    html+='.qno{font-weight:600;margin-bottom:4px}'
+    html+='.qbody{font-size:15px}'
+    html+='.qopts{font-size:14px;margin-top:4px}'
+    html+='.qopts span{margin-right:16px}'
+    html+='img{max-width:100%}'
+    html+='table{border-collapse:collapse;margin:8px 0}table th,table td{border:1px solid #000;padding:4px 8px}'
+    html+='@media print{body{padding:16px}.no-print{display:none!important}}'
+    html+='</style></head><body>'
+    html+='<div class="paper-title">'+title+'</div>'
+    html+='<div class="paper-sub">共 '+items.length+' 题 · '+dateStr+' · ChemAI 智辅化学</div>'
+    html+='<div id="qs"></div>'
+    html+='<button class="no-print" onclick="window.print()" style="position:fixed;top:16px;right:16px;padding:10px 20px;background:#b43c28;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">打印 / 导出 PDF</button>'
+    html+='<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"><\/script>'
+    html+='<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/mhchem.min.js"><\/script>'
+    html+='<script src="/js/chem-markdown.js"><\/script>'
+    html+='<script>window.__pq='+JSON.stringify(data)+';'
+    html+='(function(){var qs=window.__pq,out="";'
+    html+='for(var i=0;i<qs.length;i++){var q=qs[i];'
+    html+='out+=\'<div class="q"><div class="qno">\'+(i+1)+\'.</div>\';'
+    html+='if(q.page_image)out+=\'<img src="/static/figures/\'+q.page_image+\'">\';'
+    html+='out+=\'<div class="qbody">\'+(window.renderChemMD?window.renderChemMD(q.content):q.content)+\'</div>\';'
+    html+='if(q.options&&q.options.length){out+=\'<div class="qopts">\';for(var j=0;j<q.options.length;j++){out+=\'<span>\'+q.options[j]+\'</span>\'}out+=\'</div>\'}'
+    html+='out+=\'</div>\'}'
+    html+='document.getElementById("qs").innerHTML=out;'
+    html+='})();<\/script>'
+    html+='</body></html>'
+    w.document.write(html)
+    w.document.close()
+  },
+  // ── Variant ──
+  // ── Variant browser ──
+  openVariantBrowser:function(){
+    var self=this
+    this.modal._vbStep='dir';this.modal._vbQuestions=[];this.modal._vbPaperName=''
+    this.modalShow({title:'选择变种题蓝本',type:'variant',showConfirm:false,cancelText:'关闭'})
+    // Load paper directory if not loaded
+    if(!this.modal._vbPapers.length){
+      fetch('/api/exam-bank/papers',{headers:{'Authorization':'Bearer '+getToken(),'Content-Type':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+        if(d.success)self.modal._vbPapers=(d.data&&d.data.groups)||[]
+      })
+    }
+  },
+  openVariantPaper:function(p){
+    var self=this;this.modal._vbStep='paper';this.modal._vbPaperName=p.name;this.modal._vbQuestions=[]
+    var params='region='+encodeURIComponent(p.source_key||p.name)+'&year='+(p.year||'')+'&page_size=200'
+    api('/api/exam-bank/historical?'+params).then(function(d){
+      self.modal._vbQuestions=((d.data&&d.data.questions)||[]).map(function(q){q._sel=false;return q})
+    })
+  },
+  selectVariant:function(vq){
+    this.variantQid=vq.exam_id||vq.question_id
+    this.variantLabel=(vq.source||'')+' · #'+(vq.question_number||'')
+    this.modal.fading=true;var self=this
+    setTimeout(function(){self.modal.show=false;self.modal.fading=false},150)
+    toast2('已选择蓝本: '+self.variantLabel,false,true)
+  },
+  useAsVariant:function(hq){
+    this.variantQid=hq.exam_id||hq.question_id
+    this.variantLabel=(hq.source||'')+' · #'+(hq.question_number||'')
+    this.useVariant=true
+    this.tab='workbench';this.sourceMode='ai'
+    this.histResults.forEach(function(q){q._sel=false})
+    toast2('已设置蓝本: '+this.variantLabel+'，可在出题工作台生成变种题',false,true)
+  },
+  // ── AI Generate ──
+  aiGenerate:function(){
+    var self=this
+    if(this.useVariant&&this.variantQid){
+      this.generating=true;this.questions=[]
+      api('/api/question/generate',{method:'POST',body:JSON.stringify({knowledge_points:[],difficulty:this.difficulty,quantity:3,question_types:['choice'],variant_source_id:this.variantQid})}).then(function(d){
+        var qs=(d.questions||[]).map(function(q){q._typeLabel='变种题';q._source='(变种)';q._saved=false;q._removed=false;q._editing=false;q._kpsStr=(q.knowledge_points||[]).join(', ');return q})
+        self.questions=qs;self.generating=false;toast2('已生成 '+qs.length+' 道变种题',false,true)
+      }).catch(function(){self.generating=false;toast2('生成失败',true)})
+      return
+    }
+    var kps=this.kps.filter(function(k){return k.active}).map(function(k){return k.name})
+    var atypes=this.types.filter(function(t){return t.active})
+    if(!kps.length&&!this.useVariant){toast2('请选择至少一个知识点',true);return}
+    if(!atypes.length){toast2('请选择至少一种题型',true);return}
+    this.generating=true;this.questions=[];this.sourceMode='ai'
+    var pending=atypes.length;var allQs=[]
+    atypes.forEach(function(t){
+      var qty=t.qty||2
+      api('/api/question/generate',{method:'POST',body:JSON.stringify({knowledge_points:kps,difficulty:self.difficulty,quantity:qty,question_types:[t.val]})}).then(function(d){
+        var qs=(d.questions||[]).map(function(q){q._typeLabel=typeMap[t.val]||t.val;q._source='(AI)';q._saved=false;q._removed=false;q._editing=false;q._kpsStr=(q.knowledge_points||[]).join(', ');return q})
+        allQs=allQs.concat(qs);pending--
+        if(!pending){self.questions=allQs;self.generating=false;toast2('已生成 '+allQs.length+' 题',false,true)}
+      }).catch(function(){pending--;if(!pending){self.questions=allQs;self.generating=false}})
+    })
+  },
+  saveOne:function(i){
+    var q=this.questions[i];if(!q||q._removed||q._saved)return
+    var sid=this.selectedFolder;if(!sid){toast2('请先在左侧选择保存目标题库',true);return}
+    var self=this
+    var opts=Array.isArray(q.options)?q.options:(typeof q.options==='string'?q.options.split(',').filter(Boolean):[])
+    api('/api/exam-bank/import-questions',{method:'POST',body:JSON.stringify({set_id:sid,questions:[{content:q.content,options:opts,answer:q.answer||'',analysis:'',knowledge_points:q.knowledge_points||[],difficulty:q.difficulty||'medium'}]})}).then(function(d){
+      if(d.success){q._saved=true;q._removed=true;toast2('已保存到题库',false,true)}else{toast2('保存失败: '+(d.message||''),true)}
+    }).catch(function(){toast2('网络错误',true)})
+  },
+  removeOne:function(i){this.questions[i]._removed=true},
+  saveAll:function(){
+    var self=this;var active=this.questions.filter(function(q){return !q._removed&&!q._saved})
+    if(!active.length){toast2('没有待保存的题目',true);return}
+    var sid=this.selectedFolder;if(!sid){toast2('请选择保存目标题库',true);return}
+    this.savingAll=true
+    api('/api/exam-bank/import-questions',{method:'POST',body:JSON.stringify({set_id:sid,questions:active.map(function(q){return{content:q.content,options:Array.isArray(q.options)?q.options:(typeof q.options==='string'?q.options.split(',').filter(Boolean):[]),answer:q.answer||'',analysis:'',knowledge_points:q.knowledge_points||[],difficulty:q.difficulty||'medium'}})})}).then(function(d){
+      if(d.success){active.forEach(function(q){q._saved=true;q._removed=true});toast2('已保存 '+active.length+' 题到题库',false,true);self.loadFolders()}
+      else{toast2('失败: '+(d.message||''),true)}
+      self.savingAll=false
+    }).catch(function(){toast2('网络错误',true);self.savingAll=false})
+  },
+  deleteAll:function(){this.questions=[];this.showDelConfirm=false},
+  // ── Manual ──
+  manualAdd:function(){
+    if(!this.mqContent){toast2('请输入题目内容',true);return}
+    var opts=this.mqOptions?this.mqOptions.split(',').map(function(s){return s.trim()}).filter(Boolean):[]
+    this.questions.push({content:this.mqContent,options:opts,answer:this.mqAnswer,analysis:'',knowledge_points:this.mqKps.split(',').map(function(s){return s.trim()}).filter(Boolean),difficulty:this.mqDiff,_typeLabel:opts.length?'选择题':'问答题',_source:'(手动)',_saved:false,_removed:false,_editing:false,_kpsStr:this.mqKps})
+    this.mqContent='';this.mqOptions='';this.mqAnswer='';this.mqKps='';toast2('已添加',false,true)
+  },
+  // ── OCR ──
+  handleOcrDrop:function(ev){var f=ev.dataTransfer.files[0];if(!f)return;this.processOcrFile(f)},
+  handleOcrFile:function(e){var f=e.target.files[0];if(!f)return;this.processOcrFile(f)},
+  processOcrFile:function(f){
+    var self=this;self.ocrLoading=true;self.ocrResult=''
+    var reader=new FileReader()
+    reader.onload=function(ev){
+      var b64=ev.target.result.split(',')[1]
+      api('/api/ocr/parse/document',{method:'POST',body:JSON.stringify({file_data:b64,file_type:'auto',source:'auto'})}).then(function(d){
+        self.ocrLoading=false
+        if(d.success){self.ocrResult='识别成功! provider='+d.provider; self.mqContent=d.result.raw_text||''; self.sourceMode='manual'; toast2('题目已提取到手动录入区',false,true)}
+        else{self.ocrResult='识别失败: '+(d.error||'未知错误')}
+      }).catch(function(){self.ocrLoading=false;self.ocrResult='网络错误'})
+    }
+    reader.readAsDataURL(f)
+  },
+  // ── Folder ──
+  newFolder:function(){
+    var self=this
+    this.$prompt('请输入题库名称：','新建题库','例如：高一月考题库').then(function(name){
+      api('/api/exam-bank/exam-sets',{method:'POST',body:JSON.stringify({name:name,region:'',year:new Date().getFullYear()})}).then(function(d){
+        if(d.success){self.selectedFolder=d.exam_set.set_id;self.bankFolder=d.exam_set.set_id;self.bankQuestions=[];self.loadFolders();toast2('题库「'+name+'」已创建',false,true)}
+        else{toast2('创建失败: '+(d.message||''),true)}
+      })
+    }).catch(function(){})
+  },
+  loadFolders:function(){
+    var self=this
+    fetch('/api/exam-bank/exam-sets',{headers:{'Authorization':'Bearer '+getToken(),'Content-Type':'application/json'}})
+      .then(function(r){return r.json()})
+      .then(function(d){self.folders=(d.data&&d.data.exam_sets)||[]})
+      .catch(function(){})
+  },
+  loadBank:function(){
+    var self=this;if(!this.bankFolder){this.bankQuestions=[];return}
+    fetch('/api/exam-bank/exam-sets/'+this.bankFolder,{headers:{'Authorization':'Bearer '+getToken(),'Content-Type':'application/json'}})
+      .then(function(r){return r.json()})
+      .then(function(d){self.bankQuestions=(d.data&&d.data.questions)||[]})
+      .catch(function(){})
+  },
+  deleteFolder:async function(){
+    try{await this.$confirm('确定删除此题库？所有题目将丢失。','删除题库');var self=this}
+    catch(e){return}
+    api('/api/exam-bank/exam-sets/'+this.bankFolder,{method:'DELETE'}).then(function(d){
+      if(d.success){self.folders=self.folders.filter(function(f){return f.set_id!==self.bankFolder});self.bankFolder='';self.bankQuestions=[];toast2('已删除',false,true)}
+    })
+  },
+  removeFromBank:async function(qid,idx){
+    try{await this.$confirm('从题库中移除此题？','移除题目')}catch(e){return}
+    var self=this
+    api('/api/exam-bank/exam-sets/'+this.bankFolder+'/questions/'+qid,{method:'DELETE'}).then(function(d){
+      if(d.success){self.bankQuestions.splice(idx,1);toast2('已移除',false,true)}
+      else{toast2('移除失败: '+(d.detail||d.message||''),true)}
+    })
+  },
+  // ── Add questions to exam from bank/history ──
+  addBankToExam:async function(bq){
+    var exams=this.examList.filter(function(e){return!e.question_stats||!e.question_stats.published})
+    if(!exams.length){this.$alert('没有可用的未发布考试，请先在"考试列表"中创建考试。','提示');return}
+    var self=this
+    var ename=''
+    try{
+      var eid=await this.modalShow({title:'选题入考试',message:'选择目标考试:',type:'select',selectOptions:exams.map(function(e){return{value:e.record_id,label:e.name}}),selectPlaceholder:'选择考试...',confirmText:'加入'})
+    }catch(e){return}
+    ename=exams.find(function(e){return e.record_id===eid})||{name:'考试'}
+    api('/api/exam/'+eid+'/questions',{method:'POST',body:JSON.stringify({question_ids:[bq.question_id]})}).then(function(d){
+      if(d.success){
+        toast2('已加入「'+ename.name+'」',false,true)
+        // Refresh exam list counts
+        api('/api/exam/'+eid+'/questions').then(function(qd){
+          var ex=self.examList.find(function(x){return x.record_id===eid})
+          if(ex){var s=ex.question_stats||{};s.question_count=(qd.questions||[]).length;ex.question_stats=s}
+        })
+      }
+      else toast2('加入失败',true)
+    })
+  },
+  addBankToExamBatch:async function(){
+    var exams=this.examList.filter(function(e){return!e.question_stats||!e.question_stats.published})
+    if(!exams.length){this.$alert('没有可用的未发布考试','提示');return}
+    var self=this
+    var ename=''
+    try{
+      var eid=await this.modalShow({title:'批量选题入考试',message:'选择目标考试:',type:'select',selectOptions:exams.map(function(e){return{value:e.record_id,label:e.name}}),selectPlaceholder:'选择考试...',confirmText:'加入'})
+    }catch(e){return}
+    ename=exams.find(function(e){return e.record_id===eid})||{name:'考试'}
+    api('/api/exam/'+eid+'/questions',{method:'POST',body:JSON.stringify({question_ids:this.bankQuestions.map(function(q){return q.question_id})})}).then(function(d){
+      if(d.success){
+        toast2('已加入 '+d.updated+' 题到「'+ename.name+'」',false,true)
+        var ex=self.examList.find(function(x){return x.record_id===eid})
+        if(ex){var s=ex.question_stats||{};s.question_count=(s.question_count||0)+d.updated;ex.question_stats=s}
+      }
+      else toast2('加入失败',true)
+    })
+  },
+  // ── History ──
+  loadPapers:function(){
+    var self=this
+    fetch('/api/exam-bank/papers',{headers:{'Authorization':'Bearer '+getToken(),'Content-Type':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+      if(d.success){
+        self.histPapers=(d.data&&d.data.groups)||[]
+        self.histTotalPapers=(d.data&&d.data.total_papers)||0
+        self.histTotal=(d.data&&d.data.total_questions)||0
+      }
+    })
+  },
+  openPaper:function(p){
+    if(p&&p.empty){return}
+    var self=this;this.historyMode='paper';this.histResults=[]
+    var params='region='+encodeURIComponent(p.source_key||p.name)+'&year='+(p.year||'')+'&page_size=200'
+    api('/api/exam-bank/historical?'+params).then(function(d){
+      self.histResults=((d.data&&d.data.questions)||[]).map(function(q){q._sel=false;return q})
+    })
+  },
+  searchHistory:function(){
+    var self=this;this.historyMode='search';var params=[]
+    if(this.histSearch)params.push('knowledge_point='+encodeURIComponent(this.histSearch))
+    api('/api/exam-bank/historical?'+params.join('&')).then(function(d){
+      self.histResults=((d.data&&d.data.questions)||[]).map(function(q){q._sel=false;return q})
+      self.histTotal=d.data?d.data.total:self.histTotal
+    })
+  },
+  addHistToCanvas:function(){
+    var self=this;var selected=this.histResults.filter(function(q){return q._sel})
+    selected.forEach(function(hq){self.questions.push({content:hq.content,options:hq.options||[],answer:hq.answer||'',analysis:hq.analysis||'',knowledge_points:hq.knowledge_points||[],difficulty:hq.difficulty||'medium',_typeLabel:'选择题',_saved:false,_removed:false,_editing:false,_kpsStr:(hq.knowledge_points||[]).join(', ')})})
+    this.histResults.forEach(function(q){q._sel=false});this.tab='workbench';this.sourceMode='ai';toast2('已加入 '+selected.length+' 题到出题区',false,true)
+  },
+  addHistToExam:async function(){
+    var selected=this.histResults.filter(function(q){return q._sel})
+    if(!selected.length){toast2('请先勾选真题',true);return}
+    var exams=this.examList.filter(function(e){return!e.question_stats||!e.question_stats.published})
+    if(!exams.length){this.$alert('没有可用的未发布考试','提示');return}
+    var self=this
+    var ename=''
+    try{
+      var eid=await this.modalShow({title:'真题加入考试',message:'选择目标考试:',type:'select',selectOptions:exams.map(function(e){return{value:e.record_id,label:e.name}}),selectPlaceholder:'选择考试...',confirmText:'加入'})
+    }catch(e){return}
+    ename=exams.find(function(e){return e.record_id===eid})||{name:'考试'}
+    api('/api/exam/'+eid+'/questions',{method:'POST',body:JSON.stringify({question_ids:selected.map(function(q){return q.question_id})})}).then(function(d){
+      if(d.success){
+        self.histResults.forEach(function(q){q._sel=false})
+        toast2('已加入 '+selected.length+' 题到「'+ename.name+'」',false,true)
+        var ex=self.examList.find(function(x){return x.record_id===eid})
+        if(ex){var s=ex.question_stats||{};s.question_count=(s.question_count||0)+selected.length;ex.question_stats=s}
+      }
+      else toast2('加入失败',true)
+    })
+  },
+  // ── Exams ──
+  createExam:function(){
+    if(!this.examName||!this.examClass){toast2('请填写名称和班级',true);return};var self=this
+    api('/api/exam/create',{method:'POST',body:JSON.stringify({name:this.examName,class_id:this.examClass})}).then(function(d){
+      if(d.success){self.examList.push({record_id:d.record_id,name:d.name,class_id:d.class_id,exam_date:d.exam_date,total_students:d.total_students,present_students:d.present_students});self.examName='';toast2('考试「'+d.name+'」已创建，去题库或真题库选题吧',false,true)}
+      else{toast2('创建失败: '+(d.detail||d.message||'未知错误'),true)}
+    }).catch(function(){toast2('网络错误',true)})
+  },
+  previewExam:function(e){
+    var self=this
+    this.modalShow({title:'预览: '+e.name,type:'preview',showConfirm:false,cancelText:'关闭',previewLoading:true,previewQuestions:[]})
+    api('/api/exam/'+e.record_id+'/questions').then(function(d){
+      self.modal.previewLoading=false
+      self.modal.previewQuestions=(d.data&&d.data.questions)||d.questions||[]
+    }).catch(function(){self.modal.previewLoading=false;self.modal.previewQuestions=[]})
+  },
+  manageExam:function(e){
+    var self=this
+    this.modal._manageTab='paper'
+    this.modal._manageExamId=e.record_id
+    this.modal._manageExam=e
+    this.modalShow({title:e.name,type:'manage',showConfirm:false,cancelText:'关闭',previewLoading:true,previewQuestions:[]})
+    api('/api/exam/'+e.record_id+'/questions').then(function(d){
+      self.modal.previewLoading=false
+      self.modal.previewQuestions=(d.data&&d.data.questions)||d.questions||[]
+    }).catch(function(){self.modal.previewLoading=false;self.modal.previewQuestions=[]})
+  },
+  removeExamQuestion:function(qid,idx){
+    var self=this
+    api('/api/exam/'+this.modal._manageExamId+'/questions/'+qid,{method:'DELETE'}).then(function(d){
+      if(d.success){
+        self.modal.previewQuestions.splice(idx,1)
+        var e=self.modal._manageExam
+        if(e){var s=e.question_stats||{};s.question_count=self.modal.previewQuestions.length;e.question_stats=s}
+        toast2('已移除',false,true)
+      }
+    })
+  },
+  publishExam:async function(e){
+    try{await this.$confirm('发布后学生将看到此考试，确定发布？','发布考试: '+e.name)}catch(e2){return}
+    var self=this
+    api('/api/exam/'+e.record_id+'/publish',{method:'POST'}).then(function(d){
+      if(d.success){toast2('「'+e.name+'」已发布，共 '+d.question_count+' 题',false,true)}
+      else{toast2(d.detail||d.message||'发布失败',true)}
+    })
+  },
+  deleteExam:async function(e){
+    try{await this.$confirm('确定删除「'+e.name+'」？此操作不可撤销。','删除考试')}catch(e2){return}
+    var self=this
+    api('/api/exam/'+e.record_id,{method:'DELETE'}).then(function(d){
+      if(d.success){self.examList=self.examList.filter(function(x){return x.record_id!==e.record_id});toast2('已删除',false,true)}
+    })
+  }
+}}).mount('#app-root')
+})()
+</script>
+<script>(function(){var n=sessionStorage.getItem('chemai_navigate');if(!n)return;try{n=JSON.parse(n)}catch(e){return}window.__chemai_bridge=n;sessionStorage.removeItem('chemai_navigate')})()</script></body></html>

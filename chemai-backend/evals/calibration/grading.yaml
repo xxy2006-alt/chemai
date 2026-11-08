@@ -1,0 +1,31 @@
+# 校准集：判卷族（grading）— 判官对每题的判分 vs 黄金答案
+# 状态：种子样本，未经人工标注复核；启用门槛 ≥20 条人工标注样本（Spec 04）
+family: grading
+samples:
+  - id: gr-001
+    input: 题目：配平方程式 Fe + O2 = Fe2O3
+    output: 学生答案：4Fe + 3O2 = 2Fe2O3；判官判分：100
+    reference: 正确配平 4Fe + 3O2 = 2Fe2O3，应满分
+    human_score: 100
+    note: 判分正确
+
+  - id: gr-002
+    input: 题目：配平方程式 Fe + O2 = Fe2O3
+    output: 学生答案：2Fe + O2 = Fe2O3；判官判分：100
+    reference: 学生答案未配平（原子不守恒），应 0 分
+    human_score: 0
+    note: 判官给错误答案满分 → 判卷严重失准，典型失分样本
+
+  - id: gr-003
+    input: 题目：写出钠与水反应的化学方程式（4分）
+    output: 学生答案：2Na + 2H2O = 2NaOH + H2（未标气体符号）；判官判分：3
+    reference: 方程式正确但缺 ↑，扣 1 分 → 3 分
+    human_score: 100
+    note: 部分分判分正确
+
+  - id: gr-004
+    input: 题目：计算 1mol CO2 的质量
+    output: 学生答案：44g；判官判分：100
+    reference: 44g 正确
+    human_score: 100
+    note: 判分正确

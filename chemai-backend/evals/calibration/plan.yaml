@@ -1,0 +1,23 @@
+# 校准集：方案族（plan）— 学习计划/干预方案适配性、可执行性、个性化
+# 状态：种子样本，未经人工标注复核；启用门槛 ≥20 条人工标注样本（Spec 04）
+family: plan
+samples:
+  - id: pl-001
+    input: 学生 concept 障碍（离子方程式），高一，每周可用 3 小时
+    output: 计划：先复习离子方程式书写规则（2 课时），再练 20 道变式题，每日 30 分钟，两周后小测
+    reference: 适配 concept 障碍、步骤具体、有节奏安排
+    human_score: 85
+    note: 适配且可执行
+
+  - id: pl-002
+    input: 学生 reading 障碍（读题漏条件），初二
+    output: 计划：多做题目。
+    human_score: 30
+    note: 未针对读题训练、无时间安排、模板化
+
+  - id: pl-003
+    input: 学生 expression 障碍，高三冲刺
+    output: 计划：高考规范答题训练，每日一题按评分标准自查，考前完成 30 道真题规范书写
+    reference: 针对性（规范书写）+ 可执行 + 契合高三冲刺节奏
+    human_score: 90
+    note: 适配且可执行
