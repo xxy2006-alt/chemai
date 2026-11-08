@@ -1,0 +1,30 @@
+ChemAI（智辅化学）源码交付说明
+====================================
+
+【这是什么】
+完整源码快照（git HEAD 导出），含演示数据库（chemai.db：340 名学生、
+9 个班级、教师/学生/家长演示账号、题库与作答记录）。
+
+【快速运行】
+1. 环境：Python 3.11、Node.js 18+
+2. 后端依赖：
+       cd ChemAI/chemai-backend
+       pip install -r requirements.txt
+3. 前端构建（服务直接托管构建产物）：
+       cd ChemAI/chemai-backend/frontend
+       npm install && npm run build
+4. 配置：复制 chemai-backend/.env.example 为 .env，填入你自己的
+   LLM API Key（默认 deepseek/mimo）与 OCR Key——交付包不含任何密钥
+5. 启动：双击 chemai-backend/start.bat（开发，端口 8001）
+   或 start.bat stable（稳定，端口 8000）
+6. 登录：教师演示账号 zhou / zhou123456（其余见 app/utils/init_db.py）；
+   学生演示账号 241901 / 123456
+
+【本包已排除（重要）】
+- .env（真实 API 密钥，泄露即产生费用风险）——请用 .env.example 自建
+- .archive/chemai-backend-history.bundle（旧仓库历史，收件无需）
+- 运行日志、node_modules、前端 dist 构建产物、AI 工具本地状态
+
+【数据说明】
+chemai.db 为演示数据库（git 内有意跟踪）。含学生姓名/作答等演示数据，
+请勿用于真实在读学生的生产环境；如需生产部署请重新初始化数据。

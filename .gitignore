@@ -1,0 +1,28 @@
+# ---- 工具状态（本机环境，不入库）----
+.gstack/
+.workbuddy/
+**/.claude/settings.local.json
+
+# ---- 生成物 / 运行时数据 ----
+graphify-out/
+_e2e_accept/
+**/.scratch/
+
+# ---- 桌面端构建产物（源码 build_exe.py 保留）----
+桌面应用/*.exe
+桌面应用/_build_tmp/
+
+# ---- 操作系统 ----
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# ---- 根目录运行时/临时产物（可再生，不与其他会话的进行中文件混在一起）----
+/data/
+/_arch_shot/
+
+# 临时产物/生成物（2026-09-12 清理：会话级工具与验证截图不入库）
+.dsh-vision-toolkit/
+UI组件/_shots/
+chemai-backend/tests/_design_upgrade_shots/
+chemai-backend/tests/test_web_search.py
